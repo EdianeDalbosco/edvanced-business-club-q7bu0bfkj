@@ -1464,44 +1464,46 @@ export default function MeetingsAndMaterials() {
       )}
 
       {/* =========================================================================
-          4. VISÃO B: ABA DE CALENDÁRIO UNIFICADO (Requisitos: Encontros + Divulgações + Filtros)
+          4. VISÃO B: ABA DE CALENDÁRIO UNIFICADO (Fundo Claro / Light Theme)
          ========================================================================= */}
       {mainView === 'calendario' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Header do Calendário com Filtros Completos */}
-          <div className="bg-[#06242E] border border-teal-950 rounded-3xl p-6 space-y-6 shadow-xl">
+        <div className="space-y-6 animate-fade-in text-slate-900">
+          {/* Header do Calendário com Filtros Completos (Fundo Claro) */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 space-y-6 shadow-sm">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px]">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px] shadow-xs">
                     Calendário Geral de Eventos
                   </Badge>
-                  <span className="text-xs text-teal-300/80">
+                  <span className="text-xs font-semibold text-slate-500">
                     {filteredCalendarEvents.length} evento(s) no calendário
                   </span>
                 </div>
-                <h2 className="text-xl md:text-2xl font-black text-white">
+                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                   Agenda Oficial do Business Club & Eventos dos Membros
                 </h2>
-                <p className="text-xs text-teal-200/70">
-                  Os encontros oficiais aparecem destacados em{' '}
-                  <span className="text-[#F5D77F] font-bold">Azul Escuro / Dourado VIP</span> e os
-                  eventos dos membros em{' '}
-                  <span className="text-teal-300 font-bold">Verde Petróleo</span>.
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Os encontros oficiais aparecem com destaque em{' '}
+                  <span className="text-[#06242E] font-bold">
+                    Azul Petróleo Escuro + Dourado VIP
+                  </span>{' '}
+                  e os eventos dos membros em{' '}
+                  <span className="text-teal-700 font-bold">Verde Petróleo Suave</span>.
                 </p>
               </div>
 
               {/* Controles de Navegação de Data & Alternância Dia / Semana / Mês */}
               <div className="flex flex-wrap items-center gap-2.5">
                 {/* View Mode: Dia / Semana / Mês */}
-                <div className="flex items-center bg-[#03151B] p-1 rounded-xl border border-teal-900/60">
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('mes')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'mes'
-                        ? 'bg-[#D4AF37] text-slate-950'
-                        : 'text-teal-200 hover:text-white'
+                        ? 'bg-[#06242E] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
                     Mês
@@ -1509,10 +1511,10 @@ export default function MeetingsAndMaterials() {
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('semana')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'semana'
-                        ? 'bg-[#D4AF37] text-slate-950'
-                        : 'text-teal-200 hover:text-white'
+                        ? 'bg-[#06242E] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
                     Semana
@@ -1520,10 +1522,10 @@ export default function MeetingsAndMaterials() {
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('dia')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'dia'
-                        ? 'bg-[#D4AF37] text-slate-950'
-                        : 'text-teal-200 hover:text-white'
+                        ? 'bg-[#06242E] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
                     Dia
@@ -1531,12 +1533,12 @@ export default function MeetingsAndMaterials() {
                 </div>
 
                 {/* Prev / Today / Next */}
-                <div className="flex items-center gap-1 bg-[#03151B] p-1 rounded-xl border border-teal-900/60">
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={handlePrevDate}
-                    className="h-8 w-8 text-teal-100 hover:text-white hover:bg-white/10"
+                    className="h-8 w-8 text-slate-700 hover:text-slate-900 hover:bg-slate-200/80 rounded-lg"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -1544,7 +1546,7 @@ export default function MeetingsAndMaterials() {
                     variant="ghost"
                     size="sm"
                     onClick={handleToday}
-                    className="h-8 text-xs font-bold text-[#D4AF37] hover:bg-white/10"
+                    className="h-8 px-2.5 text-xs font-bold text-[#8C6D07] hover:text-slate-950 hover:bg-slate-200/80 rounded-lg"
                   >
                     Hoje
                   </Button>
@@ -1552,23 +1554,23 @@ export default function MeetingsAndMaterials() {
                     variant="ghost"
                     size="icon"
                     onClick={handleNextDate}
-                    className="h-8 w-8 text-teal-100 hover:text-white hover:bg-white/10"
+                    className="h-8 w-8 text-slate-700 hover:text-slate-900 hover:bg-slate-200/80 rounded-lg"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
 
-                <div className="px-3 py-1.5 rounded-xl bg-[#03151B] border border-teal-900/60 text-xs font-black text-white uppercase tracking-wider min-w-[140px] text-center">
+                <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-[#06242E] uppercase tracking-wider min-w-[140px] text-center shadow-2xs">
                   {format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
                 </div>
               </div>
             </div>
 
             {/* BARRA DE FILTROS DO CALENDÁRIO (Evento, Local, Presencial/Online, Pago/Gratuito, Origem) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-4 border-t border-teal-950">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-4 border-t border-slate-200">
               {/* 1. Busca por Nome de Evento */}
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                   Nome do Evento
                 </Label>
                 <div className="relative">
@@ -1577,20 +1579,20 @@ export default function MeetingsAndMaterials() {
                     placeholder="Filtrar evento..."
                     value={calSearchName}
                     onChange={(e) => setCalSearchName(e.target.value)}
-                    className="pl-8 text-xs h-9 bg-[#03151B] border-teal-900/80 text-white placeholder:text-slate-500 rounded-xl"
+                    className="pl-8 text-xs h-9 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus-visible:ring-[#D4AF37]"
                   />
                 </div>
               </div>
 
               {/* 2. Origem (Business Club vs Membros) */}
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                   Origem do Evento
                 </Label>
                 <select
                   value={calOriginFilter}
                   onChange={(e) => setCalOriginFilter(e.target.value)}
-                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-hidden focus:border-[#D4AF37]"
                 >
                   <option value="todos">Todos (Club & Membros)</option>
                   <option value="club">Apenas Edvanced Business Club</option>
@@ -1600,13 +1602,13 @@ export default function MeetingsAndMaterials() {
 
               {/* 3. Formato: Presencial ou Online */}
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                   Presencial / Online
                 </Label>
                 <select
                   value={calFormatFilter}
                   onChange={(e) => setCalFormatFilter(e.target.value)}
-                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-hidden focus:border-[#D4AF37]"
                 >
                   <option value="todos">Todos os Formatos</option>
                   <option value="presencial">Presencial</option>
@@ -1617,13 +1619,13 @@ export default function MeetingsAndMaterials() {
 
               {/* 4. Cobrança: Pago ou Gratuito */}
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                   Pago / Gratuito
                 </Label>
                 <select
                   value={calPricingFilter}
                   onChange={(e) => setCalPricingFilter(e.target.value)}
-                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-hidden focus:border-[#D4AF37]"
                 >
                   <option value="todos">Todos (Gratuito & Pago)</option>
                   <option value="gratuito">Apenas Gratuitos / Inclusos</option>
@@ -1633,13 +1635,13 @@ export default function MeetingsAndMaterials() {
 
               {/* 5. Local */}
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                   Localização
                 </Label>
                 <select
                   value={calLocationFilter}
                   onChange={(e) => setCalLocationFilter(e.target.value)}
-                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-hidden focus:border-[#D4AF37]"
                 >
                   <option value="todos">Todos os Locais</option>
                   {uniqueLocations.map((loc) => (
@@ -1652,26 +1654,26 @@ export default function MeetingsAndMaterials() {
             </div>
 
             {/* Legenda Visual */}
-            <div className="flex flex-wrap items-center gap-4 text-xs pt-2 text-teal-200/80">
-              <span className="font-semibold text-slate-400">Legenda:</span>
+            <div className="flex flex-wrap items-center gap-4 text-xs pt-2 text-slate-600">
+              <span className="font-semibold text-slate-500">Legenda:</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-[#06242E] border-2 border-[#D4AF37]" />
-                <span className="text-white font-medium">Business Club (Oficial)</span>
+                <span className="text-slate-800 font-semibold">Business Club (Oficial)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-teal-800 border-2 border-teal-400" />
-                <span className="text-white font-medium">Eventos dos Membros</span>
+                <span className="w-3 h-3 rounded-full bg-teal-600 border-2 border-teal-300" />
+                <span className="text-slate-800 font-semibold">Eventos dos Membros</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Badge
                   variant="outline"
-                  className="text-[9px] uppercase font-bold text-emerald-300 border-emerald-500/40"
+                  className="text-[9px] uppercase font-bold text-emerald-700 border-emerald-300 bg-emerald-50"
                 >
                   Gratuito
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="text-[9px] uppercase font-bold text-amber-300 border-amber-500/40"
+                  className="text-[9px] uppercase font-bold text-amber-700 border-amber-300 bg-amber-50"
                 >
                   Pago
                 </Badge>
@@ -1680,23 +1682,23 @@ export default function MeetingsAndMaterials() {
           </div>
 
           {/* =========================================================================
-              MODO 1: VISÃO DE MÊS (Month Grid)
+              MODO 1: VISÃO DE MÊS (Month Grid - Fundo Claro)
              ========================================================================= */}
           {calendarViewMode === 'mes' && (
-            <div className="bg-[#06242E] border border-teal-950 rounded-3xl overflow-hidden shadow-xl">
+            <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-sm">
               {/* Weekday headers */}
-              <div className="grid grid-cols-7 border-b border-teal-950 bg-[#03151B]/80 text-center text-xs font-bold uppercase tracking-wider text-teal-300 py-3">
-                <span>Dom</span>
+              <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center text-xs font-bold uppercase tracking-wider text-slate-700 py-3">
+                <span className="text-rose-600">Dom</span>
                 <span>Seg</span>
                 <span>Ter</span>
                 <span>Qua</span>
                 <span>Qui</span>
                 <span>Sex</span>
-                <span>Sáb</span>
+                <span className="text-slate-600">Sáb</span>
               </div>
 
               {/* Month calendar cells */}
-              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-teal-950/60 bg-[#06242E]">
+              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200 bg-slate-100/50">
                 {monthDays.map((day, idx) => {
                   const isCurrentMonth = isSameMonth(day, currentCalendarDate)
                   const isToday = isSameDay(day, new Date())
@@ -1714,55 +1716,63 @@ export default function MeetingsAndMaterials() {
                       key={idx}
                       className={`min-h-[120px] p-2 flex flex-col justify-between transition-colors ${
                         isCurrentMonth
-                          ? 'bg-[#06242E]/70'
-                          : 'bg-[#03151B]/40 text-slate-600 opacity-60'
-                      } ${isToday ? 'ring-2 ring-inset ring-[#D4AF37]/80' : ''}`}
+                          ? 'bg-white hover:bg-slate-50/80'
+                          : 'bg-slate-50/70 text-slate-400 opacity-60'
+                      } ${isToday ? 'ring-2 ring-inset ring-[#D4AF37] bg-amber-50/20' : ''}`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <span
-                          className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
+                          className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
                             isToday
-                              ? 'bg-[#D4AF37] text-slate-950 font-black'
+                              ? 'bg-[#06242E] text-[#F5D77F] ring-1 ring-[#D4AF37] font-black shadow-xs'
                               : isCurrentMonth
-                                ? 'text-teal-100'
-                                : 'text-slate-600'
+                                ? 'text-slate-800'
+                                : 'text-slate-400'
                           }`}
                         >
                           {format(day, 'd')}
                         </span>
                         {dayEvents.length > 0 && (
-                          <span className="text-[10px] font-extrabold text-[#D4AF37]">
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-100 text-[#06242E] border border-slate-200">
                             {dayEvents.length}
                           </span>
                         )}
                       </div>
 
                       {/* Event Chips */}
-                      <div className="space-y-1 overflow-y-auto max-h-[90px] no-scrollbar">
+                      <div className="space-y-1.5 overflow-y-auto max-h-[90px] no-scrollbar">
                         {dayEvents.map((ev) => {
                           const isOfficial = ev.origin === 'meeting'
                           return (
                             <div
                               key={ev.id}
                               onClick={() => handleCalendarEventClick(ev)}
-                              className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border ${
+                              className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border shadow-2xs ${
                                 isOfficial
-                                  ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] hover:bg-[#06242E] shadow-xs'
-                                  : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400 hover:bg-teal-900'
+                                  ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] hover:border-[#D4AF37]'
+                                  : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100/90 hover:border-teal-300'
                               }`}
                               title={`${ev.title} (${ev.format} - ${ev.pricing}) - Clique para ver`}
                             >
-                              <div className="flex items-center gap-1 truncate">
+                              <div className="flex items-center gap-1.5 truncate">
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                    isOfficial ? 'bg-[#D4AF37]' : 'bg-teal-400'
+                                    isOfficial ? 'bg-[#D4AF37]' : 'bg-teal-600'
                                   }`}
                                 />
-                                <span className="truncate">{ev.title}</span>
+                                <span className="truncate font-bold">{ev.title}</span>
                               </div>
-                              <div className="flex items-center justify-between text-[9px] text-teal-300/80 mt-0.5">
-                                <span>{formatTimeString(ev.date)}</span>
-                                <span className="uppercase text-[8px] font-extrabold text-[#F5D77F]">
+                              <div
+                                className={`flex items-center justify-between text-[9px] mt-0.5 ${
+                                  isOfficial ? 'text-teal-200' : 'text-teal-700'
+                                }`}
+                              >
+                                <span className="font-medium">{formatTimeString(ev.date)}</span>
+                                <span
+                                  className={`uppercase text-[8px] font-extrabold ${
+                                    isOfficial ? 'text-[#F5D77F]' : 'text-teal-900'
+                                  }`}
+                                >
                                   {ev.format}
                                 </span>
                               </div>
@@ -1778,10 +1788,10 @@ export default function MeetingsAndMaterials() {
           )}
 
           {/* =========================================================================
-              MODO 2: VISÃO DE SEMANA (Week Columns)
+              MODO 2: VISÃO DE SEMANA (Week Columns - Fundo Claro)
              ========================================================================= */}
           {calendarViewMode === 'semana' && (
-            <div className="bg-[#06242E] border border-teal-950 rounded-3xl overflow-hidden shadow-xl p-4">
+            <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-sm p-4">
               <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
                 {weekDays.map((day, idx) => {
                   const isToday = isSameDay(day, new Date())
@@ -1796,17 +1806,19 @@ export default function MeetingsAndMaterials() {
                   return (
                     <div
                       key={idx}
-                      className={`rounded-2xl p-3 bg-[#03151B] border min-h-[220px] flex flex-col justify-between ${
-                        isToday ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' : 'border-teal-950'
+                      className={`rounded-2xl p-3 bg-slate-50/80 border min-h-[220px] flex flex-col justify-between transition-all ${
+                        isToday
+                          ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/50 bg-amber-50/20 shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      <div className="border-b border-teal-950 pb-2 mb-2 text-center">
-                        <p className="text-[10px] font-bold uppercase text-teal-300">
+                      <div className="border-b border-slate-200 pb-2 mb-2 text-center">
+                        <p className="text-[10px] font-bold uppercase text-slate-500">
                           {format(day, 'EEE', { locale: ptBR })}
                         </p>
                         <p
                           className={`text-lg font-black mt-0.5 ${
-                            isToday ? 'text-[#D4AF37]' : 'text-white'
+                            isToday ? 'text-[#8C6D07]' : 'text-slate-900'
                           }`}
                         >
                           {format(day, 'dd/MM')}
@@ -1821,10 +1833,10 @@ export default function MeetingsAndMaterials() {
                               <div
                                 key={ev.id}
                                 onClick={() => handleCalendarEventClick(ev)}
-                                className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-105 ${
+                                className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-[1.02] shadow-2xs ${
                                   isOfficial
-                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-md'
-                                    : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400'
+                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] shadow-sm'
+                                    : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100 hover:border-teal-300'
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1 mb-1">
@@ -1832,21 +1844,37 @@ export default function MeetingsAndMaterials() {
                                     className={`text-[8px] uppercase font-extrabold ${
                                       isOfficial
                                         ? 'bg-[#D4AF37] text-slate-950'
-                                        : 'bg-teal-800 text-white'
+                                        : 'bg-teal-700 text-white'
                                     }`}
                                   >
                                     {isOfficial ? 'Club' : 'Membro'}
                                   </Badge>
-                                  <span className="text-[10px] text-[#F5D77F] font-bold">
+                                  <span
+                                    className={`text-[10px] font-bold ${
+                                      isOfficial ? 'text-[#F5D77F]' : 'text-teal-800'
+                                    }`}
+                                  >
                                     {formatTimeString(ev.date)}
                                   </span>
                                 </div>
-                                <h4 className="font-bold text-xs text-white line-clamp-2 leading-tight">
+                                <h4
+                                  className={`font-bold text-xs line-clamp-2 leading-tight ${
+                                    isOfficial ? 'text-white' : 'text-slate-900'
+                                  }`}
+                                >
                                   {ev.title}
                                 </h4>
                                 {ev.location && (
-                                  <p className="text-[10px] text-teal-300/80 truncate mt-1 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3 text-[#D4AF37]" />
+                                  <p
+                                    className={`text-[10px] truncate mt-1 flex items-center gap-1 ${
+                                      isOfficial ? 'text-teal-200' : 'text-slate-600'
+                                    }`}
+                                  >
+                                    <MapPin
+                                      className={`w-3 h-3 ${
+                                        isOfficial ? 'text-[#D4AF37]' : 'text-teal-700'
+                                      }`}
+                                    />
                                     {ev.location}
                                   </p>
                                 )}
@@ -1854,7 +1882,7 @@ export default function MeetingsAndMaterials() {
                             )
                           })
                         ) : (
-                          <div className="text-center py-6 text-slate-600 text-[11px]">
+                          <div className="text-center py-6 text-slate-400 text-[11px]">
                             Sem eventos
                           </div>
                         )}
@@ -1867,16 +1895,16 @@ export default function MeetingsAndMaterials() {
           )}
 
           {/* =========================================================================
-              MODO 3: VISÃO DE DIA (Day Agenda)
+              MODO 3: VISÃO DE DIA (Day Agenda - Fundo Claro)
              ========================================================================= */}
           {calendarViewMode === 'dia' && (
-            <div className="bg-[#06242E] border border-teal-950 rounded-3xl p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-teal-950 pb-4">
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                 <div>
-                  <span className="text-xs uppercase font-bold text-[#D4AF37] tracking-wider">
+                  <span className="text-xs uppercase font-bold text-[#8C6D07] tracking-wider">
                     Agenda do Dia Selecionado
                   </span>
-                  <h3 className="text-xl md:text-2xl font-black text-white">
+                  <h3 className="text-xl md:text-2xl font-black text-slate-900">
                     {format(currentCalendarDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                   </h3>
                 </div>
@@ -1893,12 +1921,12 @@ export default function MeetingsAndMaterials() {
 
                 if (dayEvents.length === 0) {
                   return (
-                    <div className="p-12 text-center bg-[#03151B] rounded-2xl border border-teal-950 space-y-3">
-                      <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto" />
-                      <h4 className="font-bold text-white text-base">
+                    <div className="p-12 text-center bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                      <CalendarIcon className="w-12 h-12 text-slate-400 mx-auto" />
+                      <h4 className="font-bold text-slate-900 text-base">
                         Nenhum evento agendado para esta data
                       </h4>
-                      <p className="text-xs text-slate-400 max-w-md mx-auto">
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
                         Nenhum encontro do Business Club ou divulgação de membros coincide com os
                         filtros aplicados.
                       </p>
@@ -1916,8 +1944,8 @@ export default function MeetingsAndMaterials() {
                           onClick={() => handleCalendarEventClick(ev)}
                           className={`p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.01] flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                             isOfficial
-                              ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-xl'
-                              : 'bg-teal-950/70 text-teal-100 border-teal-700/60 hover:border-teal-400'
+                              ? 'bg-[#06242E] text-white border-[#D4AF37]/50 hover:bg-[#0A3340] shadow-md'
+                              : 'bg-white text-slate-900 border-slate-200 hover:border-teal-400 hover:bg-slate-50/60 shadow-xs'
                           }`}
                         >
                           <div className="space-y-2 min-w-0 flex-1">
@@ -1934,7 +1962,11 @@ export default function MeetingsAndMaterials() {
 
                               <Badge
                                 variant="outline"
-                                className="text-[10px] uppercase font-bold text-teal-200 border-teal-700"
+                                className={`text-[10px] uppercase font-bold ${
+                                  isOfficial
+                                    ? 'text-teal-200 border-teal-700'
+                                    : 'text-slate-700 border-slate-300'
+                                }`}
                               >
                                 {ev.format}
                               </Badge>
@@ -1943,37 +1975,69 @@ export default function MeetingsAndMaterials() {
                                 variant="outline"
                                 className={`text-[10px] uppercase font-bold ${
                                   ev.pricing === 'pago'
-                                    ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
-                                    : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                                    ? isOfficial
+                                      ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                                      : 'text-amber-800 border-amber-300 bg-amber-50'
+                                    : isOfficial
+                                      ? 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                                      : 'text-emerald-800 border-emerald-300 bg-emerald-50'
                                 }`}
                               >
                                 {ev.pricing === 'pago' ? 'Pago' : 'Gratuito'}
                               </Badge>
 
-                              <span className="text-xs text-teal-300 font-bold">
+                              <span
+                                className={`text-xs font-bold ${
+                                  isOfficial ? 'text-teal-300' : 'text-slate-600'
+                                }`}
+                              >
                                 {formatTimeString(ev.date)}
                                 {ev.endDate ? ` até ${formatTimeString(ev.endDate)}` : ''}
                               </span>
                             </div>
 
-                            <h4 className="font-extrabold text-base md:text-lg text-white">
+                            <h4
+                              className={`font-extrabold text-base md:text-lg ${
+                                isOfficial ? 'text-white' : 'text-slate-900'
+                              }`}
+                            >
                               {ev.title}
                             </h4>
 
                             {ev.subtitle && (
-                              <p className="text-xs text-[#F5D77F] font-semibold">{ev.subtitle}</p>
+                              <p
+                                className={`text-xs font-semibold ${
+                                  isOfficial ? 'text-[#F5D77F]' : 'text-teal-700'
+                                }`}
+                              >
+                                {ev.subtitle}
+                              </p>
                             )}
 
                             {ev.location && (
-                              <p className="text-xs text-teal-200/80 flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                              <p
+                                className={`text-xs flex items-center gap-1.5 ${
+                                  isOfficial ? 'text-teal-200/90' : 'text-slate-600'
+                                }`}
+                              >
+                                <MapPin
+                                  className={`w-3.5 h-3.5 ${
+                                    isOfficial ? 'text-[#D4AF37]' : 'text-teal-700'
+                                  }`}
+                                />
                                 {ev.location}
                               </p>
                             )}
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs">
+                            <Button
+                              className={`font-bold text-xs ${
+                                isOfficial
+                                  ? 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 shadow-sm'
+                                  : 'bg-[#06242E] hover:bg-[#0A3340] text-white shadow-xs'
+                              }`}
+                            >
                               {isOfficial ? 'Acessar Encontro & Materiais →' : 'Ver Detalhes →'}
                             </Button>
                           </div>
