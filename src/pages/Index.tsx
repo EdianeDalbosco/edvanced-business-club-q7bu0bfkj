@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Download,
   Eye,
+  Tag,
+  Hourglass,
+  CalendarCheck2,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -86,10 +89,33 @@ export default function Index() {
     loadDashboardData()
   }, [user, isAdmin])
 
-  const nextMeeting = meetings[0] || null
+  // Sort meetings to find upcoming first, then fallback to newest
+  const sortedMeetings = [...meetings].sort((a, b) => {
+    const timeA = new Date(a.start_date || a.date).getTime()
+    const timeB = new Date(b.start_date || b.date).getTime()
+    return timeB - timeA
+  })
+
+  // Prioritize upcoming or ongoing meeting, else most recent
+  const now = new Date()
+  const upcomingOrOngoing = sortedMeetings
+    .filter((m) => {
+      const start = new Date(m.start_date || m.date)
+      const end = m.end_date
+        ? new Date(m.end_date)
+        : new Date(start.getTime() + 2.5 * 60 * 60 * 1000)
+      return end >= now
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.start_date || a.date).getTime() - new Date(b.start_date || b.date).getTime(),
+    )[0]
+
+  const nextMeeting = upcomingOrOngoing || sortedMeetings[0] || null
   const latestMyDisclosure = myDisclosures[0] || null
 
-  const formatDateString = (dateStr: string) => {
+  const formatDateString = (dateStr?: string) => {
+    if (!dateStr) return ''
     try {
       const d = new Date(dateStr)
       return format(d, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
@@ -98,7 +124,8 @@ export default function Index() {
     }
   }
 
-  const formatTimeString = (dateStr: string) => {
+  const formatTimeString = (dateStr?: string) => {
+    if (!dateStr) return ''
     try {
       const d = new Date(dateStr)
       return format(d, "HH:mm'h'", { locale: ptBR })
@@ -107,10 +134,45 @@ export default function Index() {
     }
   }
 
+  const getMeetingStatus = (meeting: Meeting) => {
+    const nowDate = new Date()
+    const startStr = meeting.start_date || meeting.date
+    if (!startStr) {
+      return {
+        label: 'Agendado',
+        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        icon: Calendar,
+      }
+    }
+    const start = new Date(startStr)
+    const end = meeting.end_date
+      ? new Date(meeting.end_date)
+      : new Date(start.getTime() + 2.5 * 60 * 60 * 1000)
+    if (nowDate < start) {
+      return {
+        label: 'Próximo Encontro',
+        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        icon: Calendar,
+      }
+    } else if (nowDate >= start && nowDate <= end) {
+      return {
+        label: 'Em Andamento',
+        badgeClass: 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse',
+        icon: Hourglass,
+      }
+    } else {
+      return {
+        label: 'Realizado',
+        badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+        icon: CalendarCheck2,
+      }
+    }
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* 1. Hero Welcome Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-slate-800 text-white p-6 md:p-10 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0B3D4E] via-[#0E4C60] to-[#082B38] border border-teal-900/50 text-white p-6 md:p-10 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
@@ -121,7 +183,7 @@ export default function Index() {
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white">
               Bem-vindo(a), <span className="text-[#D4AF37]">{user?.name || 'Membro VIP'}</span>
             </h1>
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+            <p className="text-teal-100/90 text-sm md:text-base leading-relaxed">
               Acesse fotos e vídeos em alta resolução dos nossos encontros presenciais, assista aos
               encontros online e divulgue suas oportunidades exclusivas para o ecossistema.
             </p>
@@ -137,7 +199,7 @@ export default function Index() {
             <Link to="/encontros">
               <Button
                 variant="outline"
-                className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white text-xs font-semibold px-5 py-6 rounded-xl"
+                className="border-teal-700/60 bg-[#0B3D4E]/60 text-teal-100 hover:bg-[#0E4C60] hover:text-white text-xs font-semibold px-5 py-6 rounded-xl"
               >
                 Ver Acervo de Encontros
               </Button>
@@ -153,19 +215,45 @@ export default function Index() {
           {nextMeeting ? (
             <Card className="h-full border-slate-200/80 shadow-md hover:shadow-lg transition-all bg-white overflow-hidden flex flex-col justify-between">
               <div>
-                <CardHeader className="bg-slate-900 text-white p-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4" /> Próximo Encontro do Club
-                    </span>
-                    <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px]">
-                      {nextMeeting.type || 'Presencial'}
-                    </Badge>
+                <CardHeader className="bg-[#0B3D4E] text-white p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4" /> Encontro em Destaque
+                      </span>
+                      <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px]">
+                        {nextMeeting.type || 'Presencial'}
+                      </Badge>
+                      {(() => {
+                        const status = getMeetingStatus(nextMeeting)
+                        const StatusIcon = status.icon
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={`font-bold uppercase text-[10px] flex items-center gap-1 bg-white/10 text-white border-white/20`}
+                          >
+                            <StatusIcon className="w-3 h-3 text-[#D4AF37]" />
+                            {status.label}
+                          </Badge>
+                        )
+                      })()}
+                    </div>
                   </div>
-                  <CardTitle className="text-xl md:text-2xl mt-2 text-white font-bold leading-tight">
-                    {nextMeeting.title}
-                  </CardTitle>
+
+                  {/* Highlighted Title & Event Name */}
+                  <div className="mt-3 space-y-1">
+                    <CardTitle className="text-xl md:text-2xl text-white font-black leading-tight tracking-tight">
+                      {nextMeeting.title}
+                    </CardTitle>
+                    {nextMeeting.event_name && (
+                      <p className="text-xs md:text-sm font-semibold text-[#F5D77F] flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>Evento: {nextMeeting.event_name}</span>
+                      </p>
+                    )}
+                  </div>
                 </CardHeader>
+
                 <CardContent className="p-6 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
@@ -173,10 +261,15 @@ export default function Index() {
                         <Clock className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 font-medium">Data & Horário</p>
+                        <p className="text-xs text-slate-400 font-medium">
+                          Data & Horário (15 min)
+                        </p>
                         <p className="font-semibold text-slate-800">
-                          {formatDateString(nextMeeting.date)} às{' '}
-                          {formatTimeString(nextMeeting.date)}
+                          {formatDateString(nextMeeting.start_date || nextMeeting.date)} às{' '}
+                          {formatTimeString(nextMeeting.start_date || nextMeeting.date)}
+                          {nextMeeting.end_date
+                            ? ` até ${formatTimeString(nextMeeting.end_date)}`
+                            : ''}
                         </p>
                       </div>
                     </div>
@@ -259,7 +352,7 @@ export default function Index() {
               </CardHeader>
               <CardContent className="pt-2">
                 <Link to="/admin/aprovacao">
-                  <Button className="w-full bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider py-2.5">
+                  <Button className="w-full bg-[#0B3D4E] hover:bg-[#0E4C60] text-white text-xs font-bold uppercase tracking-wider py-2.5">
                     Abrir Fila de Aprovação
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -375,7 +468,7 @@ export default function Index() {
                   onClick={() => setSelectedMedia(item)}
                   className="group cursor-pointer bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex flex-col justify-between"
                 >
-                  <div className="relative h-44 bg-slate-900 overflow-hidden flex items-center justify-center">
+                  <div className="relative h-44 bg-[#082B38] overflow-hidden flex items-center justify-center">
                     {isPhoto && item.url ? (
                       <img
                         src={item.url}
@@ -383,9 +476,9 @@ export default function Index() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : isVideo ? (
-                      <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white relative">
+                      <div className="w-full h-full bg-[#051C24] flex flex-col items-center justify-center text-white relative">
                         <img
-                          src="https://img.usecurling.com/p/600/400?q=executive%20boardroom%20conference&color=navy"
+                          src="https://img.usecurling.com/p/600/400?q=executive%20boardroom%20conference&color=teal"
                           alt="Video thumbnail"
                           className="w-full h-full object-cover opacity-40"
                         />
@@ -514,7 +607,7 @@ export default function Index() {
                       rel="noopener noreferrer"
                       className="w-full"
                     >
-                      <Button className="w-full bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold py-2">
+                      <Button className="w-full bg-[#0B3D4E] hover:bg-[#0E4C60] text-white text-xs font-semibold py-2">
                         Acessar Link / Inscrição
                         <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                       </Button>
@@ -562,7 +655,7 @@ export default function Index() {
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-[300px]">
+            <div className="my-4 rounded-xl overflow-hidden bg-[#082B38] flex items-center justify-center min-h-[300px]">
               {selectedMedia.type === 'photo' && selectedMedia.url && (
                 <img
                   src={selectedMedia.url}

@@ -14,7 +14,10 @@ export interface User extends RecordModel {
 
 export interface Meeting extends RecordModel {
   title: string
+  event_name?: string
   date: string
+  start_date?: string
+  end_date?: string
   location: string
   type?: 'presencial' | 'online' | 'hibrido'
   speakers?: string

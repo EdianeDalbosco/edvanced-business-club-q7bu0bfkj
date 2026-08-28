@@ -54,7 +54,7 @@ export default function Login() {
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#8C6D07] p-[2px] shadow-xl shadow-[#D4AF37]/20 items-center justify-center">
-            <div className="w-full h-full bg-[#0F172A] rounded-[14px] flex items-center justify-center">
+            <div className="w-full h-full bg-[#0B3D4E] rounded-[14px] flex items-center justify-center">
               <Crown className="w-8 h-8 text-[#D4AF37]" />
             </div>
           </div>

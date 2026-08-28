@@ -22,6 +22,17 @@ export async function createMeeting(data: Partial<Meeting> | FormData): Promise<
   return pb.collection('meetings').create<Meeting>(data)
 }
 
+export async function updateMeeting(
+  id: string,
+  data: Partial<Meeting> | FormData,
+): Promise<Meeting> {
+  return pb.collection('meetings').update<Meeting>(id, data)
+}
+
+export async function deleteMeeting(id: string): Promise<boolean> {
+  return pb.collection('meetings').delete(id)
+}
+
 // MATERIALS
 export async function getMaterialsByMeeting(meetingId: string): Promise<Material[]> {
   return pb.collection('materials').getFullList<Material>({

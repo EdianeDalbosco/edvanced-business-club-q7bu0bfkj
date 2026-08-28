@@ -144,13 +144,13 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row antialiased selection:bg-[#D4AF37]/30 selection:text-slate-900">
       {/* Mobile Top Header */}
-      <header className="md:hidden bg-[#0F172A] text-white px-4 py-3.5 flex items-center justify-between border-b border-slate-800 sticky top-0 z-50">
+      <header className="md:hidden bg-[#0B3D4E] text-white px-4 py-3.5 flex items-center justify-between border-b border-[#082B38] sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-slate-300 hover:text-white hover:bg-slate-800"
+            className="text-teal-100 hover:text-white hover:bg-[#0E4C60]"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
@@ -181,22 +181,22 @@ export default function Layout() {
       {/* Sidebar Overlay (Mobile) */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-slate-950/70 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-[#051C24]/80 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar (Desktop & Mobile drawer) */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0F172A] text-slate-200 z-50 flex flex-col justify-between border-r border-slate-800/80 transition-transform duration-300 ease-in-out ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0B3D4E] text-slate-100 z-50 flex flex-col justify-between border-r border-[#082B38] transition-transform duration-300 ease-in-out ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Top Logo / Brand Header */}
-        <div className="p-6 border-b border-slate-800/60 bg-gradient-to-b from-slate-900 to-[#0F172A]">
+        <div className="p-6 border-b border-[#082B38]/80 bg-gradient-to-b from-[#082B38] to-[#0B3D4E]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
-              <div className="w-full h-full bg-[#0F172A] rounded-[10px] flex items-center justify-center">
+              <div className="w-full h-full bg-[#0B3D4E] rounded-[10px] flex items-center justify-center">
                 <Crown className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]/20" />
               </div>
             </div>
@@ -218,7 +218,7 @@ export default function Layout() {
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
           {/* Main Section */}
           <div>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-teal-200/70 mb-2">
               Menu Principal
             </p>
             <nav className="space-y-1">
@@ -233,7 +233,7 @@ export default function Layout() {
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
                       isActive
                         ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-semibold shadow-md shadow-[#D4AF37]/20'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                        : 'text-teal-50 hover:text-white hover:bg-[#0E4C60]/80'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ export default function Layout() {
         </div>
 
         {/* Sidebar Footer / User Profile */}
-        <div className="p-4 border-t border-slate-800/80 bg-slate-950/60">
+        <div className="p-4 border-t border-[#082B38] bg-[#082B38]/90">
           {user ? (
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -384,7 +384,7 @@ export default function Layout() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 shadow-xl border-slate-200" align="end">
-                <div className="p-4 bg-slate-900 text-white rounded-t-lg flex items-center justify-between">
+                <div className="p-4 bg-[#0B3D4E] text-white rounded-t-lg flex items-center justify-between">
                   <h4 className="font-bold text-sm flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#D4AF37]" /> Notificações do Club
                   </h4>

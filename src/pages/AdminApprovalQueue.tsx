@@ -149,7 +149,7 @@ export default function AdminApprovalQueue() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-950 via-[#0F172A] to-slate-950 border border-slate-800 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-[#082B38] via-[#0B3D4E] to-[#082B38] border border-teal-900/60 text-white rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-semibold uppercase tracking-wider mb-2">
@@ -273,7 +273,7 @@ export default function AdminApprovalQueue() {
                         setRejectReason('')
                         setReviewModalOpen(true)
                       }}
-                      className="bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs rounded-xl py-2 px-4"
+                      className="bg-[#0B3D4E] hover:bg-[#0E4C60] text-white font-bold text-xs rounded-xl py-2 px-4"
                     >
                       <Eye className="w-4 h-4 mr-1.5" /> Revisar & Decidir
                     </Button>
