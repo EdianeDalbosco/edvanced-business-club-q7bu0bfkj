@@ -205,7 +205,7 @@ export default function Index() {
       return {
         key: 'completed',
         label: 'Realizado',
-        badgeClass: 'bg-teal-950/80 text-teal-200 border-teal-700/50',
+        badgeClass: 'bg-blue-950/80 text-blue-200 border-blue-700/50',
         cardClass: 'bg-slate-800/80 text-slate-300 border-slate-700',
         icon: CalendarCheck2,
       }
@@ -246,9 +246,9 @@ export default function Index() {
       {/* =========================================================================
           1. NETFLIX-STYLE HERO BANNER (Capa em Destaque)
          ========================================================================= */}
-      <div className="relative rounded-3xl overflow-hidden bg-[#03151B] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
+      <div className="relative rounded-3xl overflow-hidden bg-[#061020] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
         {/* Background Cover Image with Cinematic Gradients & Premium Fallback */}
-        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#06242E] via-[#03151B] to-[#0A3340]">
+        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#0A1A33] via-[#061020] to-[#122443]">
           {getMeetingHeroCover(heroMeeting) ? (
             <img
               src={getMeetingHeroCover(heroMeeting)}
@@ -259,7 +259,7 @@ export default function Index() {
             <div className="w-full h-full relative flex items-center justify-center">
               <div className="absolute inset-0 bg-radial-gradient opacity-80" />
               <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#D4AF37]/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px]" />
               <div className="flex flex-col items-center justify-center text-center p-8 opacity-40">
                 <Sparkles className="w-20 h-20 text-[#D4AF37] mb-2" />
@@ -270,8 +270,8 @@ export default function Index() {
             </div>
           )}
           {/* Multi-layer Netflix-style vignette: Top subtle, bottom deep darkness, left dark gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-[#06242E]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/85 to-transparent w-full md:w-3/4" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-[#0A1A33]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#061020] via-[#061020]/85 to-transparent w-full md:w-3/4" />
           {/* Golden Ambient Glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
         </div>
@@ -307,7 +307,7 @@ export default function Index() {
               </>
             )}
 
-            <span className="text-xs font-medium text-teal-200/90 hidden sm:inline-block">
+            <span className="text-xs font-medium text-slate-300 hidden sm:inline-block">
               &bull; Portal do Membro VIP
             </span>
           </div>
@@ -330,7 +330,7 @@ export default function Index() {
               <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">
                 Edvanced Business Club
               </h1>
-              <p className="text-teal-100 text-sm md:text-base">
+              <p className="text-slate-200 text-sm md:text-base">
                 O ecossistema exclusivo para líderes, empresários e investidores de alto impacto.
               </p>
             </div>
@@ -338,19 +338,19 @@ export default function Index() {
 
           {/* Meeting Metadata (Data, Horário, Local) */}
           {heroMeeting && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs md:text-sm text-teal-100/90">
-              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs md:text-sm text-slate-200">
+              <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                 <Calendar className="w-4 h-4 text-[#D4AF37]" />
                 <span className="font-semibold">
                   {formatDateString(heroMeeting.start_date || heroMeeting.date)}
                 </span>
-                <span className="text-teal-300">
+                <span className="text-[#F5D77F]">
                   às {formatTimeString(heroMeeting.start_date || heroMeeting.date)}
                   {heroMeeting.end_date ? ` até ${formatTimeString(heroMeeting.end_date)}` : ''}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+              <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
                 <span className="truncate max-w-[240px]" title={heroMeeting.location}>
                   {heroMeeting.location}
@@ -358,7 +358,7 @@ export default function Index() {
               </div>
 
               {heroMeeting.speakers && (
-                <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                   <Users className="w-4 h-4 text-[#D4AF37]" />
                   <span className="truncate max-w-[220px]" title={heroMeeting.speakers}>
                     {heroMeeting.speakers}
@@ -392,7 +392,7 @@ export default function Index() {
                   variant="outline"
                   className="border-white/30 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md text-xs md:text-sm font-bold px-5 py-6 rounded-xl transition-all"
                 >
-                  <Info className="w-4 h-4 mr-1.5 text-teal-200" />
+                  <Info className="w-4 h-4 mr-1.5 text-slate-200" />
                   Mais Detalhes
                 </Button>
               </>
@@ -407,7 +407,7 @@ export default function Index() {
             <Link to="/divulgacoes/nova">
               <Button
                 variant="ghost"
-                className="text-teal-200 hover:text-white hover:bg-white/10 text-xs font-semibold px-4 py-6 rounded-xl"
+                className="text-slate-200 hover:text-white hover:bg-white/10 text-xs font-semibold px-4 py-6 rounded-xl"
               >
                 <Megaphone className="w-4 h-4 mr-1.5 text-[#D4AF37]" />
                 Criar Divulgação
@@ -421,7 +421,7 @@ export default function Index() {
           2. ADMIN & MEMBER STATUS BANNERS (Se houver fila de aprovação ou submissão)
          ========================================================================= */}
       {isAdmin && pendingCount > 0 && (
-        <div className="rounded-2xl p-4 md:p-5 bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-[#06242E] border border-amber-500/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="rounded-2xl p-4 md:p-5 bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-[#0A1A33] border border-amber-500/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-xl bg-[#D4AF37] text-slate-950 flex items-center justify-center flex-shrink-0 shadow-md">
               <ShieldCheck className="w-6 h-6 fill-current" />
@@ -451,14 +451,14 @@ export default function Index() {
 
       {/* Status da Última Divulgação do Usuário (se houver) */}
       {latestMyDisclosure && (
-        <div className="rounded-2xl p-4 bg-[#06242E] border border-teal-900/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="rounded-2xl p-4 bg-[#0A1A33] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] flex-shrink-0">
               <Megaphone className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#F5D77F]">
                   Sua Última Divulgação:
                 </span>
                 <span className="text-xs font-bold text-white truncate max-w-xs sm:max-w-md">
@@ -527,10 +527,10 @@ export default function Index() {
               <div
                 key={meeting.id}
                 onClick={() => navigate(`/encontros?id=${meeting.id}`)}
-                className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
               >
                 {/* Card Media Preview with Fallback */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
                   {getMeetingHeroCover(meeting) ? (
                     <img
                       src={getMeetingHeroCover(meeting)}
@@ -538,7 +538,7 @@ export default function Index() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#0A3340] via-[#06242E] to-[#03151B] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                    <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                       <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
                       <Sparkles className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" />
                       <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F] line-clamp-1">
@@ -546,7 +546,7 @@ export default function Index() {
                       </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
 
                   {/* Top Badges */}
                   <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
@@ -570,7 +570,7 @@ export default function Index() {
                   </div>
 
                   {/* Bottom Date Overlay */}
-                  <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-teal-100">
+                  <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-200">
                     <span className="font-semibold text-[#F5D77F]">
                       {formatShortDate(meeting.start_date || meeting.date)}
                     </span>
@@ -592,7 +592,7 @@ export default function Index() {
                     </h3>
                   </div>
 
-                  <div className="space-y-1.5 text-xs text-teal-100/80 pt-2 border-t border-teal-950">
+                  <div className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-slate-800">
                     <div className="flex items-center gap-1.5 text-[11px] truncate">
                       <MapPin className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
                       <span className="truncate" title={meeting.location}>
@@ -614,7 +614,7 @@ export default function Index() {
             )
           })
         ) : (
-          <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+          <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
             <p className="text-xs text-slate-400">Nenhum encontro agendado.</p>
           </div>
         )}
@@ -643,10 +643,10 @@ export default function Index() {
               <div
                 key={item.id}
                 onClick={() => setSelectedMedia(item)}
-                className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
               >
                 {/* Media Poster / Thumbnail */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#03151B] flex items-center justify-center">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#061020] flex items-center justify-center">
                   {isPhoto && item.url ? (
                     <img
                       src={item.url}
@@ -656,7 +656,7 @@ export default function Index() {
                   ) : isVideo ? (
                     <>
                       <img
-                        src="https://img.usecurling.com/p/600/380?q=executive%20boardroom%20conference&color=teal"
+                        src="https://img.usecurling.com/p/600/380?q=executive%20boardroom%20conference&color=navy"
                         alt="Video Cover"
                         className="w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-500"
                       />
@@ -667,7 +667,7 @@ export default function Index() {
                       </div>
                     </>
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#0A3340] to-[#03151B] flex flex-col items-center justify-center text-teal-100 p-4 text-center">
+                    <div className="w-full h-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 mb-2 group-hover:scale-110 transition-transform">
                         <FileText className="w-6 h-6" />
                       </div>
@@ -677,7 +677,7 @@ export default function Index() {
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30" />
 
                   {/* Badge de tipo */}
                   <div className="absolute top-2.5 left-2.5">
@@ -694,7 +694,7 @@ export default function Index() {
                     </Badge>
                   </div>
 
-                  <div className="absolute bottom-2 right-2 text-[10px] text-teal-200/90 flex items-center gap-1 bg-[#03151B]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                  <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
                     <Eye className="w-3 h-3 text-[#D4AF37]" />
                     <span>Ver</span>
                   </div>
@@ -707,13 +707,13 @@ export default function Index() {
                       {item.title}
                     </h4>
                     {item.description && (
-                      <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
                         {item.description}
                       </p>
                     )}
                   </div>
 
-                  <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                     <span className="font-medium">Edvanced Media</span>
                     <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
                       Abrir &rarr;
@@ -724,7 +724,7 @@ export default function Index() {
             )
           })
         ) : (
-          <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+          <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
             <p className="text-xs text-slate-400">Nenhum material cadastrado.</p>
           </div>
         )}
@@ -747,14 +747,14 @@ export default function Index() {
           approvedDisclosures.map((disc) => (
             <div
               key={disc.id}
-              className="group relative flex-shrink-0 w-72 sm:w-80 rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+              className="group relative flex-shrink-0 w-72 sm:w-80 rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
             >
               <div className="p-5 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-950 bg-[#D4AF37] px-2 py-0.5 rounded shadow-sm">
                     Aprovado
                   </span>
-                  <span className="text-[10px] text-teal-300/80 font-medium">
+                  <span className="text-[10px] text-slate-300 font-medium">
                     {formatShortDate(disc.created)}
                   </span>
                 </div>
@@ -763,20 +763,20 @@ export default function Index() {
                   {disc.title}
                 </h3>
 
-                <p className="text-xs text-teal-100/80 line-clamp-3 leading-relaxed">
+                <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed">
                   {disc.content}
                 </p>
 
                 {(disc.event_date || disc.event_location) && (
-                  <div className="p-2.5 bg-[#03151B]/80 rounded-xl space-y-1 text-[11px] border border-teal-900/50">
+                  <div className="p-2.5 bg-[#061020]/80 rounded-xl space-y-1 text-[11px] border border-slate-800">
                     {disc.event_date && (
-                      <div className="flex items-center gap-1.5 text-teal-100">
+                      <div className="flex items-center gap-1.5 text-slate-200">
                         <Calendar className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
                         <span>{formatDateString(disc.event_date)}</span>
                       </div>
                     )}
                     {disc.event_location && (
-                      <div className="flex items-center gap-1.5 text-teal-100">
+                      <div className="flex items-center gap-1.5 text-slate-200">
                         <MapPin className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
                         <span className="truncate">{disc.event_location}</span>
                       </div>
@@ -793,7 +793,7 @@ export default function Index() {
                     rel="noopener noreferrer"
                     className="block w-full"
                   >
-                    <Button className="w-full bg-[#03151B] hover:bg-[#D4AF37] hover:text-slate-950 text-white border border-[#D4AF37]/40 text-xs font-bold py-2 rounded-xl transition-all">
+                    <Button className="w-full bg-[#061020] hover:bg-[#D4AF37] hover:text-slate-950 text-white border border-[#D4AF37]/40 text-xs font-bold py-2 rounded-xl transition-all">
                       <span>Acessar Link</span>
                       <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                     </Button>
@@ -802,7 +802,7 @@ export default function Index() {
                   <Link to="/divulgacoes" className="block w-full">
                     <Button
                       variant="outline"
-                      className="w-full text-xs font-semibold border-teal-900/80 bg-white/5 text-teal-100 hover:bg-white/10 hover:text-white rounded-xl"
+                      className="w-full text-xs font-semibold border-slate-700 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white rounded-xl"
                     >
                       Ver Detalhes
                     </Button>
@@ -812,7 +812,7 @@ export default function Index() {
             </div>
           ))
         ) : (
-          <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+          <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
             <p className="text-xs text-slate-400">Nenhuma divulgação ativa no mural no momento.</p>
           </div>
         )}
@@ -840,7 +840,7 @@ export default function Index() {
               <div
                 key={member.id}
                 onClick={() => navigate('/membros')}
-                className="group relative flex-shrink-0 w-60 sm:w-64 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 p-5 flex flex-col justify-between space-y-4"
+                className="group relative flex-shrink-0 w-60 sm:w-64 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 p-5 flex flex-col justify-between space-y-4"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <Avatar className="w-20 h-20 ring-2 ring-[#D4AF37]/60 group-hover:scale-105 transition-transform">
@@ -866,7 +866,7 @@ export default function Index() {
                         Fundadora & Master
                       </span>
                     ) : (
-                      <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
+                      <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
                         Membro VIP
                       </span>
                     )}
@@ -879,13 +879,13 @@ export default function Index() {
                   </div>
 
                   {member.bio && (
-                    <p className="text-[11px] text-teal-200/70 line-clamp-2 italic leading-tight">
+                    <p className="text-[11px] text-slate-300 line-clamp-2 italic leading-tight">
                       "{member.bio}"
                     </p>
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-teal-950 flex items-center justify-center gap-2 text-xs">
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-center gap-2 text-xs">
                   <span className="text-[#D4AF37] font-semibold group-hover:underline text-[11px]">
                     Ver perfil no diretório &rarr;
                   </span>
@@ -903,7 +903,7 @@ export default function Index() {
       {/* Media Viewer Modal */}
       {selectedMedia && (
         <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#06242E] text-white border-teal-950 p-6 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl">
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
@@ -914,13 +914,13 @@ export default function Index() {
                 {selectedMedia.title}
               </DialogTitle>
               {selectedMedia.description && (
-                <DialogDescription className="text-xs text-teal-200/80">
+                <DialogDescription className="text-xs text-slate-300">
                   {selectedMedia.description}
                 </DialogDescription>
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[300px] border border-teal-950">
+            <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800">
               {selectedMedia.type === 'photo' && selectedMedia.url && (
                 <img
                   src={selectedMedia.url}
@@ -932,7 +932,7 @@ export default function Index() {
                 <div className="p-8 text-center text-white space-y-4">
                   <Video className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
                   <p className="text-sm font-semibold">Vídeo / Gravação na Íntegra</p>
-                  <p className="text-xs text-teal-200/70 max-w-md mx-auto">
+                  <p className="text-xs text-slate-300 max-w-md mx-auto">
                     A reprodução de vídeo em alta definição está pronta para streaming.
                   </p>
                   {selectedMedia.url && (
@@ -973,7 +973,7 @@ export default function Index() {
               <Button
                 variant="outline"
                 onClick={() => setSelectedMedia(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>
@@ -988,7 +988,7 @@ export default function Index() {
           open={!!selectedMeetingModal}
           onOpenChange={(open) => !open && setSelectedMeetingModal(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
             <DialogHeader className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
@@ -1021,14 +1021,14 @@ export default function Index() {
 
             <div className="space-y-4 my-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-[#D4AF37]" /> Data & Horário
                   </p>
                   <p className="text-white font-bold">
                     {formatDateString(selectedMeetingModal.start_date || selectedMeetingModal.date)}
                   </p>
-                  <p className="text-teal-200">
+                  <p className="text-slate-300">
                     {formatTimeString(selectedMeetingModal.start_date || selectedMeetingModal.date)}
                     {selectedMeetingModal.end_date
                       ? ` às ${formatTimeString(selectedMeetingModal.end_date)}`
@@ -1036,8 +1036,8 @@ export default function Index() {
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#D4AF37]" /> Localização
                   </p>
                   <p className="text-white font-bold">{selectedMeetingModal.location}</p>
@@ -1045,8 +1045,8 @@ export default function Index() {
               </div>
 
               {selectedMeetingModal.speakers && (
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 text-xs space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 text-xs space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
                   </p>
                   <p className="text-white">{selectedMeetingModal.speakers}</p>
@@ -1054,17 +1054,17 @@ export default function Index() {
               )}
 
               {selectedMeetingModal.description && (
-                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-xs text-teal-100/90 max-h-48 overflow-y-auto leading-relaxed">
+                <div className="p-4 bg-[#061020]/80 rounded-2xl border border-slate-800 text-xs text-slate-200 max-h-48 overflow-y-auto leading-relaxed">
                   <div dangerouslySetInnerHTML={{ __html: selectedMeetingModal.description }} />
                 </div>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setSelectedMeetingModal(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>

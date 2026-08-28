@@ -291,12 +291,12 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6 animate-fade-in text-slate-900 pb-16">
-      {/* Header com estilo elegante #06242E e Dourado VIP em harmonia com fundo claro */}
+      {/* Header com estilo elegante #0A1A33 e Dourado VIP em harmonia com fundo claro */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#06242E] text-[#F5D77F] border border-[#D4AF37]/50 text-xs font-black uppercase tracking-wider shadow-sm">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1A33] text-[#F5D77F] border border-[#D4AF37]/50 text-xs font-black uppercase tracking-wider shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>Calendário Integrado</span>
               </div>
@@ -314,7 +314,7 @@ export default function CalendarPage() {
 
             <p className="text-sm text-slate-600 leading-relaxed">
               Consulte a programação completa dos encontros oficiais do{' '}
-              <strong className="text-[#06242E] font-bold">Edvanced Business Club</strong> e as
+              <strong className="text-[#0A1A33] font-bold">Edvanced Business Club</strong> e as
               divulgações e workshops realizados pelos membros. Alterne entre visões de Mês, Semana
               e Dia, aplique filtros personalizados e sincronize com seu celular.
             </p>
@@ -324,7 +324,7 @@ export default function CalendarPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Button
               onClick={handleExportICS}
-              className="bg-gradient-to-r from-[#06242E] to-[#0A3340] hover:from-[#03151B] hover:to-[#06242E] text-white border border-[#D4AF37]/40 text-xs md:text-sm font-bold py-5 px-5 rounded-xl shadow-md flex items-center gap-2 transition-all hover:scale-105"
+              className="bg-gradient-to-r from-[#0A1A33] to-[#122443] hover:from-[#061020] hover:to-[#0A1A33] text-white border border-[#D4AF37]/40 text-xs md:text-sm font-bold py-5 px-5 rounded-xl shadow-md flex items-center gap-2 transition-all hover:scale-105"
               title="Exportar eventos visíveis no formato .ICS para Google Agenda, Apple Calendar ou Celular"
             >
               <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
@@ -352,7 +352,7 @@ export default function CalendarPage() {
                 onClick={() => setCalendarViewMode('mes')}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   calendarViewMode === 'mes'
-                    ? 'bg-[#06242E] text-white shadow-sm'
+                    ? 'bg-[#0A1A33] text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                 }`}
               >
@@ -363,7 +363,7 @@ export default function CalendarPage() {
                 onClick={() => setCalendarViewMode('semana')}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   calendarViewMode === 'semana'
-                    ? 'bg-[#06242E] text-white shadow-sm'
+                    ? 'bg-[#0A1A33] text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                 }`}
               >
@@ -374,7 +374,7 @@ export default function CalendarPage() {
                 onClick={() => setCalendarViewMode('dia')}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   calendarViewMode === 'dia'
-                    ? 'bg-[#06242E] text-white shadow-sm'
+                    ? 'bg-[#0A1A33] text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                 }`}
               >
@@ -411,7 +411,7 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div className="px-5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-black text-[#06242E] uppercase tracking-wider min-w-[200px] text-center shadow-2xs">
+          <div className="px-5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-black text-[#0A1A33] uppercase tracking-wider min-w-[200px] text-center shadow-2xs">
             {calendarViewMode === 'dia'
               ? format(currentCalendarDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
               : format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
@@ -510,11 +510,11 @@ export default function CalendarPage() {
           <div className="flex flex-wrap items-center gap-4">
             <span className="font-semibold text-slate-500">Legenda:</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#06242E] border-2 border-[#D4AF37]" />
+              <span className="w-3 h-3 rounded-full bg-[#0A1A33] border-2 border-[#D4AF37]" />
               <span className="text-slate-800 font-semibold">Business Club (Oficial)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-teal-600 border-2 border-teal-300" />
+              <span className="w-3 h-3 rounded-full bg-blue-600 border-2 border-blue-300" />
               <span className="text-slate-800 font-semibold">Eventos dos Membros</span>
             </div>
           </div>
@@ -579,7 +579,7 @@ export default function CalendarPage() {
                     <span
                       className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
                         isToday
-                          ? 'bg-[#06242E] text-[#F5D77F] ring-1 ring-[#D4AF37] font-black shadow-xs'
+                          ? 'bg-[#0A1A33] text-[#F5D77F] ring-1 ring-[#D4AF37] font-black shadow-xs'
                           : isCurrentMonth
                             ? 'text-slate-800'
                             : 'text-slate-400'
@@ -588,7 +588,7 @@ export default function CalendarPage() {
                       {format(day, 'd')}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-100 text-[#06242E] border border-slate-200">
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-100 text-[#0A1A33] border border-slate-200">
                         {dayEvents.length}
                       </span>
                     )}
@@ -604,28 +604,28 @@ export default function CalendarPage() {
                           onClick={() => handleCalendarEventClick(ev)}
                           className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border shadow-2xs ${
                             isOfficial
-                              ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] hover:border-[#D4AF37]'
-                              : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100/90 hover:border-teal-300'
+                              ? 'bg-[#0A1A33] text-white border-[#D4AF37]/60 hover:bg-[#122443] hover:border-[#D4AF37]'
+                              : 'bg-blue-50 text-slate-900 border-blue-200 hover:bg-blue-100/90 hover:border-blue-300'
                           }`}
                           title={`${ev.title} (${ev.format} - ${ev.pricing}) - Clique para ver detalhes`}
                         >
                           <div className="flex items-center gap-1.5 truncate">
                             <span
                               className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                isOfficial ? 'bg-[#D4AF37]' : 'bg-teal-600'
+                                isOfficial ? 'bg-[#D4AF37]' : 'bg-blue-600'
                               }`}
                             />
                             <span className="truncate font-bold">{ev.title}</span>
                           </div>
                           <div
                             className={`flex items-center justify-between text-[9px] mt-0.5 ${
-                              isOfficial ? 'text-teal-200' : 'text-teal-700'
+                              isOfficial ? 'text-blue-200' : 'text-blue-700'
                             }`}
                           >
                             <span className="font-medium">{formatTimeString(ev.date)}</span>
                             <span
                               className={`uppercase text-[8px] font-extrabold ${
-                                isOfficial ? 'text-[#F5D77F]' : 'text-teal-900'
+                                isOfficial ? 'text-[#F5D77F]' : 'text-blue-900'
                               }`}
                             >
                               {ev.format}
@@ -690,8 +690,8 @@ export default function CalendarPage() {
                             onClick={() => handleCalendarEventClick(ev)}
                             className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-[1.02] shadow-2xs ${
                               isOfficial
-                                ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] shadow-sm'
-                                : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100 hover:border-teal-300'
+                                ? 'bg-[#0A1A33] text-white border-[#D4AF37]/60 hover:bg-[#122443] shadow-sm'
+                                : 'bg-blue-50 text-slate-900 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
                             }`}
                           >
                             <div className="flex items-center justify-between gap-1 mb-1">
@@ -699,14 +699,14 @@ export default function CalendarPage() {
                                 className={`text-[8px] uppercase font-extrabold ${
                                   isOfficial
                                     ? 'bg-[#D4AF37] text-slate-950'
-                                    : 'bg-teal-700 text-white'
+                                    : 'bg-blue-700 text-white'
                                 }`}
                               >
                                 {isOfficial ? 'Club' : 'Membro'}
                               </Badge>
                               <span
                                 className={`text-[10px] font-bold ${
-                                  isOfficial ? 'text-[#F5D77F]' : 'text-teal-800'
+                                  isOfficial ? 'text-[#F5D77F]' : 'text-blue-800'
                                 }`}
                               >
                                 {formatTimeString(ev.date)}
@@ -722,12 +722,12 @@ export default function CalendarPage() {
                             {ev.location && (
                               <p
                                 className={`text-[10px] truncate mt-1 flex items-center gap-1 ${
-                                  isOfficial ? 'text-teal-200' : 'text-slate-600'
+                                  isOfficial ? 'text-blue-200' : 'text-slate-600'
                                 }`}
                               >
                                 <MapPin
                                   className={`w-3 h-3 ${
-                                    isOfficial ? 'text-[#D4AF37]' : 'text-teal-700'
+                                    isOfficial ? 'text-[#D4AF37]' : 'text-blue-700'
                                   }`}
                                 />
                                 {ev.location}
@@ -796,15 +796,15 @@ export default function CalendarPage() {
                       onClick={() => handleCalendarEventClick(ev)}
                       className={`p-5 md:p-6 rounded-2xl border cursor-pointer transition-all hover:scale-[1.01] flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                         isOfficial
-                          ? 'bg-[#06242E] text-white border-[#D4AF37]/50 hover:bg-[#0A3340] shadow-md'
-                          : 'bg-white text-slate-900 border-slate-200 hover:border-teal-400 hover:bg-slate-50/60 shadow-xs'
+                          ? 'bg-[#0A1A33] text-white border-[#D4AF37]/50 hover:bg-[#122443] shadow-md'
+                          : 'bg-white text-slate-900 border-slate-200 hover:border-blue-400 hover:bg-slate-50/60 shadow-xs'
                       }`}
                     >
                       <div className="space-y-2 min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             className={`text-[10px] font-black uppercase tracking-wider ${
-                              isOfficial ? 'bg-[#D4AF37] text-slate-950' : 'bg-teal-700 text-white'
+                              isOfficial ? 'bg-[#D4AF37] text-slate-950' : 'bg-blue-700 text-white'
                             }`}
                           >
                             {isOfficial ? 'Business Club Oficial' : 'Divulgação de Membro'}
@@ -814,7 +814,7 @@ export default function CalendarPage() {
                             variant="outline"
                             className={`text-[10px] uppercase font-bold ${
                               isOfficial
-                                ? 'text-teal-200 border-teal-700'
+                                ? 'text-blue-200 border-blue-700'
                                 : 'text-slate-700 border-slate-300'
                             }`}
                           >
@@ -838,7 +838,7 @@ export default function CalendarPage() {
 
                           <span
                             className={`text-xs font-bold ${
-                              isOfficial ? 'text-teal-300' : 'text-slate-600'
+                              isOfficial ? 'text-blue-300' : 'text-slate-600'
                             }`}
                           >
                             {formatTimeString(ev.date)}
@@ -857,7 +857,7 @@ export default function CalendarPage() {
                         {ev.subtitle && (
                           <p
                             className={`text-xs font-semibold ${
-                              isOfficial ? 'text-[#F5D77F]' : 'text-teal-700'
+                              isOfficial ? 'text-[#F5D77F]' : 'text-blue-700'
                             }`}
                           >
                             {ev.subtitle}
@@ -867,12 +867,12 @@ export default function CalendarPage() {
                         {ev.location && (
                           <p
                             className={`text-xs flex items-center gap-1.5 ${
-                              isOfficial ? 'text-teal-200/90' : 'text-slate-600'
+                              isOfficial ? 'text-blue-200/90' : 'text-slate-600'
                             }`}
                           >
                             <MapPin
                               className={`w-3.5 h-3.5 ${
-                                isOfficial ? 'text-[#D4AF37]' : 'text-teal-700'
+                                isOfficial ? 'text-[#D4AF37]' : 'text-blue-700'
                               }`}
                             />
                             {ev.location}
@@ -897,7 +897,7 @@ export default function CalendarPage() {
                               e.stopPropagation()
                               handleCalendarEventClick(ev)
                             }}
-                            className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs shadow-xs"
+                            className="bg-[#0A1A33] hover:bg-[#122443] text-white font-bold text-xs shadow-xs"
                           >
                             Ver Detalhes →
                           </Button>
@@ -920,14 +920,14 @@ export default function CalendarPage() {
           open={!!selectedCalendarEvent}
           onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-[#061020] p-6 md:p-8 shadow-2xl rounded-3xl">
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   className={`uppercase font-black text-[10px] ${
                     selectedCalendarEvent.origin === 'meeting'
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'bg-teal-700 text-white'
+                      : 'bg-blue-700 text-white'
                   }`}
                 >
                   {selectedCalendarEvent.origin === 'meeting'
@@ -937,7 +937,7 @@ export default function CalendarPage() {
 
                 <Badge
                   variant="outline"
-                  className="text-[10px] uppercase font-bold text-teal-200 border-teal-700"
+                  className="text-[10px] uppercase font-bold text-blue-200 border-blue-800"
                 >
                   {selectedCalendarEvent.format}
                 </Badge>
@@ -965,14 +965,14 @@ export default function CalendarPage() {
 
             <div className="space-y-4 my-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data do Evento
                   </p>
                   <p className="text-white font-bold">
                     {formatDateString(selectedCalendarEvent.date)}
                   </p>
-                  <p className="text-teal-200">
+                  <p className="text-slate-300">
                     {formatTimeString(selectedCalendarEvent.date)}
                     {selectedCalendarEvent.endDate
                       ? ` às ${formatTimeString(selectedCalendarEvent.endDate)}`
@@ -980,8 +980,8 @@ export default function CalendarPage() {
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#D4AF37]" /> Local / Plataforma
                   </p>
                   <p className="text-white font-bold">
@@ -991,8 +991,8 @@ export default function CalendarPage() {
               </div>
 
               {selectedCalendarEvent.speakers && (
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
                   </p>
                   <p className="text-white">{selectedCalendarEvent.speakers}</p>
@@ -1000,7 +1000,7 @@ export default function CalendarPage() {
               )}
 
               {selectedCalendarEvent.description && (
-                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-teal-100/90 leading-relaxed whitespace-pre-wrap">
+                <div className="p-4 bg-[#061020]/80 rounded-2xl border border-slate-800 text-slate-200 leading-relaxed whitespace-pre-wrap">
                   {selectedCalendarEvent.description.startsWith('<') ? (
                     <div dangerouslySetInnerHTML={{ __html: selectedCalendarEvent.description }} />
                   ) : (
@@ -1010,11 +1010,11 @@ export default function CalendarPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setSelectedCalendarEvent(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>

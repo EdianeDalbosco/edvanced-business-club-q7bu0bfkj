@@ -79,7 +79,7 @@ export default function NetflixShelf({
                 </span>
               )}
             </div>
-            {subtitle && <p className="text-xs text-teal-200/70 line-clamp-1">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-slate-300/80 line-clamp-1">{subtitle}</p>}
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export default function NetflixShelf({
           onClick={() => scroll('left')}
           disabled={!canScrollLeft}
           aria-label="Rolar para esquerda"
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-28 bg-[#03151B]/85 hover:bg-[#06242E] text-white rounded-r-xl border-y border-r border-[#D4AF37]/30 flex items-center justify-center backdrop-blur-md shadow-2xl transition-all duration-300 opacity-0 group-hover/shelf:opacity-100 disabled:pointer-events-none disabled:opacity-0 ${
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-28 bg-[#061224]/90 hover:bg-[#0A1E3F] text-white rounded-r-xl border-y border-r border-[#D4AF37]/30 flex items-center justify-center backdrop-blur-md shadow-2xl transition-all duration-300 opacity-0 group-hover/shelf:opacity-100 disabled:pointer-events-none disabled:opacity-0 ${
             canScrollLeft ? 'cursor-pointer' : 'hidden'
           }`}
         >
@@ -137,7 +137,7 @@ export default function NetflixShelf({
           onClick={() => scroll('right')}
           disabled={!canScrollRight}
           aria-label="Rolar para direita"
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-28 bg-[#03151B]/85 hover:bg-[#06242E] text-white rounded-l-xl border-y border-l border-[#D4AF37]/30 flex items-center justify-center backdrop-blur-md shadow-2xl transition-all duration-300 opacity-0 group-hover/shelf:opacity-100 disabled:pointer-events-none disabled:opacity-0 ${
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-28 bg-[#061224]/90 hover:bg-[#0A1E3F] text-white rounded-l-xl border-y border-l border-[#D4AF37]/30 flex items-center justify-center backdrop-blur-md shadow-2xl transition-all duration-300 opacity-0 group-hover/shelf:opacity-100 disabled:pointer-events-none disabled:opacity-0 ${
             canScrollRight ? 'cursor-pointer' : 'hidden'
           }`}
         >

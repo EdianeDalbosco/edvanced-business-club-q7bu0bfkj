@@ -35,16 +35,51 @@ export async function deleteMeeting(id: string): Promise<boolean> {
 
 // MATERIALS
 export async function getMaterialsByMeeting(meetingId: string): Promise<Material[]> {
-  return pb.collection('materials').getFullList<Material>({
-    filter: `meeting = "${meetingId}"`,
+  const records = await pb.collection('materials').getFullList<any>({
+    filter: `meeting = "${meetingId}" || meeting_id = "${meetingId}"`,
     sort: '-created',
+    expand: 'meeting',
+  })
+  return records.map((r) => {
+    let resolvedUrl = r.url
+    if (r.file && (!resolvedUrl || !resolvedUrl.startsWith('http'))) {
+      resolvedUrl = getFileUrl('materials', r.id, r.file)
+    }
+    return {
+      id: r.id,
+      meeting_id: r.meeting_id || r.meeting,
+      title: r.title,
+      description: r.description,
+      type: r.type,
+      url: resolvedUrl || r.url || '',
+      created: r.created,
+      updated: r.updated,
+      expand: r.expand,
+    } as Material
   })
 }
 
 export async function getAllMaterials(): Promise<Material[]> {
-  return pb.collection('materials').getFullList<Material>({
+  const records = await pb.collection('materials').getFullList<any>({
     sort: '-created',
     expand: 'meeting',
+  })
+  return records.map((r) => {
+    let resolvedUrl = r.url
+    if (r.file && (!resolvedUrl || !resolvedUrl.startsWith('http'))) {
+      resolvedUrl = getFileUrl('materials', r.id, r.file)
+    }
+    return {
+      id: r.id,
+      meeting_id: r.meeting_id || r.meeting,
+      title: r.title,
+      description: r.description,
+      type: r.type,
+      url: resolvedUrl || r.url || '',
+      created: r.created,
+      updated: r.updated,
+      expand: r.expand,
+    } as Material
   })
 }
 

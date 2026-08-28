@@ -149,7 +149,7 @@ export default function AdminApprovalQueue() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#03151B] via-[#06242E] to-[#03151B] border border-teal-950/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-[#061224] via-[#0A1E3F] to-[#061224] border border-[#061224]/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-semibold uppercase tracking-wider mb-2">
@@ -273,7 +273,7 @@ export default function AdminApprovalQueue() {
                         setRejectReason('')
                         setReviewModalOpen(true)
                       }}
-                      className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs rounded-xl py-2 px-4 border border-teal-900/60"
+                      className="bg-[#0A1E3F] hover:bg-[#102A56] text-white font-bold text-xs rounded-xl py-2 px-4 border border-[#102A56]"
                     >
                       <Eye className="w-4 h-4 mr-1.5" /> Revisar & Decidir
                     </Button>
@@ -557,7 +557,7 @@ export default function AdminApprovalQueue() {
                     type="button"
                     disabled={isProcessing}
                     onClick={() => handleApprove(selectedDisclosure)}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20"
+                    className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-600/20"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1.5" /> Aprovar & Publicar no Club
                   </Button>

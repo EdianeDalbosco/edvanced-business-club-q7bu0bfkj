@@ -145,7 +145,7 @@ export default function Profile() {
   return (
     <div className="space-y-8 animate-fade-in max-w-4xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#03151B] via-[#06242E] to-[#03151B] border border-teal-950/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-[#061020] via-[#0A1A33] to-[#061020] border border-slate-800 text-white rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="relative group">

@@ -66,7 +66,7 @@ export default function Login() {
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#8C6D07] p-[2px] shadow-xl shadow-[#D4AF37]/20 items-center justify-center">
-            <div className="w-full h-full bg-[#06242E] rounded-[14px] flex items-center justify-center">
+            <div className="w-full h-full bg-[#0A1E3F] rounded-[14px] flex items-center justify-center">
               <Crown className="w-8 h-8 text-[#D4AF37]" />
             </div>
           </div>
@@ -132,12 +132,12 @@ export default function Login() {
             </form>
 
             {/* Link para a Área Pública sem login (Eventos abertos & EdvancedCast) */}
-            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-[#06242E] to-[#0A3340] text-white border border-[#D4AF37]/40 shadow-sm text-center space-y-2">
+            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-[#0A1E3F] to-[#102A56] text-white border border-[#D4AF37]/40 shadow-sm text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#F5D77F]">
                 <Globe className="w-4 h-4 text-[#D4AF37]" />
                 <span>Página Pública Aberta</span>
               </div>
-              <p className="text-[11px] text-teal-100/80 leading-relaxed">
+              <p className="text-[11px] text-slate-200/90 leading-relaxed">
                 Quer ver a agenda de eventos abertos e assistir aos episódios do EdvancedCast?
               </p>
               <Link

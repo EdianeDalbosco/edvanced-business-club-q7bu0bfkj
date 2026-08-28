@@ -27,8 +27,8 @@
     --primary: 46 65% 52%;
     --primary-foreground: 222 47% 11%;
 
-    /* Darker Deep Azul Petróleo (#06242E -> 195 77% 10%) */
-    --secondary: 195 77% 10%;
+    /* Pure Deep Dark Navy (#0A1A33 -> 217 67% 12%, #061020 -> 217 68% 8%) */
+    --secondary: 217 67% 12%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 214 32% 91%;
@@ -46,13 +46,13 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 195 77% 10%;
+    --sidebar-background: 217 67% 12%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 46 65% 52%;
-    --sidebar-primary-foreground: 195 77% 10%;
-    --sidebar-accent: 195 60% 16%;
+    --sidebar-primary-foreground: 217 67% 12%;
+    --sidebar-accent: 217 50% 18%;
     --sidebar-accent-foreground: 46 65% 70%;
-    --sidebar-border: 195 80% 6%;
+    --sidebar-border: 217 68% 8%;
     --sidebar-ring: 46 65% 52%;
 
     --chart-1: 34 100% 44%;

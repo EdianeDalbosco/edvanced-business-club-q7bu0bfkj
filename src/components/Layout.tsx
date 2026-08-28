@@ -157,13 +157,13 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row antialiased selection:bg-[#D4AF37]/30 selection:text-slate-900">
       {/* Mobile Top Header */}
-      <header className="md:hidden bg-[#06242E] text-white px-4 py-3.5 flex items-center justify-between border-b border-[#03151B] sticky top-0 z-50">
+      <header className="md:hidden bg-[#0A1E3F] text-white px-4 py-3.5 flex items-center justify-between border-b border-[#061224] sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-teal-100 hover:text-white hover:bg-[#0A3340]"
+            className="text-slate-200 hover:text-white hover:bg-[#102A56]"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
@@ -203,22 +203,22 @@ export default function Layout() {
       {/* Sidebar Overlay (Mobile) */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-[#03151B]/80 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-[#061224]/80 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar (Desktop & Mobile drawer) */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#06242E] text-slate-100 z-50 flex flex-col justify-between border-r border-[#03151B] transition-transform duration-300 ease-in-out ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0A1E3F] text-slate-100 z-50 flex flex-col justify-between border-r border-[#061224] transition-transform duration-300 ease-in-out ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Top Logo / Brand Header */}
-        <div className="p-6 border-b border-[#03151B]/90 bg-gradient-to-b from-[#03151B] to-[#06242E]">
+        <div className="p-6 border-b border-[#061224]/90 bg-gradient-to-b from-[#061224] to-[#0A1E3F]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
-              <div className="w-full h-full bg-[#06242E] rounded-[10px] flex items-center justify-center">
+              <div className="w-full h-full bg-[#0A1E3F] rounded-[10px] flex items-center justify-center">
                 <Crown className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]/20" />
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function Layout() {
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
           {/* Main Section */}
           <div>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-teal-200/70 mb-2">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-300/80 mb-2">
               Menu Principal
             </p>
             <nav className="space-y-1">
@@ -255,7 +255,7 @@ export default function Layout() {
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
                       isActive
                         ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-semibold shadow-md shadow-[#D4AF37]/20'
-                        : 'text-teal-50 hover:text-white hover:bg-[#0A3340]/80'
+                        : 'text-slate-200 hover:text-white hover:bg-[#102A56]/80'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -279,7 +279,7 @@ export default function Layout() {
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
                     location.pathname === '/perfil'
                       ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-semibold shadow-md shadow-[#D4AF37]/20'
-                      : 'text-teal-50 hover:text-white hover:bg-[#0A3340]/80'
+                      : 'text-slate-200 hover:text-white hover:bg-[#102A56]/80'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ export default function Layout() {
         </div>
 
         {/* Sidebar Footer / User Profile (Compacto, Elegante & Completo) */}
-        <div className="p-3.5 border-t border-[#03151B] bg-[#03151B]/95">
+        <div className="p-3.5 border-t border-[#061224] bg-[#061224]/95">
           {user ? (
             <div className="flex items-start justify-between gap-2">
               <Link
@@ -396,7 +396,7 @@ export default function Layout() {
                   )}
 
                   {/* E-mail com quebra de linha quando longo */}
-                  <p className="text-[10px] text-teal-200/70 break-all leading-tight">
+                  <p className="text-[10px] text-slate-300/80 break-all leading-tight">
                     {user.email}
                   </p>
                 </div>
@@ -457,7 +457,7 @@ export default function Layout() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 shadow-xl border-slate-200" align="end">
-                <div className="p-4 bg-[#06242E] text-white rounded-t-lg flex items-center justify-between">
+                <div className="p-4 bg-[#0A1E3F] text-white rounded-t-lg flex items-center justify-between">
                   <h4 className="font-bold text-sm flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#D4AF37]" /> Notificações do Club
                   </h4>

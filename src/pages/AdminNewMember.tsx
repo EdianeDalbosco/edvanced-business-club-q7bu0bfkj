@@ -95,7 +95,7 @@ export default function AdminNewMember() {
       </div>
 
       {/* Header Card */}
-      <div className="bg-gradient-to-r from-[#03151B] via-[#06242E] to-[#03151B] border border-teal-950/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-[#061224] via-[#0A1E3F] to-[#061224] border border-[#061224]/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-semibold uppercase tracking-wider mb-3">
           <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
           Área Restrita da Diretoria

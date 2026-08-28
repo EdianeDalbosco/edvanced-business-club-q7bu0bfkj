@@ -328,7 +328,7 @@ export default function MeetingsAndMaterials() {
       return {
         key: 'completed',
         label: 'Realizado',
-        badgeClass: 'bg-teal-950/80 text-teal-200 border-teal-700/50',
+        badgeClass: 'bg-blue-950/80 text-blue-200 border-blue-700/50',
         cardClass: 'bg-slate-800/80 text-slate-300 border-slate-700',
         icon: CalendarCheck2,
       }
@@ -802,9 +802,9 @@ export default function MeetingsAndMaterials() {
       {/* =========================================================================
           1. NETFLIX-STYLE HERO BANNER (Capa em Destaque no Topo)
          ========================================================================= */}
-      <div className="relative rounded-3xl overflow-hidden bg-[#03151B] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
+      <div className="relative rounded-3xl overflow-hidden bg-[#061020] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
         {/* Background Cover Image with Premium Fallback */}
-        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#06242E] via-[#03151B] to-[#0A3340]">
+        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#0A1A33] via-[#061020] to-[#122443]">
           {getMeetingHeroCover(heroMeeting) ? (
             <img
               src={getMeetingHeroCover(heroMeeting)}
@@ -816,7 +816,7 @@ export default function MeetingsAndMaterials() {
               {/* Elegant abstract geometric gold & navy background */}
               <div className="absolute inset-0 bg-radial-gradient opacity-80" />
               <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#D4AF37]/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px]" />
               <div className="flex flex-col items-center justify-center text-center p-8 opacity-40">
                 <Sparkles className="w-20 h-20 text-[#D4AF37] mb-2" />
@@ -827,8 +827,8 @@ export default function MeetingsAndMaterials() {
             </div>
           )}
           {/* Multi-layer Netflix-style vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-[#06242E]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/85 to-transparent w-full md:w-3/4" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-[#0A1A33]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#061020] via-[#061020]/85 to-transparent w-full md:w-3/4" />
           {/* Golden Ambient Glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
         </div>
@@ -875,7 +875,7 @@ export default function MeetingsAndMaterials() {
               </>
             )}
 
-            <span className="text-xs font-medium text-teal-200/90 hidden sm:inline-block">
+            <span className="text-xs font-medium text-slate-300 hidden sm:inline-block">
               &bull; Fotos, Gravações & Cronograma
             </span>
           </div>
@@ -898,7 +898,7 @@ export default function MeetingsAndMaterials() {
               <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">
                 Encontros & Materiais Oficiais
               </h1>
-              <p className="text-teal-100 text-sm md:text-base">
+              <p className="text-slate-200 text-sm md:text-base">
                 Assista a palestras gravadas, baixe apresentações em PDF e visualize fotos em alta
                 resolução.
               </p>
@@ -907,19 +907,19 @@ export default function MeetingsAndMaterials() {
 
           {/* Meeting Metadata */}
           {heroMeeting && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs md:text-sm text-teal-100/90">
-              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs md:text-sm text-slate-200">
+              <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                 <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
                 <span className="font-semibold">
                   {formatDateString(heroMeeting.start_date || heroMeeting.date)}
                 </span>
-                <span className="text-teal-300">
+                <span className="text-[#F5D77F]">
                   às {formatTimeString(heroMeeting.start_date || heroMeeting.date)}
                   {heroMeeting.end_date ? ` até ${formatTimeString(heroMeeting.end_date)}` : ''}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+              <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
                 <span className="truncate max-w-[240px]" title={heroMeeting.location}>
                   {heroMeeting.location}
@@ -927,7 +927,7 @@ export default function MeetingsAndMaterials() {
               </div>
 
               {heroMeeting.speakers && (
-                <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2 bg-[#061020]/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
                   <Users className="w-4 h-4 text-[#D4AF37]" />
                   <span className="truncate max-w-[220px]" title={heroMeeting.speakers}>
                     {heroMeeting.speakers}
@@ -973,7 +973,7 @@ export default function MeetingsAndMaterials() {
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleOpenAddMeeting}
-                  className="bg-[#06242E] hover:bg-[#0A3340] border border-[#D4AF37]/40 text-white font-bold text-xs px-4 py-6 rounded-xl"
+                  className="bg-[#0A1A33] hover:bg-[#122443] border border-[#D4AF37]/40 text-white font-bold text-xs px-4 py-6 rounded-xl"
                 >
                   <Plus className="w-4 h-4 mr-1 text-[#D4AF37]" />
                   Novo Encontro
@@ -983,7 +983,7 @@ export default function MeetingsAndMaterials() {
                     setNewMatMeetingId(heroMeeting?.id || '')
                     setShowAddMaterialModal(true)
                   }}
-                  className="bg-teal-900/60 hover:bg-teal-800 border border-teal-700 text-teal-100 font-bold text-xs px-4 py-6 rounded-xl"
+                  className="bg-blue-900/60 hover:bg-blue-800 border border-blue-700 text-blue-100 font-bold text-xs px-4 py-6 rounded-xl"
                 >
                   <Plus className="w-4 h-4 mr-1 text-[#D4AF37]" />
                   Adicionar Mídia
@@ -993,12 +993,11 @@ export default function MeetingsAndMaterials() {
           </div>
         </div>
       </div>
-
       {/* =========================================================================
           2. SELEÇÃO PRINCIPAL: PRATELEIRAS POR CATEGORIA vs ABA CALENDÁRIO
          ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-teal-950/80 pb-4">
-        <div className="flex items-center gap-2 bg-[#06242E] p-1.5 rounded-2xl border border-teal-900/60 shadow-inner w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex items-center gap-2 bg-[#0A1A33] p-1.5 rounded-2xl border border-slate-800 shadow-inner w-full sm:w-auto">
           <Button
             type="button"
             onClick={() => {
@@ -1008,7 +1007,7 @@ export default function MeetingsAndMaterials() {
             className={`flex-1 sm:flex-none text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all ${
               mainView === 'acervo'
                 ? 'bg-[#D4AF37] text-slate-950 shadow-md shadow-[#D4AF37]/20 font-black'
-                : 'bg-transparent text-teal-200 hover:text-white hover:bg-white/5'
+                : 'bg-transparent text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
             <LayoutGrid className="w-4 h-4 mr-2" />
@@ -1024,7 +1023,7 @@ export default function MeetingsAndMaterials() {
             className={`flex-1 sm:flex-none text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all ${
               mainView === 'calendario'
                 ? 'bg-[#D4AF37] text-slate-950 shadow-md shadow-[#D4AF37]/20 font-black'
-                : 'bg-transparent text-teal-200 hover:text-white hover:bg-white/5'
+                : 'bg-transparent text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
             <CalendarDays className="w-4 h-4 mr-2" />
@@ -1039,12 +1038,11 @@ export default function MeetingsAndMaterials() {
               placeholder="Buscar por tema, foto, gravação..."
               value={acervoSearch}
               onChange={(e) => setAcervoSearch(e.target.value)}
-              className="pl-9 text-xs rounded-xl bg-[#06242E] border-teal-950 text-white placeholder:text-slate-400"
+              className="pl-9 text-xs rounded-xl bg-[#0A1A33] border-slate-800 text-white placeholder:text-slate-400"
             />
           </div>
         )}
       </div>
-
       {/* =========================================================================
           3. VISÃO A: MATERIAIS SEPARADOS POR CATEGORIA (Estilo Capa Netflix)
          ========================================================================= */}
@@ -1079,14 +1077,14 @@ export default function MeetingsAndMaterials() {
                         setSelectedMeeting(m)
                         setDetailMeeting(m)
                       }}
-                      className={`group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between ${
+                      className={`group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between ${
                         isHero
                           ? 'border-[#D4AF37] ring-1 ring-[#D4AF37] shadow-xl shadow-[#D4AF37]/15'
-                          : 'border-teal-950 hover:border-[#D4AF37] shadow-lg'
+                          : 'border-slate-800 hover:border-[#D4AF37] shadow-lg'
                       }`}
                     >
                       {/* Thumbnail Cover with Fallback */}
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
                         {getMeetingHeroCover(m) ? (
                           <img
                             src={getMeetingHeroCover(m)}
@@ -1094,7 +1092,7 @@ export default function MeetingsAndMaterials() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[#0A3340] via-[#06242E] to-[#03151B] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
                             <Sparkles className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F] line-clamp-1">
@@ -1102,7 +1100,7 @@ export default function MeetingsAndMaterials() {
                             </span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
 
                         {/* Badges Top */}
                         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
@@ -1126,7 +1124,7 @@ export default function MeetingsAndMaterials() {
                         </div>
 
                         {/* Bottom Date */}
-                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-teal-100">
+                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-200">
                           <span className="font-semibold text-[#F5D77F]">
                             {formatShortDate(m.start_date || m.date)}
                           </span>
@@ -1148,7 +1146,7 @@ export default function MeetingsAndMaterials() {
                           </h3>
                         </div>
 
-                        <div className="space-y-1.5 text-xs text-teal-100/80 pt-2 border-t border-teal-950">
+                        <div className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-slate-800">
                           <div className="flex items-center gap-1.5 text-[11px] truncate">
                             <MapPin className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
                             <span className="truncate" title={m.location}>
@@ -1169,14 +1167,14 @@ export default function MeetingsAndMaterials() {
                         {/* Admin Action Buttons inline */}
                         {isAdmin && (
                           <div
-                            className="pt-2 border-t border-teal-950/60 flex items-center justify-end gap-1.5"
+                            className="pt-2 border-t border-slate-800 flex items-center justify-end gap-1.5"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleOpenEditMeeting(m)}
-                              className="h-7 px-2 text-[11px] text-teal-300 hover:text-white hover:bg-white/10"
+                              className="h-7 px-2 text-[11px] text-slate-300 hover:text-white hover:bg-white/10"
                             >
                               <Edit2 className="w-3 h-3 mr-1" /> Editar
                             </Button>
@@ -1195,22 +1193,21 @@ export default function MeetingsAndMaterials() {
                   )
                 })
               ) : (
-                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
                   <p className="text-xs text-slate-400">Nenhum encontro encontrado.</p>
                 </div>
               )}
             </NetflixShelf>
           )}
-
           {/* Info banner if filtered by selected meeting */}
           {selectedMeeting && (
-            <div className="p-3.5 rounded-2xl bg-[#06242E] border border-[#D4AF37]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div className="p-3.5 rounded-2xl bg-[#0A1A33] border border-[#D4AF37]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-teal-300">
+                  <span className="text-[10px] uppercase font-bold text-[#F5D77F]">
                     Visualizando materiais vinculados ao encontro:
                   </span>
                   <h4 className="font-extrabold text-xs text-white">{selectedMeeting.title}</h4>
@@ -1229,7 +1226,6 @@ export default function MeetingsAndMaterials() {
               </Button>
             </div>
           )}
-
           {/* CATEGORIA 2: PRATELEIRA DE FOTOS (Galeria de Imagens) */}
           {(acervoCategory === 'todos' || acervoCategory === 'photos') && (
             <NetflixShelf
@@ -1263,9 +1259,9 @@ export default function MeetingsAndMaterials() {
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
-                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
                   >
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#03151B]">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#061020]">
                       {item.url ? (
                         <img
                           src={item.url}
@@ -1273,11 +1269,11 @@ export default function MeetingsAndMaterials() {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-teal-950/40">
+                        <div className="w-full h-full flex items-center justify-center bg-blue-950/40">
                           <ImageIcon className="w-8 h-8 text-[#D4AF37]" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/30" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30" />
 
                       <div className="absolute top-2.5 left-2.5">
                         <Badge className="text-[9px] uppercase font-bold tracking-wider bg-[#D4AF37] text-slate-950">
@@ -1285,7 +1281,7 @@ export default function MeetingsAndMaterials() {
                         </Badge>
                       </div>
 
-                      <div className="absolute bottom-2 right-2 text-[10px] text-teal-200/90 flex items-center gap-1 bg-[#03151B]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                      <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
                         <Eye className="w-3 h-3 text-[#D4AF37]" />
                         <span>Ver álbum</span>
                       </div>
@@ -1297,13 +1293,13 @@ export default function MeetingsAndMaterials() {
                           {item.title}
                         </h4>
                         {item.description && (
-                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
                             {item.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                         <span className="font-medium">Galeria Edvanced</span>
                         <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
                           Abrir Foto &rarr;
@@ -1313,13 +1309,12 @@ export default function MeetingsAndMaterials() {
                   </div>
                 ))
               ) : (
-                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
                   <p className="text-xs text-slate-400">Nenhuma foto cadastrada no acervo.</p>
                 </div>
               )}
             </NetflixShelf>
           )}
-
           {/* CATEGORIA 3: PRATELEIRA DE VÍDEOS (Gravações & Palestras) */}
           {(acervoCategory === 'todos' || acervoCategory === 'videos') && (
             <NetflixShelf
@@ -1353,15 +1348,15 @@ export default function MeetingsAndMaterials() {
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
-                    className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                    className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
                   >
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
                       <img
-                        src="https://img.usecurling.com/p/600/380?q=executive%20keynote%20stage&color=teal"
+                        src="https://img.usecurling.com/p/600/380?q=executive%20keynote%20stage&color=navy"
                         alt="Video Cover"
                         className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
 
                       <div className="absolute top-2.5 left-2.5">
                         <Badge className="text-[9px] uppercase font-bold tracking-wider bg-rose-600 text-white">
@@ -1375,7 +1370,7 @@ export default function MeetingsAndMaterials() {
                         </div>
                       </div>
 
-                      <div className="absolute bottom-2 right-2 text-[10px] text-teal-200/90 flex items-center gap-1 bg-[#03151B]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                      <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
                         <span>Assistir streaming</span>
                       </div>
                     </div>
@@ -1386,13 +1381,13 @@ export default function MeetingsAndMaterials() {
                           {item.title}
                         </h4>
                         {item.description && (
-                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
                             {item.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                         <span className="font-medium">Edvanced Player</span>
                         <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
                           Reproduzir &rarr;
@@ -1402,13 +1397,12 @@ export default function MeetingsAndMaterials() {
                   </div>
                 ))
               ) : (
-                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
                   <p className="text-xs text-slate-400">Nenhum vídeo cadastrado no acervo.</p>
                 </div>
               )}
             </NetflixShelf>
           )}
-
           {/* CATEGORIA 4: PRATELEIRA DE DOCUMENTOS & PDFS */}
           {(acervoCategory === 'todos' || acervoCategory === 'documents') && (
             <NetflixShelf
@@ -1442,9 +1436,9 @@ export default function MeetingsAndMaterials() {
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
-                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
                   >
-                    <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-[#0A3340] to-[#03151B] flex flex-col items-center justify-center text-teal-100 p-4 text-center">
+                    <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 mb-2 group-hover:scale-110 transition-transform">
                         <FileText className="w-6 h-6" />
                       </div>
@@ -1465,31 +1459,30 @@ export default function MeetingsAndMaterials() {
                           {item.title}
                         </h4>
                         {item.description && (
-                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
                             {item.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
-                        <span className="font-medium">Material de Apoio</span>
-                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                          <Download className="w-3 h-3" /> Baixar
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
+                        <span className="font-medium">Acervo PDF</span>
+                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                          Visualizar / Baixar &rarr;
                         </span>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
-                  <p className="text-xs text-slate-400">Nenhum documento ou PDF anexado.</p>
+                <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
+                  <p className="text-xs text-slate-400">Nenhum documento cadastrado no acervo.</p>
                 </div>
               )}
             </NetflixShelf>
-          )}
+          )}{' '}
         </div>
       )}
-
       {/* =========================================================================
           4. VISÃO B: ABA DE CALENDÁRIO UNIFICADO (Fundo Claro / Light Theme)
          ========================================================================= */}
@@ -1512,12 +1505,12 @@ export default function MeetingsAndMaterials() {
                 </h2>
                 <p className="text-xs text-slate-600">
                   Encontros oficiais em{' '}
-                  <span className="text-[#06242E] font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-[#D4AF37]/40">
-                    Azul Petróleo Escuro & Dourado VIP
+                  <span className="text-[#0A1A33] font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-[#D4AF37]/40">
+                    Azul Escuro Navy & Dourado VIP
                   </span>{' '}
                   e eventos dos membros em{' '}
-                  <span className="text-teal-800 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
-                    Verde Petróleo Suave
+                  <span className="text-blue-800 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                    Azul Suave
                   </span>
                   .
                 </p>
@@ -1528,7 +1521,7 @@ export default function MeetingsAndMaterials() {
                 {/* Botão de Exportação para Celular / Google Agenda / Apple (.ICS) */}
                 <Button
                   onClick={handleExportICS}
-                  className="bg-gradient-to-r from-[#06242E] to-[#0A3340] hover:from-[#03151B] hover:to-[#06242E] text-white border border-[#D4AF37]/40 text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center gap-2 transition-all hover:scale-105"
+                  className="bg-gradient-to-r from-[#0A1A33] to-[#122443] hover:from-[#061020] hover:to-[#0A1A33] text-white border border-[#D4AF37]/40 text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center gap-2 transition-all hover:scale-105"
                   title="Exportar eventos visíveis no formato .ICS para Google Agenda, Apple Calendar ou Celular"
                 >
                   <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
@@ -1547,7 +1540,7 @@ export default function MeetingsAndMaterials() {
                     onClick={() => setCalendarViewMode('mes')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'mes'
-                        ? 'bg-[#06242E] text-white shadow-xs'
+                        ? 'bg-[#0A1A33] text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
@@ -1558,7 +1551,7 @@ export default function MeetingsAndMaterials() {
                     onClick={() => setCalendarViewMode('semana')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'semana'
-                        ? 'bg-[#06242E] text-white shadow-xs'
+                        ? 'bg-[#0A1A33] text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
@@ -1569,7 +1562,7 @@ export default function MeetingsAndMaterials() {
                     onClick={() => setCalendarViewMode('dia')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'dia'
-                        ? 'bg-[#06242E] text-white shadow-xs'
+                        ? 'bg-[#0A1A33] text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
@@ -1606,7 +1599,7 @@ export default function MeetingsAndMaterials() {
                 </div>
               </div>
 
-              <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-[#06242E] uppercase tracking-wider min-w-[160px] text-center shadow-2xs">
+              <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-[#0A1A33] uppercase tracking-wider min-w-[160px] text-center shadow-2xs">
                 {format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
               </div>
             </div>
@@ -1702,11 +1695,11 @@ export default function MeetingsAndMaterials() {
             <div className="flex flex-wrap items-center gap-4 text-xs pt-2 text-slate-600">
               <span className="font-semibold text-slate-500">Legenda:</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-[#06242E] border-2 border-[#D4AF37]" />
+                <span className="w-3 h-3 rounded-full bg-[#0A1A33] border-2 border-[#D4AF37]" />
                 <span className="text-slate-800 font-semibold">Business Club (Oficial)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-teal-600 border-2 border-teal-300" />
+                <span className="w-3 h-3 rounded-full bg-blue-600 border-2 border-blue-300" />
                 <span className="text-slate-800 font-semibold">Eventos dos Membros</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -1769,7 +1762,7 @@ export default function MeetingsAndMaterials() {
                         <span
                           className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
                             isToday
-                              ? 'bg-[#06242E] text-[#F5D77F] ring-1 ring-[#D4AF37] font-black shadow-xs'
+                              ? 'bg-[#0A1A33] text-[#F5D77F] ring-1 ring-[#D4AF37] font-black shadow-xs'
                               : isCurrentMonth
                                 ? 'text-slate-800'
                                 : 'text-slate-400'
@@ -1778,7 +1771,7 @@ export default function MeetingsAndMaterials() {
                           {format(day, 'd')}
                         </span>
                         {dayEvents.length > 0 && (
-                          <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-100 text-[#06242E] border border-slate-200">
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-100 text-[#0A1A33] border border-slate-200">
                             {dayEvents.length}
                           </span>
                         )}
@@ -1794,28 +1787,28 @@ export default function MeetingsAndMaterials() {
                               onClick={() => handleCalendarEventClick(ev)}
                               className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border shadow-2xs ${
                                 isOfficial
-                                  ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] hover:border-[#D4AF37]'
-                                  : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100/90 hover:border-teal-300'
+                                  ? 'bg-[#0A1A33] text-white border-[#D4AF37]/60 hover:bg-[#122443] hover:border-[#D4AF37]'
+                                  : 'bg-blue-50 text-slate-900 border-blue-200 hover:bg-blue-100/90 hover:border-blue-300'
                               }`}
                               title={`${ev.title} (${ev.format} - ${ev.pricing}) - Clique para ver`}
                             >
                               <div className="flex items-center gap-1.5 truncate">
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                    isOfficial ? 'bg-[#D4AF37]' : 'bg-teal-600'
+                                    isOfficial ? 'bg-[#D4AF37]' : 'bg-blue-600'
                                   }`}
                                 />
                                 <span className="truncate font-bold">{ev.title}</span>
                               </div>
                               <div
                                 className={`flex items-center justify-between text-[9px] mt-0.5 ${
-                                  isOfficial ? 'text-teal-200' : 'text-teal-700'
+                                  isOfficial ? 'text-blue-200' : 'text-blue-700'
                                 }`}
                               >
                                 <span className="font-medium">{formatTimeString(ev.date)}</span>
                                 <span
                                   className={`uppercase text-[8px] font-extrabold ${
-                                    isOfficial ? 'text-[#F5D77F]' : 'text-teal-900'
+                                    isOfficial ? 'text-[#F5D77F]' : 'text-blue-900'
                                   }`}
                                 >
                                   {ev.format}
@@ -1880,8 +1873,8 @@ export default function MeetingsAndMaterials() {
                                 onClick={() => handleCalendarEventClick(ev)}
                                 className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-[1.02] shadow-2xs ${
                                   isOfficial
-                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/60 hover:bg-[#0A3340] shadow-sm'
-                                    : 'bg-teal-50 text-teal-950 border-teal-200 hover:bg-teal-100 hover:border-teal-300'
+                                    ? 'bg-[#0A1A33] text-white border-[#D4AF37]/60 hover:bg-[#122443] shadow-sm'
+                                    : 'bg-blue-50 text-slate-900 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1 mb-1">
@@ -1889,14 +1882,14 @@ export default function MeetingsAndMaterials() {
                                     className={`text-[8px] uppercase font-extrabold ${
                                       isOfficial
                                         ? 'bg-[#D4AF37] text-slate-950'
-                                        : 'bg-teal-700 text-white'
+                                        : 'bg-blue-700 text-white'
                                     }`}
                                   >
                                     {isOfficial ? 'Club' : 'Membro'}
                                   </Badge>
                                   <span
                                     className={`text-[10px] font-bold ${
-                                      isOfficial ? 'text-[#F5D77F]' : 'text-teal-800'
+                                      isOfficial ? 'text-[#F5D77F]' : 'text-blue-800'
                                     }`}
                                   >
                                     {formatTimeString(ev.date)}
@@ -1912,12 +1905,12 @@ export default function MeetingsAndMaterials() {
                                 {ev.location && (
                                   <p
                                     className={`text-[10px] truncate mt-1 flex items-center gap-1 ${
-                                      isOfficial ? 'text-teal-200' : 'text-slate-600'
+                                      isOfficial ? 'text-blue-200' : 'text-slate-600'
                                     }`}
                                   >
                                     <MapPin
                                       className={`w-3 h-3 ${
-                                        isOfficial ? 'text-[#D4AF37]' : 'text-teal-700'
+                                        isOfficial ? 'text-[#D4AF37]' : 'text-blue-700'
                                       }`}
                                     />
                                     {ev.location}
@@ -1989,8 +1982,8 @@ export default function MeetingsAndMaterials() {
                           onClick={() => handleCalendarEventClick(ev)}
                           className={`p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.01] flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                             isOfficial
-                              ? 'bg-[#06242E] text-white border-[#D4AF37]/50 hover:bg-[#0A3340] shadow-md'
-                              : 'bg-white text-slate-900 border-slate-200 hover:border-teal-400 hover:bg-slate-50/60 shadow-xs'
+                              ? 'bg-[#0A1A33] text-white border-[#D4AF37]/50 hover:bg-[#122443] shadow-md'
+                              : 'bg-white text-slate-900 border-slate-200 hover:border-blue-400 hover:bg-slate-50/60 shadow-xs'
                           }`}
                         >
                           <div className="space-y-2 min-w-0 flex-1">
@@ -2080,7 +2073,7 @@ export default function MeetingsAndMaterials() {
                               className={`font-bold text-xs ${
                                 isOfficial
                                   ? 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 shadow-sm'
-                                  : 'bg-[#06242E] hover:bg-[#0A3340] text-white shadow-xs'
+                                  : 'bg-[#0A1A33] hover:bg-[#122443] text-white shadow-xs'
                               }`}
                             >
                               {isOfficial ? 'Acessar Encontro & Materiais →' : 'Ver Detalhes →'}
@@ -2096,15 +2089,13 @@ export default function MeetingsAndMaterials() {
           )}
         </div>
       )}
-
       {/* =========================================================================
           MODAIS: PREVIEW DE MÍDIA, DETALHES DE ENCONTRO E DETALHES DO EVENTO CALENDÁRIO
          ========================================================================= */}
-
       {/* 1. Modal Preview de Foto / Vídeo / Documento */}
       {previewMedia && (
         <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#06242E] text-white border-teal-950 p-6 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl">
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
@@ -2115,13 +2106,13 @@ export default function MeetingsAndMaterials() {
                 {previewMedia.title}
               </DialogTitle>
               {previewMedia.description && (
-                <DialogDescription className="text-xs text-teal-200/80">
+                <DialogDescription className="text-xs text-slate-300">
                   {previewMedia.description}
                 </DialogDescription>
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[300px] border border-teal-950">
+            <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800">
               {previewMedia.type === 'photo' && previewMedia.url && (
                 <img
                   src={previewMedia.url}
@@ -2133,7 +2124,7 @@ export default function MeetingsAndMaterials() {
                 <div className="p-8 text-center text-white space-y-4">
                   <Video className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
                   <p className="text-sm font-semibold">Vídeo / Gravação na Íntegra</p>
-                  <p className="text-xs text-teal-200/70 max-w-md mx-auto">
+                  <p className="text-xs text-slate-300 max-w-md mx-auto">
                     A reprodução de vídeo em alta definição está pronta para streaming.
                   </p>
                   {previewMedia.url && (
@@ -2174,7 +2165,7 @@ export default function MeetingsAndMaterials() {
               <Button
                 variant="outline"
                 onClick={() => setPreviewMedia(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>
@@ -2182,11 +2173,10 @@ export default function MeetingsAndMaterials() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* 2. Modal Detalhes do Encontro */}
       {detailMeeting && (
         <Dialog open={!!detailMeeting} onOpenChange={(open) => !open && setDetailMeeting(null)}>
-          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
@@ -2229,14 +2219,14 @@ export default function MeetingsAndMaterials() {
 
             <div className="space-y-4 my-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data & Horário
                   </p>
                   <p className="text-white font-bold">
                     {formatDateString(detailMeeting.start_date || detailMeeting.date)}
                   </p>
-                  <p className="text-teal-200">
+                  <p className="text-slate-300">
                     {formatTimeString(detailMeeting.start_date || detailMeeting.date)}
                     {detailMeeting.end_date
                       ? ` até ${formatTimeString(detailMeeting.end_date)}`
@@ -2244,8 +2234,8 @@ export default function MeetingsAndMaterials() {
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#D4AF37]" /> Localização
                   </p>
                   <p className="text-white font-bold">{detailMeeting.location}</p>
@@ -2253,8 +2243,8 @@ export default function MeetingsAndMaterials() {
               </div>
 
               {detailMeeting.speakers && (
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 text-xs space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 text-xs space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
                   </p>
                   <p className="text-white">{detailMeeting.speakers}</p>
@@ -2262,13 +2252,13 @@ export default function MeetingsAndMaterials() {
               )}
 
               {detailMeeting.description && (
-                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-xs text-teal-100/90 max-h-48 overflow-y-auto leading-relaxed">
+                <div className="p-4 bg-[#061020]/80 rounded-2xl border border-slate-800 text-xs text-slate-200 max-h-48 overflow-y-auto leading-relaxed">
                   <div dangerouslySetInnerHTML={{ __html: detailMeeting.description }} />
                 </div>
               )}
 
               {/* Materiais vinculados a este Encontro */}
-              <div className="space-y-2 pt-2 border-t border-teal-950">
+              <div className="space-y-2 pt-2 border-t border-slate-800">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
@@ -2281,7 +2271,7 @@ export default function MeetingsAndMaterials() {
                         setNewMatMeetingId(detailMeeting.id)
                         setShowAddMaterialModal(true)
                       }}
-                      className="h-6 text-[10px] bg-teal-900/80 hover:bg-teal-800 text-teal-200"
+                      className="h-6 text-[10px] bg-blue-900/80 hover:bg-blue-800 text-blue-200"
                     >
                       + Anexar Material
                     </Button>
@@ -2294,7 +2284,7 @@ export default function MeetingsAndMaterials() {
                       <div
                         key={mat.id}
                         onClick={() => setPreviewMedia(mat)}
-                        className="p-2.5 rounded-xl bg-[#03151B] border border-teal-900/80 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group"
+                        className="p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group"
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           {mat.type === 'photo' ? (
@@ -2308,7 +2298,7 @@ export default function MeetingsAndMaterials() {
                             <p className="font-bold text-xs text-white truncate group-hover:text-[#F5D77F]">
                               {mat.title}
                             </p>
-                            <span className="text-[10px] text-teal-300/70 uppercase">
+                            <span className="text-[10px] text-blue-300/70 uppercase">
                               {mat.type === 'photo'
                                 ? 'Foto HD'
                                 : mat.type === 'video'
@@ -2322,8 +2312,8 @@ export default function MeetingsAndMaterials() {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 bg-[#03151B]/40 rounded-xl border border-teal-950 text-center">
-                    <p className="text-[11px] text-teal-200/60">
+                  <div className="p-3 bg-[#061020]/40 rounded-xl border border-slate-800 text-center">
+                    <p className="text-[11px] text-slate-400">
                       Nenhum material anexado especificamente a este encontro ainda.
                     </p>
                   </div>
@@ -2331,11 +2321,11 @@ export default function MeetingsAndMaterials() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setDetailMeeting(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>
@@ -2355,21 +2345,20 @@ export default function MeetingsAndMaterials() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* 3. Modal Detalhes do Evento do Calendário (Unificado) */}
       {selectedCalendarEvent && (
         <Dialog
           open={!!selectedCalendarEvent}
           onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   className={`uppercase font-black text-[10px] ${
                     selectedCalendarEvent.origin === 'meeting'
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'bg-teal-700 text-white'
+                      : 'bg-blue-700 text-white'
                   }`}
                 >
                   {selectedCalendarEvent.origin === 'meeting'
@@ -2379,7 +2368,7 @@ export default function MeetingsAndMaterials() {
 
                 <Badge
                   variant="outline"
-                  className="text-[10px] uppercase font-bold text-teal-200 border-teal-700"
+                  className="text-[10px] uppercase font-bold text-blue-200 border-blue-800"
                 >
                   {selectedCalendarEvent.format}
                 </Badge>
@@ -2407,14 +2396,14 @@ export default function MeetingsAndMaterials() {
 
             <div className="space-y-4 my-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data do Evento
                   </p>
                   <p className="text-white font-bold">
                     {formatDateString(selectedCalendarEvent.date)}
                   </p>
-                  <p className="text-teal-200">
+                  <p className="text-slate-300">
                     {formatTimeString(selectedCalendarEvent.date)}
                     {selectedCalendarEvent.endDate
                       ? ` às ${formatTimeString(selectedCalendarEvent.endDate)}`
@@ -2422,8 +2411,8 @@ export default function MeetingsAndMaterials() {
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#D4AF37]" /> Local / Plataforma
                   </p>
                   <p className="text-white font-bold">
@@ -2433,8 +2422,8 @@ export default function MeetingsAndMaterials() {
               </div>
 
               {selectedCalendarEvent.speakers && (
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-blue-200 font-semibold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
                   </p>
                   <p className="text-white">{selectedCalendarEvent.speakers}</p>
@@ -2442,7 +2431,7 @@ export default function MeetingsAndMaterials() {
               )}
 
               {selectedCalendarEvent.description && (
-                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-teal-100/90 leading-relaxed whitespace-pre-wrap">
+                <div className="p-4 bg-[#061020]/80 rounded-2xl border border-slate-800 text-slate-200 leading-relaxed whitespace-pre-wrap">
                   {selectedCalendarEvent.description.startsWith('<') ? (
                     <div dangerouslySetInnerHTML={{ __html: selectedCalendarEvent.description }} />
                   ) : (
@@ -2452,11 +2441,11 @@ export default function MeetingsAndMaterials() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setSelectedCalendarEvent(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
               >
                 Fechar
               </Button>
@@ -2476,68 +2465,67 @@ export default function MeetingsAndMaterials() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* =========================================================================
           ADMIN: CRIAR / EDITAR ENCONTRO MODAL
          ========================================================================= */}
       {showMeetingModal && (
         <Dialog open={showMeetingModal} onOpenChange={setShowMeetingModal}>
-          <DialogContent className="max-w-xl bg-[#06242E] text-white border-teal-950 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-xl bg-[#0A1A33] text-white border-slate-800 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-white">
                 {editingMeeting ? 'Editar Encontro Oficial' : 'Cadastrar Novo Encontro Oficial'}
               </DialogTitle>
-              <DialogDescription className="text-xs text-teal-200/70">
+              <DialogDescription className="text-xs text-slate-300">
                 Configure os dados do encontro oficial. Selecione formato e cobrança.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSaveMeeting} className="space-y-4 pt-2 text-xs">
               <div className="space-y-1">
-                <Label className="text-teal-300">Título do Encontro *</Label>
+                <Label className="text-slate-200">Título do Encontro *</Label>
                 <Input
                   placeholder="Ex: Mastermind de Escala & Governança 2026"
                   value={meetingTitle}
                   onChange={(e) => setMeetingTitle(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">
+                <Label className="text-slate-200">
                   Nome do Evento / Série (exibido em destaque)
                 </Label>
                 <Input
                   placeholder="Ex: Edvanced Executive Immersion 2026"
                   value={meetingEventName}
                   onChange={(e) => setMeetingEventName(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                 />
               </div>
 
               {/* Data Início & Previsão de Fim com step 900 (15 min) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-teal-300">Data e Hora de Início * (passo: 15 min)</Label>
+                  <Label className="text-slate-200">Data e Hora de Início * (passo: 15 min)</Label>
                   <Input
                     type="datetime-local"
                     step={900}
                     value={meetingStartDate}
                     onChange={(e) => setMeetingStartDate(e.target.value)}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                    className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                     required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-teal-300">Previsão de Fim (passo: 15 min)</Label>
+                  <Label className="text-slate-200">Previsão de Fim (passo: 15 min)</Label>
                   <Input
                     type="datetime-local"
                     step={900}
                     value={meetingEndDate}
                     onChange={(e) => setMeetingEndDate(e.target.value)}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                    className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   />
                 </div>
               </div>
@@ -2545,11 +2533,11 @@ export default function MeetingsAndMaterials() {
               {/* Formato & Cobrança */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-teal-300">Formato do Encontro *</Label>
+                  <Label className="text-slate-200">Formato do Encontro *</Label>
                   <select
                     value={meetingType}
                     onChange={(e) => setMeetingType(e.target.value as any)}
-                    className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                    className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                   >
                     <option value="presencial">Presencial</option>
                     <option value="online">Online VIP</option>
@@ -2558,11 +2546,11 @@ export default function MeetingsAndMaterials() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-teal-300">Cobrança / Acesso *</Label>
+                  <Label className="text-slate-200">Cobrança / Acesso *</Label>
                   <select
                     value={meetingPricing}
                     onChange={(e) => setMeetingPricing(e.target.value as any)}
-                    className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                    className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                   >
                     <option value="gratuito">Gratuito (Incluso na Membresia)</option>
                     <option value="pago">Pago (Inscrição Extra)</option>
@@ -2571,8 +2559,8 @@ export default function MeetingsAndMaterials() {
               </div>
 
               {/* Upload da Imagem de Capa do Encontro */}
-              <div className="space-y-2 p-3 bg-[#03151B]/70 rounded-2xl border border-teal-900/60">
-                <Label className="text-teal-300 flex items-center justify-between">
+              <div className="space-y-2 p-3 bg-[#061020]/70 rounded-2xl border border-slate-800">
+                <Label className="text-slate-200 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
                     Imagem de Capa do Encontro (Estilo Netflix / Formato 16:9)
@@ -2620,34 +2608,34 @@ export default function MeetingsAndMaterials() {
                         setMeetingCoverPreview(previewUrl)
                       }
                     }}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#D4AF37] file:text-slate-950 hover:file:bg-[#F5D77F] file:cursor-pointer"
+                    className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#D4AF37] file:text-slate-950 hover:file:bg-[#F5D77F] file:cursor-pointer"
                   />
                 </div>
-                <p className="text-[10px] text-teal-200/60">
+                <p className="text-[10px] text-slate-400">
                   Formatos aceitos: JPG, PNG, WEBP. Tamanho máx.: 10MB. Se não enviada, será
                   utilizado um gradiente premium padrão.
                 </p>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Local / Plataforma de Transmissão *</Label>
+                <Label className="text-slate-200">Local / Plataforma de Transmissão *</Label>
                 <Input
                   placeholder="Ex: Palácio Tangará - SP ou Zoom VIP"
                   value={meetingLocation}
                   onChange={(e) => setMeetingLocation(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   required
                 />
               </div>
 
               {/* Link de Inscrição Externa */}
-              <div className="space-y-1 p-3 bg-[#03151B]/70 rounded-2xl border border-teal-900/60">
+              <div className="space-y-1 p-3 bg-[#061020]/70 rounded-2xl border border-slate-800">
                 <Label className="text-[#F5D77F] font-semibold flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ExternalLink className="w-4 h-4 text-[#D4AF37]" />
                     Link de Inscrição Externa (Página Pública de Eventos)
                   </span>
-                  <span className="text-[10px] text-teal-300 font-normal">
+                  <span className="text-[10px] text-slate-300 font-normal">
                     Opcional / Recomendado
                   </span>
                 </Label>
@@ -2655,31 +2643,31 @@ export default function MeetingsAndMaterials() {
                   placeholder="https://eventos.edvanced.com.br/... ou link Sympla/Hotmart/Formulário"
                   value={meetingRegistrationUrl}
                   onChange={(e) => setMeetingRegistrationUrl(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl placeholder:text-teal-200/40"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl placeholder:text-slate-400"
                 />
-                <p className="text-[10px] text-teal-200/60">
+                <p className="text-[10px] text-slate-400">
                   Este link será exibido no botão "Inscrever-se" da aba pública de eventos para o
                   público externo.
                 </p>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Palestrantes / Convidados Especiais</Label>
+                <Label className="text-slate-200">Palestrantes / Convidados Especiais</Label>
                 <Input
                   placeholder="Ex: Ediane Dal Bosco, Dr. Fernando Cintra"
                   value={meetingSpeakers}
                   onChange={(e) => setMeetingSpeakers(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Pauta / Descrição</Label>
+                <Label className="text-slate-200">Pauta / Descrição</Label>
                 <Textarea
                   placeholder="Detalhes, cronograma ou tópicos discutidos..."
                   value={meetingDesc}
                   onChange={(e) => setMeetingDesc(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   rows={3}
                 />
               </div>
@@ -2689,7 +2677,7 @@ export default function MeetingsAndMaterials() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowMeetingModal(false)}
-                  className="text-xs border-teal-900 text-teal-200"
+                  className="text-xs border-slate-700 text-slate-200"
                 >
                   Cancelar
                 </Button>
@@ -2709,29 +2697,28 @@ export default function MeetingsAndMaterials() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* =========================================================================
           ADMIN: ADICIONAR MATERIAL MODAL
          ========================================================================= */}
       {showAddMaterialModal && (
         <Dialog open={showAddMaterialModal} onOpenChange={setShowAddMaterialModal}>
-          <DialogContent className="max-w-lg bg-[#06242E] text-white border-teal-950 rounded-3xl p-6 shadow-2xl">
+          <DialogContent className="max-w-lg bg-[#0A1A33] text-white border-slate-800 rounded-3xl p-6 shadow-2xl">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-white">
                 Adicionar Material ao Acervo
               </DialogTitle>
-              <DialogDescription className="text-xs text-teal-200/70">
+              <DialogDescription className="text-xs text-slate-300">
                 Selecione a qual encontro vincular e o tipo de mídia (Foto, Vídeo ou Documento).
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleAddMaterial} className="space-y-4 pt-2 text-xs">
               <div className="space-y-1">
-                <Label className="text-teal-300">Encontro Relacionado *</Label>
+                <Label className="text-slate-200">Encontro Relacionado *</Label>
                 <select
                   value={newMatMeetingId || selectedMeeting?.id || ''}
                   onChange={(e) => setNewMatMeetingId(e.target.value)}
-                  className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                  className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                   required
                 >
                   <option value="">Selecione um encontro...</option>
@@ -2744,22 +2731,22 @@ export default function MeetingsAndMaterials() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Título do Arquivo / Álbum *</Label>
+                <Label className="text-slate-200">Título do Arquivo / Álbum *</Label>
                 <Input
                   placeholder="Ex: Galeria de Fotos em Alta - Welcome Dinner"
                   value={newMatTitle}
                   onChange={(e) => setNewMatTitle(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Tipo de Categoria *</Label>
+                <Label className="text-slate-200">Tipo de Categoria *</Label>
                 <select
                   value={newMatType}
                   onChange={(e) => setNewMatType(e.target.value as any)}
-                  className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                  className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                 >
                   <option value="photo">Foto (Galeria de Imagens)</option>
                   <option value="video">Vídeo (Streaming / Gravação)</option>
@@ -2768,23 +2755,23 @@ export default function MeetingsAndMaterials() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">URL / Link Direto *</Label>
+                <Label className="text-slate-200">URL / Link Direto *</Label>
                 <Input
                   placeholder="https://img.usecurling.com/... ou link de vídeo/pdf"
                   value={newMatUrl}
                   onChange={(e) => setNewMatUrl(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-teal-300">Descrição / Notas</Label>
+                <Label className="text-slate-200">Descrição / Notas</Label>
                 <Textarea
                   placeholder="Informações adicionais para os associados..."
                   value={newMatDesc}
                   onChange={(e) => setNewMatDesc(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
                   rows={2}
                 />
               </div>
@@ -2794,7 +2781,7 @@ export default function MeetingsAndMaterials() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddMaterialModal(false)}
-                  className="text-xs border-teal-900 text-teal-200"
+                  className="text-xs border-slate-700 text-slate-200"
                 >
                   Cancelar
                 </Button>
@@ -2809,7 +2796,7 @@ export default function MeetingsAndMaterials() {
             </form>
           </DialogContent>
         </Dialog>
-      )}
+      )}{' '}
     </div>
   )
 }

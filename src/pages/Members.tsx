@@ -275,7 +275,7 @@ export default function Members() {
                 }}
                 className={`h-8 text-xs font-bold rounded-lg transition-all ${
                   showInactive
-                    ? 'bg-[#06242E] hover:bg-[#0A3340] text-amber-300 border border-[#D4AF37]/50 shadow-xs'
+                    ? 'bg-[#0A1A33] hover:bg-[#122443] text-amber-300 border border-[#D4AF37]/50 shadow-xs'
                     : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                 }`}
               >
@@ -456,7 +456,7 @@ export default function Members() {
                     >
                       <Button
                         variant="outline"
-                        className="w-full text-xs font-semibold border-slate-200 hover:bg-[#06242E] hover:text-white hover:border-[#06242E] transition-colors"
+                        className="w-full text-xs font-semibold border-slate-200 hover:bg-[#0A1A33] hover:text-white hover:border-[#0A1A33] transition-colors"
                       >
                         <Instagram className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" /> Instagram
                       </Button>
