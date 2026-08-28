@@ -25,7 +25,11 @@ import {
   LayoutGrid,
   Info,
   CalendarDays,
+  CalendarPlus,
+  Smartphone,
+  Share2,
 } from 'lucide-react'
+import { downloadICSFile } from '@/lib/ics'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   getMeetings,
@@ -99,7 +103,27 @@ export default function MeetingsAndMaterials() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Main navigation tab: "acervo" (Materiais por Categoria) or "calendario" (Calendário Unificado)
-  const [mainView, setMainView] = useState<'acervo' | 'calendario'>('acervo')
+  const initialView =
+    window.location.pathname === '/calendario' || searchParams.get('aba') === 'calendario'
+      ? 'calendario'
+      : 'acervo'
+  const [mainView, setMainView] = useState<'acervo' | 'calendario'>(initialView)
+
+  // Export ICS handler
+  const handleExportICS = () => {
+    try {
+      if (filteredCalendarEvents.length === 0) {
+        toast.error('Nenhum evento corresponde aos filtros ativos para exportação.')
+        return
+      }
+      downloadICSFile(filteredCalendarEvents, 'edvanced-business-club-agenda.ics')
+      toast.success(
+        `Arquivo .ics baixado com ${filteredCalendarEvents.length} evento(s)! Abra o arquivo para adicionar à sua agenda (Google Agenda, Apple Calendar ou Outlook).`,
+      )
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao exportar calendário.')
+    }
+  }
 
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [materials, setMaterials] = useState<Material[]>([])
@@ -229,8 +253,10 @@ export default function MeetingsAndMaterials() {
     const q = searchParams.get('busca')
     if (q) setAcervoSearch(q)
     const viewParam = searchParams.get('aba')
-    if (viewParam === 'calendario') {
+    if (viewParam === 'calendario' || window.location.pathname === '/calendario') {
       setMainView('calendario')
+    } else if (viewParam === 'acervo') {
+      setMainView('acervo')
     }
   }, [searchParams])
 
@@ -1467,43 +1493,61 @@ export default function MeetingsAndMaterials() {
           4. VISÃO B: ABA DE CALENDÁRIO UNIFICADO (Fundo Claro / Light Theme)
          ========================================================================= */}
       {mainView === 'calendario' && (
-        <div className="space-y-6 animate-fade-in text-slate-900">
-          {/* Header do Calendário com Filtros Completos (Fundo Claro) */}
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 space-y-6 shadow-sm">
+        <div className="space-y-6 animate-fade-in text-slate-900 bg-slate-50/60 p-1 sm:p-2 rounded-3xl">
+          {/* Header do Calendário com Filtros Completos & Botão de Exportação ICS */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 space-y-6 shadow-xs">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px] shadow-xs">
-                    Calendário Geral de Eventos
+                    Calendário Integrado do Club
                   </Badge>
-                  <span className="text-xs font-semibold text-slate-500">
-                    {filteredCalendarEvents.length} evento(s) no calendário
+                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                    {filteredCalendarEvents.length} evento(s) visíveis
                   </span>
                 </div>
                 <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                  Agenda Oficial do Business Club & Eventos dos Membros
+                  Agenda Oficial do Business Club & Divulgações dos Membros
                 </h2>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Os encontros oficiais aparecem com destaque em{' '}
-                  <span className="text-[#06242E] font-bold">
-                    Azul Petróleo Escuro + Dourado VIP
+                <p className="text-xs text-slate-600">
+                  Encontros oficiais em{' '}
+                  <span className="text-[#06242E] font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-[#D4AF37]/40">
+                    Azul Petróleo Escuro & Dourado VIP
                   </span>{' '}
-                  e os eventos dos membros em{' '}
-                  <span className="text-teal-700 font-bold">Verde Petróleo Suave</span>.
+                  e eventos dos membros em{' '}
+                  <span className="text-teal-800 font-bold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
+                    Verde Petróleo Suave
+                  </span>
+                  .
                 </p>
               </div>
 
-              {/* Controles de Navegação de Data & Alternância Dia / Semana / Mês */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              {/* Botões de Ação Topo: Exportar ICS + Navegação */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Botão de Exportação para Celular / Google Agenda / Apple (.ICS) */}
+                <Button
+                  onClick={handleExportICS}
+                  className="bg-gradient-to-r from-[#06242E] to-[#0A3340] hover:from-[#03151B] hover:to-[#06242E] text-white border border-[#D4AF37]/40 text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center gap-2 transition-all hover:scale-105"
+                  title="Exportar eventos visíveis no formato .ICS para Google Agenda, Apple Calendar ou Celular"
+                >
+                  <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Exportar para Celular / Google Agenda (.ics)</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Controles de Navegação de Data & Alternância Dia / Semana / Mês */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* View Mode: Dia / Semana / Mês */}
                 <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('mes')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'mes'
                         ? 'bg-[#06242E] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
                     Mês
@@ -1511,10 +1555,10 @@ export default function MeetingsAndMaterials() {
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('semana')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'semana'
                         ? 'bg-[#06242E] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
                     Semana
@@ -1522,10 +1566,10 @@ export default function MeetingsAndMaterials() {
                   <button
                     type="button"
                     onClick={() => setCalendarViewMode('dia')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       calendarViewMode === 'dia'
                         ? 'bg-[#06242E] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                     }`}
                   >
                     Dia
@@ -1559,10 +1603,10 @@ export default function MeetingsAndMaterials() {
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
+              </div>
 
-                <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-[#06242E] uppercase tracking-wider min-w-[140px] text-center shadow-2xs">
-                  {format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                </div>
+              <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-[#06242E] uppercase tracking-wider min-w-[160px] text-center shadow-2xs">
+                {format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
               </div>
             </div>
 

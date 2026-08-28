@@ -108,6 +108,12 @@ export default function Layout() {
       badge: 'Fotos, Vídeos & Docs',
     },
     {
+      label: 'Calendário Integrado',
+      path: '/calendario',
+      icon: Sparkles,
+      badge: 'Agenda VIP',
+    },
+    {
       label: 'Minhas Divulgações',
       path: '/divulgacoes',
       icon: Megaphone,
@@ -234,7 +240,11 @@ export default function Layout() {
             </p>
             <nav className="space-y-1">
               {navItems.map((item) => {
-                const isActive = location.pathname === item.path
+                const isActive =
+                  location.pathname === item.path ||
+                  (item.path === '/calendario' &&
+                    location.pathname === '/encontros' &&
+                    location.search.includes('aba=calendario'))
                 const Icon = item.icon
                 return (
                   <Link
@@ -342,17 +352,17 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Sidebar Footer / User Profile */}
-        <div className="p-4 border-t border-[#03151B] bg-[#03151B]/95">
+        {/* Sidebar Footer / User Profile (Compacto, Elegante & Completo) */}
+        <div className="p-3.5 border-t border-[#03151B] bg-[#03151B]/95">
           {user ? (
-            <div className="flex items-start justify-between gap-2.5">
+            <div className="flex items-start justify-between gap-2">
               <Link
                 to="/perfil"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-start gap-3 min-w-0 hover:opacity-90 transition-opacity flex-1 group"
+                className="flex items-start gap-2.5 min-w-0 hover:opacity-95 transition-opacity flex-1 group"
                 title="Acessar e editar Meu Perfil"
               >
-                <Avatar className="w-10 h-10 ring-2 ring-[#D4AF37]/50 flex-shrink-0 mt-0.5">
+                <Avatar className="w-8 h-8 ring-1.5 ring-[#D4AF37]/70 flex-shrink-0 mt-0.5">
                   {user.avatar ? (
                     <AvatarImage
                       src={getFileUrl('users', user.id, user.avatar)}
@@ -360,23 +370,33 @@ export default function Layout() {
                       className="object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="bg-gradient-to-br from-[#D4AF37] to-[#8C6D07] text-slate-950 font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-[#D4AF37] to-[#8C6D07] text-slate-950 font-bold text-[11px]">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center flex-wrap gap-1.5">
-                    <span className="text-sm font-semibold text-white group-hover:text-[#F5D77F] break-words leading-tight">
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  {/* Nome & Tag ADM */}
+                  <div className="flex items-center flex-wrap gap-1">
+                    <span className="text-xs font-bold text-white group-hover:text-[#F5D77F] break-words leading-tight transition-colors">
                       {user.name}
                     </span>
                     {isAdmin && (
-                      <span className="px-1.5 py-0.5 bg-[#D4AF37] text-slate-950 text-[9px] font-extrabold rounded leading-none shrink-0 shadow-sm">
+                      <span className="px-1 py-0.2 bg-[#D4AF37] text-slate-950 text-[8px] font-black rounded-xs leading-none shrink-0 shadow-2xs">
                         ADM
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 break-words leading-relaxed mt-1">
-                    {user.company || user.email || 'Edvanced Business Club'}
+
+                  {/* Empresa */}
+                  {user.company && (
+                    <p className="text-[11px] font-medium text-[#F5D77F]/90 break-words leading-snug">
+                      {user.company}
+                    </p>
+                  )}
+
+                  {/* E-mail com quebra de linha quando longo */}
+                  <p className="text-[10px] text-teal-200/70 break-all leading-tight">
+                    {user.email}
                   </p>
                 </div>
               </Link>
@@ -386,15 +406,15 @@ export default function Layout() {
                 size="icon"
                 onClick={logout}
                 title="Sair da conta"
-                className="text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 rounded-lg flex-shrink-0 mt-0.5 h-8 w-8"
+                className="text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 rounded-lg flex-shrink-0 mt-0.5 h-7 w-7"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
               </Button>
             </div>
           ) : (
             <Link
               to="/login"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#D4AF37] text-slate-950 font-bold rounded-lg text-sm hover:bg-[#F5D77F] transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#D4AF37] text-slate-950 font-bold rounded-lg text-xs hover:bg-[#F5D77F] transition-colors"
             >
               <Lock className="w-4 h-4" />
               Fazer Login VIP

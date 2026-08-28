@@ -237,10 +237,10 @@ export default function Members() {
         <div className="relative w-full max-w-md">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
-            placeholder="Buscar por nome, empresa ou especialidade..."
+            placeholder="Buscar por nome, e-mail, empresa ou Instagram..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 text-xs rounded-xl bg-slate-50 border-slate-200"
+            className="pl-10 text-xs rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-[#D4AF37]"
           />
         </div>
 
@@ -249,21 +249,21 @@ export default function Members() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-hidden"
+              className="h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
             >
               <option value="todos">Todos os Status</option>
               <option value="active">Apenas Ativos</option>
-              <option value="suspended">Apenas Suspensos</option>
+              <option value="suspended">Apenas Inativos / Suspensos</option>
             </select>
           )}
 
-          <span className="text-xs text-slate-400 font-medium whitespace-nowrap pl-2">
+          <span className="text-xs text-slate-500 font-semibold whitespace-nowrap pl-2 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200">
             {filteredMembers.length} membro(s)
           </span>
         </div>
       </div>
 
-      {/* Members Grid */}
+      {/* Members Grid with Anti-Overflow & Responsive Enquadramento */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMembers.map((member) => {
           const isMemberAdmin =
@@ -274,14 +274,15 @@ export default function Members() {
           return (
             <Card
               key={member.id}
-              className={`border bg-white rounded-3xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group ${
-                isSuspended ? 'border-rose-200/80 bg-rose-50/15' : 'border-slate-200/80'
+              className={`border bg-white rounded-3xl shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group min-w-0 ${
+                isSuspended ? 'border-rose-200/80 bg-rose-50/20' : 'border-slate-200/90'
               }`}
             >
-              <div>
-                <div className="p-6 border-b border-slate-100 flex items-start gap-4">
+              <div className="min-w-0">
+                {/* Header Card: Avatar + Name + Badges + Company */}
+                <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start gap-3.5 min-w-0">
                   <Avatar
-                    className={`w-14 h-14 ring-2 flex-shrink-0 ${isSuspended ? 'ring-rose-300 opacity-70' : 'ring-[#D4AF37]/40'}`}
+                    className={`w-13 h-13 ring-2 flex-shrink-0 ${isSuspended ? 'ring-rose-300 opacity-75' : 'ring-[#D4AF37]/50'}`}
                   >
                     {member.avatar ? (
                       <AvatarImage
@@ -291,84 +292,96 @@ export default function Members() {
                       />
                     ) : null}
                     <AvatarFallback
-                      className={`text-slate-950 font-bold text-base ${isSuspended ? 'bg-slate-300' : 'bg-gradient-to-br from-[#D4AF37] to-[#8C6D07]'}`}
+                      className={`text-slate-950 font-bold text-sm ${isSuspended ? 'bg-slate-300' : 'bg-gradient-to-br from-[#D4AF37] to-[#8C6D07]'}`}
                     >
                       {getInitials(member.name)}
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3
-                        className={`font-bold text-base truncate transition-colors ${isSuspended ? 'text-slate-500 line-through' : 'text-slate-900 group-hover:text-[#8C6D07]'}`}
-                      >
-                        {member.name}
-                      </h3>
-                    </div>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    {/* Name */}
+                    <h3
+                      className={`font-bold text-sm sm:text-base leading-snug break-words transition-colors ${
+                        isSuspended
+                          ? 'text-slate-500 line-through'
+                          : 'text-slate-900 group-hover:text-[#8C6D07]'
+                      }`}
+                    >
+                      {member.name}
+                    </h3>
 
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    {/* Badges Container */}
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {isMemberAdmin ? (
-                        <Badge className="bg-[#D4AF37] text-slate-950 font-bold text-[9px] uppercase tracking-wider">
+                        <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider">
                           <Crown className="w-3 h-3 mr-1 inline" /> Fundadora & Master
                         </Badge>
                       ) : (
                         <Badge
                           variant="outline"
-                          className="border-slate-200 text-slate-600 text-[9px] uppercase tracking-wider"
+                          className="border-slate-200 text-slate-600 text-[9px] uppercase tracking-wider font-semibold"
                         >
                           Membro VIP
                         </Badge>
                       )}
 
-                      {/* Status Badge */}
+                      {/* Status Badge (Ativo vs Inativo / Suspenso) */}
                       {isSuspended ? (
-                        <Badge className="bg-rose-500 text-white font-black text-[9px] uppercase tracking-wider shadow-xs animate-pulse">
-                          <Ban className="w-3 h-3 mr-1 inline" /> Suspenso
+                        <Badge className="bg-rose-500 text-white font-black text-[9px] uppercase tracking-wider shadow-2xs">
+                          <Ban className="w-3 h-3 mr-1 inline" /> Inativo
                         </Badge>
                       ) : (
-                        <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-300 text-[9px] uppercase tracking-wider font-bold">
+                        <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-300 text-[9px] uppercase tracking-wider font-bold">
                           <CheckCircle className="w-3 h-3 mr-1 inline" /> Ativo
                         </Badge>
                       )}
                     </div>
 
+                    {/* Company */}
                     {member.company && (
-                      <p className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mt-2 truncate">
-                        <Building2 className="w-3.5 h-3.5 text-[#8C6D07] flex-shrink-0" />
-                        <span className="truncate">{member.company}</span>
+                      <p className="text-xs font-semibold text-slate-700 flex items-start gap-1.5 pt-0.5 leading-tight break-words">
+                        <Building2 className="w-3.5 h-3.5 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                        <span className="break-words">{member.company}</span>
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="p-6 space-y-4 text-xs text-slate-600">
+                {/* Body: Bio & Contacts (Email, Phone, Instagram) */}
+                <div className="p-5 sm:p-6 space-y-4 text-xs text-slate-600 min-w-0">
                   {member.bio ? (
-                    <p className="leading-relaxed line-clamp-3 italic">"{member.bio}"</p>
+                    <p className="leading-relaxed break-words line-clamp-3 italic text-slate-600">
+                      "{member.bio}"
+                    </p>
                   ) : (
                     <p className="text-slate-400 italic">Membro do Edvanced Business Club.</p>
                   )}
 
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100 text-[11px]">
-                    <div className="flex items-center gap-2 text-slate-600 truncate">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                      <span className="truncate">{member.email}</span>
+                  {/* Contact details with proper wrapping & zero text clip */}
+                  <div className="space-y-2 pt-2 border-t border-slate-100 text-[11px] min-w-0">
+                    {/* Email */}
+                    <div className="flex items-start gap-2 text-slate-700 min-w-0">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                      <span className="break-all leading-tight font-normal">{member.email}</span>
                     </div>
 
+                    {/* Phone */}
                     {member.phone && (
-                      <div className="flex items-center gap-2 text-slate-600 truncate">
+                      <div className="flex items-center gap-2 text-slate-700 min-w-0">
                         <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <span>{member.phone}</span>
+                        <span className="break-words font-medium">{member.phone}</span>
                       </div>
                     )}
 
+                    {/* Instagram */}
                     {member.instagram && (
-                      <div className="flex items-center gap-2 text-slate-600 truncate">
-                        <Instagram className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                      <div className="flex items-start gap-2 text-slate-700 min-w-0">
+                        <Instagram className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                         <a
                           href={formatInstagramLink(member.instagram)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-[#8C6D07] hover:underline truncate font-semibold text-[#8C6D07]"
+                          className="hover:text-[#8C6D07] hover:underline break-all font-semibold text-[#8C6D07] leading-tight"
                         >
                           {formatInstagramDisplay(member.instagram)}
                         </a>
@@ -378,7 +391,8 @@ export default function Members() {
                 </div>
               </div>
 
-              <div className="p-6 pt-0 space-y-2">
+              {/* Card Footer: Action Buttons */}
+              <div className="p-5 sm:p-6 pt-0 space-y-2.5 min-w-0">
                 {/* Regular Contact Buttons */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <a
@@ -432,7 +446,7 @@ export default function Members() {
                   )}
                 </div>
 
-                {/* Admin Management Toolbar */}
+                {/* Admin Management Toolbar: Editar & Inativar / Reativar */}
                 {isAdmin && (
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                     <Button
@@ -442,7 +456,7 @@ export default function Members() {
                       className="flex-1 h-8 text-xs font-semibold text-slate-700 hover:bg-[#D4AF37]/15 hover:text-[#8C6D07] rounded-xl"
                     >
                       <Edit2 className="w-3.5 h-3.5 mr-1.5 text-[#D4AF37]" />
-                      Editar Membro
+                      Editar Dados
                     </Button>
 
                     {!isMe && (
@@ -450,22 +464,20 @@ export default function Members() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setConfirmSuspendMember(member)}
-                        className={`h-8 text-xs font-bold rounded-xl px-2.5 ${
+                        className={`h-8 text-xs font-bold rounded-xl px-2.5 transition-colors ${
                           isSuspended
-                            ? 'text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800'
-                            : 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
+                            ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200'
+                            : 'text-rose-600 hover:bg-rose-50 hover:text-rose-700 border border-rose-200'
                         }`}
-                        title={
-                          isSuspended ? 'Reativar acesso do membro' : 'Suspender acesso do membro'
-                        }
+                        title={isSuspended ? 'Reativar membro do club' : 'Inativar membro do club'}
                       >
                         {isSuspended ? (
                           <>
-                            <UserCheck className="w-3.5 h-3.5 mr-1" /> Reativar
+                            <UserCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Reativar
                           </>
                         ) : (
                           <>
-                            <UserX className="w-3.5 h-3.5 mr-1" /> Suspender
+                            <UserX className="w-3.5 h-3.5 mr-1 text-rose-600" /> Inativar
                           </>
                         )}
                       </Button>
@@ -668,13 +680,13 @@ export default function Members() {
               </div>
               <DialogTitle className="text-lg font-bold text-slate-900 text-center">
                 {confirmSuspendMember.status === 'suspended'
-                  ? 'Reativar Acesso do Membro?'
-                  : 'Suspender Acesso do Membro?'}
+                  ? 'Reativar Membro do Club?'
+                  : 'Inativar Membro do Club?'}
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500 text-center leading-relaxed">
                 {confirmSuspendMember.status === 'suspended'
-                  ? `O membro "${confirmSuspendMember.name}" voltará a ter acesso imediato à plataforma, acervo de encontros e calendário VIP.`
-                  : `Ao suspender "${confirmSuspendMember.name}", o usuário não conseguirá mais realizar login nem acessar as áreas restritas até ser reativado.`}
+                  ? `O membro "${confirmSuspendMember.name}" será reativado e voltará a ter acesso regular à plataforma, acervo de encontros e calendário VIP.`
+                  : `Ao inativar "${confirmSuspendMember.name}", o membro ficará marcado como inativo e terá seu acesso temporariamente suspenso até que seja reativado pela diretoria.`}
               </DialogDescription>
             </DialogHeader>
 
@@ -701,7 +713,7 @@ export default function Members() {
                   ? 'Processando...'
                   : confirmSuspendMember.status === 'suspended'
                     ? 'Confirmar Reativação'
-                    : 'Confirmar Suspensão'}
+                    : 'Confirmar Inativação'}
               </Button>
             </DialogFooter>
           </DialogContent>

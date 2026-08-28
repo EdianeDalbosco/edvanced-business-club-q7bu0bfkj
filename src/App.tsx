@@ -46,6 +46,16 @@ const App = () => (
               }
             />
 
+            {/* Direct Calendar Route */}
+            <Route
+              path="/calendario"
+              element={
+                <ProtectedRoute>
+                  <Meetings />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Member Disclosures */}
             <Route
               path="/divulgacoes"
