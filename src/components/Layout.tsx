@@ -345,14 +345,14 @@ export default function Layout() {
         {/* Sidebar Footer / User Profile */}
         <div className="p-4 border-t border-[#03151B] bg-[#03151B]/95">
           {user ? (
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start justify-between gap-2.5">
               <Link
                 to="/perfil"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 min-w-0 hover:opacity-90 transition-opacity flex-1 group"
+                className="flex items-start gap-3 min-w-0 hover:opacity-90 transition-opacity flex-1 group"
                 title="Acessar e editar Meu Perfil"
               >
-                <Avatar className="w-10 h-10 ring-2 ring-[#D4AF37]/50 flex-shrink-0">
+                <Avatar className="w-10 h-10 ring-2 ring-[#D4AF37]/50 flex-shrink-0 mt-0.5">
                   {user.avatar ? (
                     <AvatarImage
                       src={getFileUrl('users', user.id, user.avatar)}
@@ -365,15 +365,19 @@ export default function Layout() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5 group-hover:text-[#F5D77F]">
-                    {user.name}
+                  <div className="flex items-center flex-wrap gap-1.5">
+                    <span className="text-sm font-semibold text-white group-hover:text-[#F5D77F] break-words leading-tight">
+                      {user.name}
+                    </span>
                     {isAdmin && (
-                      <span className="px-1.5 py-0.2 bg-[#D4AF37] text-slate-950 text-[9px] font-extrabold rounded">
+                      <span className="px-1.5 py-0.5 bg-[#D4AF37] text-slate-950 text-[9px] font-extrabold rounded leading-none shrink-0 shadow-sm">
                         ADM
                       </span>
                     )}
+                  </div>
+                  <p className="text-xs text-slate-400 break-words leading-relaxed mt-1">
+                    {user.company || user.email || 'Edvanced Business Club'}
                   </p>
-                  <p className="text-xs text-slate-400 truncate">{user.company || user.email}</p>
                 </div>
               </Link>
 
@@ -382,7 +386,7 @@ export default function Layout() {
                 size="icon"
                 onClick={logout}
                 title="Sair da conta"
-                className="text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 rounded-lg flex-shrink-0"
+                className="text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 rounded-lg flex-shrink-0 mt-0.5 h-8 w-8"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
