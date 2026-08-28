@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Calendar as CalendarIcon,
@@ -28,6 +28,11 @@ import {
   Hourglass,
   Layers,
   X,
+  Copy,
+  MessageCircle,
+  Upload,
+  Image as ImageIcon,
+  RotateCcw,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -121,6 +126,7 @@ export default function PublicPortal() {
     'todos',
   )
   const [eventPricing, setEventPricing] = useState<'todos' | 'gratuito' | 'pago'>('todos')
+  const [eventMonth, setEventMonth] = useState<string>('todos')
 
   // Search for Podcast Episodes
   const [podcastSearch, setPodcastSearch] = useState('')
@@ -138,6 +144,9 @@ export default function PublicPortal() {
   const [castDesc, setCastDesc] = useState('')
   const [castVideoUrl, setCastVideoUrl] = useState('')
   const [castThumbnailUrl, setCastThumbnailUrl] = useState('')
+  const [castCoverFile, setCastCoverFile] = useState<File | null>(null)
+  const [castCoverPreview, setCastCoverPreview] = useState<string>('')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [castDuration, setCastDuration] = useState('')
   const [castEpNumber, setCastEpNumber] = useState<number | ''>('')
   const [castPublishedAt, setCastPublishedAt] = useState('')
@@ -213,6 +222,44 @@ export default function PublicPortal() {
     return ''
   }
 
+  // Get Episode Cover URL or fallback
+  const getEpisodeCoverUrl = (ep: EdvancedCastEpisode) => {
+    if (ep.cover_image) {
+      return getFileUrl('edvanced_cast', ep.id, ep.cover_image)
+    }
+    if (ep.thumbnail_url) {
+      return ep.thumbnail_url
+    }
+    return ''
+  }
+
+  // Generate share URL and handlers
+  const getEpisodeShareUrl = (ep: EdvancedCastEpisode) => {
+    const origin = window.location.origin
+    return `${origin}/publico?aba=podcast&episodio=${ep.id}`
+  }
+
+  const handleCopyEpisodeLink = (e: React.MouseEvent, ep: EdvancedCastEpisode) => {
+    e.stopPropagation()
+    const url = getEpisodeShareUrl(ep)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url)
+      toast.success('Link do episódio copiado para a área de transferência!')
+    } else {
+      toast.info(`Link do episódio: ${url}`)
+    }
+  }
+
+  const handleShareWhatsApp = (e: React.MouseEvent, ep: EdvancedCastEpisode) => {
+    e.stopPropagation()
+    const url = getEpisodeShareUrl(ep)
+    const epNumberStr = ep.episode_number ? ` #${ep.episode_number}` : ''
+    const text = encodeURIComponent(
+      `🎙️ Assista ao EdvancedCast${epNumberStr}: "${ep.title}" no Edvanced Business Club!\n\nConfira o episódio completo:\n${url}`,
+    )
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank', 'noopener,noreferrer')
+  }
+
   const getMeetingStatus = (meeting: Meeting) => {
     const now = new Date()
     const startStr = meeting.start_date || meeting.date
@@ -253,6 +300,28 @@ export default function PublicPortal() {
     }
   }
 
+  // Unique months available in meetings
+  const availableMonths = useMemo(() => {
+    const monthMap = new Map<string, { key: string; label: string; date: Date }>()
+    meetings.forEach((m) => {
+      const dateStr = m.start_date || m.date
+      if (!dateStr) return
+      try {
+        const d = new Date(dateStr)
+        if (isNaN(d.getTime())) return
+        const key = format(d, 'yyyy-MM')
+        if (!monthMap.has(key)) {
+          const rawLabel = format(d, 'MMMM yyyy', { locale: ptBR })
+          const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+          monthMap.set(key, { key, label, date: d })
+        }
+      } catch {
+        /* intentionally ignored */
+      }
+    })
+    return Array.from(monthMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime())
+  }, [meetings])
+
   // Filtered official Club meetings (strictly meetings, NEVER disclosures)
   const filteredEvents = useMemo(() => {
     return meetings.filter((m) => {
@@ -270,9 +339,21 @@ export default function PublicPortal() {
       if (eventFormat !== 'todos' && m.type !== eventFormat) return false
       if (eventPricing !== 'todos' && m.pricing !== eventPricing) return false
 
+      if (eventMonth !== 'todos') {
+        const dateStr = m.start_date || m.date
+        if (!dateStr) return false
+        try {
+          const d = new Date(dateStr)
+          const mKey = format(d, 'yyyy-MM')
+          if (mKey !== eventMonth) return false
+        } catch {
+          return false
+        }
+      }
+
       return true
     })
-  }, [meetings, eventSearch, eventFormat, eventPricing])
+  }, [meetings, eventSearch, eventFormat, eventPricing, eventMonth])
 
   // Filtered EdvancedCast episodes
   const filteredEpisodes = useMemo(() => {
@@ -294,6 +375,8 @@ export default function PublicPortal() {
     setCastDesc('')
     setCastVideoUrl('')
     setCastThumbnailUrl('')
+    setCastCoverFile(null)
+    setCastCoverPreview('')
     setCastDuration('')
     setCastEpNumber(episodes.length + 1)
     setCastPublishedAt(new Date().toISOString().split('T')[0])
@@ -306,10 +389,21 @@ export default function PublicPortal() {
     setCastDesc(ep.description || '')
     setCastVideoUrl(ep.video_url || '')
     setCastThumbnailUrl(ep.thumbnail_url || '')
+    setCastCoverFile(null)
+    setCastCoverPreview(ep.cover_image ? getFileUrl('edvanced_cast', ep.id, ep.cover_image) : '')
     setCastDuration(ep.duration || '')
     setCastEpNumber(ep.episode_number ?? '')
     setCastPublishedAt(ep.published_at ? ep.published_at.split('T')[0] : '')
     setShowPodcastModal(true)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setCastCoverFile(file)
+      const previewUrl = URL.createObjectURL(file)
+      setCastCoverPreview(previewUrl)
+    }
   }
 
   const handleSaveEpisode = async (e: React.FormEvent) => {
@@ -321,22 +415,51 @@ export default function PublicPortal() {
 
     setIsSavingEpisode(true)
     try {
-      const data: Partial<EdvancedCastEpisode> = {
-        title: castTitle.trim(),
-        description: castDesc.trim(),
-        video_url: castVideoUrl.trim(),
-        thumbnail_url: castThumbnailUrl.trim() || undefined,
-        duration: castDuration.trim() || undefined,
-        episode_number: typeof castEpNumber === 'number' ? castEpNumber : undefined,
-        published_at: castPublishedAt ? new Date(castPublishedAt).toISOString() : undefined,
-      }
+      if (castCoverFile) {
+        // Use FormData for file upload
+        const formData = new FormData()
+        formData.append('title', castTitle.trim())
+        formData.append('description', castDesc.trim())
+        formData.append('video_url', castVideoUrl.trim())
+        if (castThumbnailUrl.trim()) {
+          formData.append('thumbnail_url', castThumbnailUrl.trim())
+        }
+        if (castDuration.trim()) {
+          formData.append('duration', castDuration.trim())
+        }
+        if (typeof castEpNumber === 'number') {
+          formData.append('episode_number', String(castEpNumber))
+        }
+        if (castPublishedAt) {
+          formData.append('published_at', new Date(castPublishedAt).toISOString())
+        }
+        formData.append('cover_image', castCoverFile)
 
-      if (editingEpisode) {
-        await updateEdvancedCastEpisode(editingEpisode.id, data)
-        toast.success('Episódio do EdvancedCast atualizado com sucesso!')
+        if (editingEpisode) {
+          await updateEdvancedCastEpisode(editingEpisode.id, formData)
+          toast.success('Episódio do EdvancedCast atualizado com sucesso!')
+        } else {
+          await createEdvancedCastEpisode(formData)
+          toast.success('Novo episódio publicado com sucesso no EdvancedCast!')
+        }
       } else {
-        await createEdvancedCastEpisode(data)
-        toast.success('Novo episódio publicado com sucesso no EdvancedCast!')
+        const data: Partial<EdvancedCastEpisode> = {
+          title: castTitle.trim(),
+          description: castDesc.trim(),
+          video_url: castVideoUrl.trim(),
+          thumbnail_url: castThumbnailUrl.trim() || undefined,
+          duration: castDuration.trim() || undefined,
+          episode_number: typeof castEpNumber === 'number' ? castEpNumber : undefined,
+          published_at: castPublishedAt ? new Date(castPublishedAt).toISOString() : undefined,
+        }
+
+        if (editingEpisode) {
+          await updateEdvancedCastEpisode(editingEpisode.id, data)
+          toast.success('Episódio do EdvancedCast atualizado com sucesso!')
+        } else {
+          await createEdvancedCastEpisode(data)
+          toast.success('Novo episódio publicado com sucesso no EdvancedCast!')
+        }
       }
 
       setShowPodcastModal(false)
@@ -557,7 +680,7 @@ export default function PublicPortal() {
               </div>
 
               {/* Filters row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
                 {/* Search */}
                 <div className="relative">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -565,7 +688,7 @@ export default function PublicPortal() {
                     placeholder="Buscar evento por título, cidade, tema..."
                     value={eventSearch}
                     onChange={(e) => setEventSearch(e.target.value)}
-                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200"
+                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200 focus:border-[#D4AF37]"
                   />
                 </div>
 
@@ -574,12 +697,12 @@ export default function PublicPortal() {
                   <select
                     value={eventFormat}
                     onChange={(e) => setEventFormat(e.target.value as any)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todos os Formatos</option>
-                    <option value="presencial">Apenas Presencial</option>
-                    <option value="online">Apenas Online</option>
-                    <option value="hibrido">Apenas Híbrido</option>
+                    <option value="presencial">📍 Apenas Presencial</option>
+                    <option value="online">🌐 Apenas Online</option>
+                    <option value="hibrido">⚡ Apenas Híbrido</option>
                   </select>
                 </div>
 
@@ -588,14 +711,104 @@ export default function PublicPortal() {
                   <select
                     value={eventPricing}
                     onChange={(e) => setEventPricing(e.target.value as any)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todas as Inscrições</option>
-                    <option value="gratuito">Apenas Gratuitos / Inclusos</option>
-                    <option value="pago">Apenas Pagos / Ingressos</option>
+                    <option value="gratuito">🎟️ Apenas Gratuitos / Inclusos</option>
+                    <option value="pago">💳 Apenas Pagos / Ingressos</option>
+                  </select>
+                </div>
+
+                {/* Mês */}
+                <div>
+                  <select
+                    value={eventMonth}
+                    onChange={(e) => setEventMonth(e.target.value)}
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                  >
+                    <option value="todos">Todos os Meses</option>
+                    {availableMonths.map((m) => (
+                      <option key={m.key} value={m.key}>
+                        📅 {m.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
+
+              {/* Active filters pill list / reset */}
+              {(eventSearch ||
+                eventFormat !== 'todos' ||
+                eventPricing !== 'todos' ||
+                eventMonth !== 'todos') && (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-[11px] font-bold text-slate-400">Filtros ativos:</span>
+                  {eventSearch && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-slate-100 text-slate-700 gap-1 pr-1"
+                    >
+                      Busca: "{eventSearch}"
+                      <button onClick={() => setEventSearch('')} className="hover:text-rose-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {eventFormat !== 'todos' && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-[#D4AF37]/15 text-[#8C6D07] border border-[#D4AF37]/30 gap-1 pr-1"
+                    >
+                      Formato: {eventFormat}
+                      <button
+                        onClick={() => setEventFormat('todos')}
+                        className="hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {eventPricing !== 'todos' && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-[#06242E]/10 text-[#06242E] border border-[#06242E]/20 gap-1 pr-1"
+                    >
+                      Cobrança: {eventPricing}
+                      <button
+                        onClick={() => setEventPricing('todos')}
+                        className="hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {eventMonth !== 'todos' && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-[#D4AF37]/20 text-[#8C6D07] border border-[#D4AF37]/40 gap-1 pr-1"
+                    >
+                      Mês: {availableMonths.find((m) => m.key === eventMonth)?.label || eventMonth}
+                      <button
+                        onClick={() => setEventMonth('todos')}
+                        className="hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  <button
+                    onClick={() => {
+                      setEventSearch('')
+                      setEventFormat('todos')
+                      setEventPricing('todos')
+                      setEventMonth('todos')
+                    }}
+                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold ml-2 flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Limpar filtros
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Events Grid */}
@@ -810,6 +1023,7 @@ export default function PublicPortal() {
                     {(() => {
                       const featuredEp = activeVideoEpisode || filteredEpisodes[0]
                       const embedUrl = getVideoEmbedUrl(featuredEp.video_url)
+                      const cover = getEpisodeCoverUrl(featuredEp)
 
                       if (embedUrl) {
                         if (isDirectVideoFile(featuredEp.video_url)) {
@@ -818,10 +1032,7 @@ export default function PublicPortal() {
                               controls
                               className="w-full h-full object-cover"
                               src={featuredEp.video_url}
-                              poster={
-                                featuredEp.thumbnail_url ||
-                                'https://img.usecurling.com/p/800/450?q=business%20podcast%20studio&color=teal'
-                              }
+                              poster={cover || undefined}
                             />
                           )
                         }
@@ -838,14 +1049,29 @@ export default function PublicPortal() {
                       }
 
                       return (
-                        <div className="p-8 text-center space-y-3">
-                          <Tv className="w-12 h-12 text-[#D4AF37] mx-auto animate-pulse" />
-                          <p className="text-sm font-bold">Assistir ao Episódio</p>
-                          <a href={featuredEp.video_url} target="_blank" rel="noopener noreferrer">
-                            <Button className="bg-[#D4AF37] text-slate-950 font-bold text-xs">
-                              Abrir Player Externo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                            </Button>
-                          </a>
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          {cover ? (
+                            <img
+                              src={cover}
+                              alt={featuredEp.title}
+                              className="absolute inset-0 w-full h-full object-cover filter brightness-50"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B]" />
+                          )}
+                          <div className="relative z-10 p-8 text-center space-y-3">
+                            <Tv className="w-12 h-12 text-[#D4AF37] mx-auto animate-pulse" />
+                            <p className="text-sm font-bold text-white">Assistir ao Episódio</p>
+                            <a
+                              href={featuredEp.video_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs">
+                                Abrir Player Externo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                              </Button>
+                            </a>
+                          </div>
                         </div>
                       )
                     })()}
@@ -896,18 +1122,21 @@ export default function PublicPortal() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                if (navigator.clipboard) {
-                                  navigator.clipboard.writeText(window.location.href)
-                                  toast.success(
-                                    'Link do portal copiado para a área de transferência!',
-                                  )
-                                }
-                              }}
-                              className="border-teal-800 text-teal-100 hover:bg-teal-900 text-xs"
+                              onClick={(e) => handleCopyEpisodeLink(e, featuredEp)}
+                              className="border-teal-800 text-teal-100 hover:bg-teal-900 text-xs rounded-xl"
                             >
-                              <Share2 className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" />
-                              Compartilhar
+                              <Copy className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" />
+                              Copiar Link
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => handleShareWhatsApp(e, featuredEp)}
+                              className="border-emerald-800/80 bg-emerald-950/40 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                              WhatsApp
                             </Button>
                           </div>
 
@@ -950,9 +1179,7 @@ export default function PublicPortal() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredEpisodes.map((ep) => {
                     const isSelected = activeVideoEpisode?.id === ep.id
-                    const thumb =
-                      ep.thumbnail_url ||
-                      'https://img.usecurling.com/p/600/380?q=business%20podcast%20studio&color=teal'
+                    const cover = getEpisodeCoverUrl(ep)
 
                     return (
                       <Card
@@ -968,24 +1195,62 @@ export default function PublicPortal() {
                         }`}
                       >
                         <div>
-                          {/* Thumbnail */}
+                          {/* Thumbnail / Capa Customizada */}
                           <div className="relative aspect-[16/9] w-full bg-[#06242E] overflow-hidden">
-                            <img
-                              src={thumb}
-                              alt={ep.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+                            {cover ? (
+                              <img
+                                src={cover}
+                                alt={ep.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                              />
+                            ) : (
+                              /* Fallback Premium Gradiente Dourado + Azul Petróleo */
+                              <div className="w-full h-full bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                                <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-[#D4AF37]/15 blur-xl pointer-events-none" />
+                                <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center mb-2 shadow-inner">
+                                  <Mic className="w-5 h-5 text-[#F5D77F]" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F5D77F]">
+                                  EdvancedCast
+                                </span>
+                                <span className="text-xs font-bold text-teal-100 mt-1 line-clamp-1 px-4">
+                                  {ep.title}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
 
                             {/* Ep number */}
                             <div className="absolute top-3 left-3">
-                              <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider">
+                              <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
                                 Ep. {ep.episode_number ? `#${ep.episode_number}` : 'Extra'}
                               </Badge>
                             </div>
 
+                            {/* Quick Share Buttons on Card */}
+                            <div
+                              className="absolute top-3 right-3 flex items-center gap-1.5 opacity-90 hover:opacity-100"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                title="Copiar link do episódio"
+                                onClick={(e) => handleCopyEpisodeLink(e, ep)}
+                                className="w-7 h-7 rounded-full bg-black/60 hover:bg-[#D4AF37] text-white hover:text-slate-950 border border-white/20 hover:border-[#D4AF37] flex items-center justify-center backdrop-blur-sm transition-all"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                title="Compartilhar no WhatsApp"
+                                onClick={(e) => handleShareWhatsApp(e, ep)}
+                                className="w-7 h-7 rounded-full bg-black/60 hover:bg-emerald-600 text-white border border-white/20 hover:border-emerald-500 flex items-center justify-center backdrop-blur-sm transition-all"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
                             {/* Play overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                               <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
                                 <Play className="w-5 h-5 fill-current ml-0.5" />
                               </div>
@@ -1021,10 +1286,24 @@ export default function PublicPortal() {
 
                         {/* Footer */}
                         <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
-                          <span className="text-xs font-bold text-[#8C6D07] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            Assistir agora
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-[#8C6D07] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                              <Play className="w-3.5 h-3.5 fill-current" />
+                              Assistir
+                            </span>
+
+                            <span className="text-slate-300">&bull;</span>
+
+                            <button
+                              type="button"
+                              onClick={(e) => handleShareWhatsApp(e, ep)}
+                              className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+                              title="Compartilhar no WhatsApp"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                              WhatsApp
+                            </button>
+                          </div>
 
                           {isAdmin && (
                             <div
@@ -1303,29 +1582,114 @@ export default function PublicPortal() {
                 </p>
               </div>
 
-              {/* Thumbnail URL e Duração */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-teal-300 font-semibold">
-                    Thumbnail / Imagem de Capa (URL)
-                  </Label>
-                  <Input
-                    placeholder="https://img.usecurling.com/... (opcional)"
-                    value={castThumbnailUrl}
-                    onChange={(e) => setCastThumbnailUrl(e.target.value)}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
-                  />
+              {/* Upload de Capa / Thumbnail Própria */}
+              <div className="p-4 rounded-2xl bg-[#03151B] border border-teal-900 space-y-3">
+                <Label className="text-[#F5D77F] font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
+                    Capa / Thumbnail Própria do Episódio
+                  </span>
+                  <span className="text-[10px] text-teal-300/70">JPG, PNG ou WebP</span>
+                </Label>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {/* Preview Box */}
+                  <div className="w-full sm:w-36 h-24 rounded-xl border border-teal-800 bg-[#06242E] overflow-hidden flex items-center justify-center flex-shrink-0 relative group">
+                    {castCoverPreview ? (
+                      <img
+                        src={castCoverPreview}
+                        alt="Preview da capa"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : castThumbnailUrl ? (
+                      <img
+                        src={castThumbnailUrl}
+                        alt="Preview da URL"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      /* Fallback Preview Premium */
+                      <div className="w-full h-full bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B] flex flex-col items-center justify-center p-2 text-center">
+                        <Mic className="w-5 h-5 text-[#D4AF37] mb-1" />
+                        <span className="text-[9px] font-bold text-[#F5D77F]">Capa Padrão</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload action buttons */}
+                  <div className="w-full space-y-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                    />
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="bg-teal-950 hover:bg-teal-900 text-teal-100 border border-teal-800 text-xs py-1.5 px-3 rounded-xl flex items-center gap-1.5"
+                      >
+                        <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>Selecionar Arquivo</span>
+                      </Button>
+
+                      {castCoverFile && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            setCastCoverFile(null)
+                            setCastCoverPreview(
+                              editingEpisode?.cover_image
+                                ? getFileUrl(
+                                    'edvanced_cast',
+                                    editingEpisode.id,
+                                    editingEpisode.cover_image,
+                                  )
+                                : '',
+                            )
+                            if (fileInputRef.current) fileInputRef.current.value = ''
+                          }}
+                          className="text-xs text-rose-400 hover:text-rose-300 py-1.5 px-2"
+                        >
+                          <X className="w-3.5 h-3.5 mr-1" /> Remover
+                        </Button>
+                      )}
+                    </div>
+
+                    <p className="text-[10px] text-teal-300/60">
+                      Envie uma imagem em alta resolução (16:9). Se nenhuma imagem for enviada, será
+                      utilizado o padrão visual premium dourado do Club.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-1">
-                  <Label className="text-teal-300 font-semibold">Duração Estimada</Label>
+                {/* Ou URL Externa */}
+                <div className="pt-2 border-t border-teal-950 space-y-1">
+                  <Label className="text-[11px] text-teal-300/80">
+                    Ou informe uma URL de imagem externa:
+                  </Label>
                   <Input
-                    placeholder="Ex: 45 min ou 01h 15m"
-                    value={castDuration}
-                    onChange={(e) => setCastDuration(e.target.value)}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                    placeholder="https://... (opcional)"
+                    value={castThumbnailUrl}
+                    onChange={(e) => setCastThumbnailUrl(e.target.value)}
+                    className="text-xs bg-[#06242E] border-teal-900 text-white rounded-xl h-8"
                   />
                 </div>
+              </div>
+
+              {/* Duração Estimada */}
+              <div className="space-y-1">
+                <Label className="text-teal-300 font-semibold">Duração Estimada</Label>
+                <Input
+                  placeholder="Ex: 45 min ou 01h 15m"
+                  value={castDuration}
+                  onChange={(e) => setCastDuration(e.target.value)}
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                />
               </div>
 
               {/* Número do Episódio e Data de Publicação */}
