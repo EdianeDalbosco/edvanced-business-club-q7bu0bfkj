@@ -150,6 +150,8 @@ export default function MeetingsAndMaterials() {
   const [meetingPricing, setMeetingPricing] = useState<'gratuito' | 'pago'>('gratuito')
   const [meetingSpeakers, setMeetingSpeakers] = useState('')
   const [meetingDesc, setMeetingDesc] = useState('')
+  const [meetingCoverFile, setMeetingCoverFile] = useState<File | null>(null)
+  const [meetingCoverPreview, setMeetingCoverPreview] = useState<string>('')
 
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false)
   const [newMatTitle, setNewMatTitle] = useState('')
@@ -312,24 +314,12 @@ export default function MeetingsAndMaterials() {
   // Cover image resolver
   const getMeetingHeroCover = (meeting?: Meeting | null) => {
     if (!meeting) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20boardroom%20conference&color=teal'
+      return ''
     }
     if (meeting.cover_image) {
       return getFileUrl('meetings', meeting.id, meeting.cover_image)
     }
-    if (meeting.type === 'online') {
-      return 'https://img.usecurling.com/p/1600/900?q=executive%20broadcast%20studio&color=teal'
-    }
-    if (
-      meeting.location?.toLowerCase().includes('tangará') ||
-      meeting.location?.toLowerCase().includes('gala')
-    ) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20palace%20gala%20dinner&color=gold'
-    }
-    if (meeting.location?.toLowerCase().includes('fasano')) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20hotel%20executive%20summit&color=teal'
-    }
-    return 'https://img.usecurling.com/p/1600/900?q=business%20mastermind%20summit&color=teal'
+    return ''
   }
 
   // Hero Meeting prioritization (upcoming first, else latest)
@@ -358,6 +348,20 @@ export default function MeetingsAndMaterials() {
   // Categorized materials
   const photoMaterials = useMemo(
     () =>
+      materials.filter((m) => {
+        if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        return (
+          m.type === 'photo' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+        )
+      }),
+    [materials, acervoSearch, selectedMeeting],
+  )
+
+  const allPhotoMaterials = useMemo(
+    () =>
       materials.filter(
         (m) =>
           m.type === 'photo' &&
@@ -369,6 +373,20 @@ export default function MeetingsAndMaterials() {
   )
 
   const videoMaterials = useMemo(
+    () =>
+      materials.filter((m) => {
+        if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        return (
+          m.type === 'video' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+        )
+      }),
+    [materials, acervoSearch, selectedMeeting],
+  )
+
+  const allVideoMaterials = useMemo(
     () =>
       materials.filter(
         (m) =>
@@ -382,6 +400,20 @@ export default function MeetingsAndMaterials() {
 
   const docMaterials = useMemo(
     () =>
+      materials.filter((m) => {
+        if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        return (
+          m.type === 'document' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+        )
+      }),
+    [materials, acervoSearch, selectedMeeting],
+  )
+
+  const allDocMaterials = useMemo(
+    () =>
       materials.filter(
         (m) =>
           m.type === 'document' &&
@@ -391,6 +423,13 @@ export default function MeetingsAndMaterials() {
       ),
     [materials, acervoSearch],
   )
+
+  // Materials linked specifically to selected/detail meeting
+  const currentMeetingMaterials = useMemo(() => {
+    const target = detailMeeting || selectedMeeting
+    if (!target) return []
+    return materials.filter((m) => m.meeting === target.id)
+  }, [detailMeeting, selectedMeeting, materials])
 
   const filteredMeetingsList = useMemo(
     () =>
@@ -561,6 +600,21 @@ export default function MeetingsAndMaterials() {
     return eachDayOfInterval({ start, end })
   }, [currentCalendarDate])
 
+  // Handler for Calendar Event Click
+  // Rule 2: Official club meeting -> Open the meeting directly with all its materials
+  // Disclosure of member -> Open disclosure modal
+  const handleCalendarEventClick = (ev: UnifiedEvent) => {
+    if (ev.origin === 'meeting' && ev.originalMeeting) {
+      setSelectedMeeting(ev.originalMeeting)
+      setDetailMeeting(ev.originalMeeting)
+      setMainView('acervo')
+      setSearchParams({ id: ev.originalMeeting.id })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      setSelectedCalendarEvent(ev)
+    }
+  }
+
   // ==========================================
   // ADMIN MEETING / MATERIAL CREATION
   // ==========================================
@@ -581,6 +635,8 @@ export default function MeetingsAndMaterials() {
     setMeetingPricing('gratuito')
     setMeetingSpeakers('')
     setMeetingDesc('')
+    setMeetingCoverFile(null)
+    setMeetingCoverPreview('')
     setShowMeetingModal(true)
   }
 
@@ -596,6 +652,12 @@ export default function MeetingsAndMaterials() {
     setMeetingSpeakers(meeting.speakers || '')
     const cleanDesc = (meeting.description || '').replace(/^<p>/, '').replace(/<\/p>$/, '')
     setMeetingDesc(cleanDesc)
+    setMeetingCoverFile(null)
+    if (meeting.cover_image) {
+      setMeetingCoverPreview(getFileUrl('meetings', meeting.id, meeting.cover_image))
+    } else {
+      setMeetingCoverPreview('')
+    }
     setShowMeetingModal(true)
   }
 
@@ -616,25 +678,36 @@ export default function MeetingsAndMaterials() {
 
     setIsSubmitting(true)
     try {
-      const payload: Partial<Meeting> = {
-        title: meetingTitle,
-        event_name: meetingEventName.trim() || undefined,
-        date: startIso,
-        start_date: startIso,
-        end_date: endIso || undefined,
-        location: meetingLocation,
-        type: meetingType,
-        pricing: meetingPricing,
-        speakers: meetingSpeakers,
-        description: meetingDesc ? `<p>${meetingDesc}</p>` : '',
+      const formData = new FormData()
+      formData.append('title', meetingTitle)
+      if (meetingEventName.trim()) {
+        formData.append('event_name', meetingEventName.trim())
+      } else {
+        formData.append('event_name', '')
+      }
+      formData.append('date', startIso)
+      formData.append('start_date', startIso)
+      if (endIso) {
+        formData.append('end_date', endIso)
+      } else {
+        formData.append('end_date', '')
+      }
+      formData.append('location', meetingLocation)
+      formData.append('type', meetingType)
+      formData.append('pricing', meetingPricing)
+      formData.append('speakers', meetingSpeakers || '')
+      formData.append('description', meetingDesc ? `<p>${meetingDesc}</p>` : '')
+
+      if (meetingCoverFile) {
+        formData.append('cover_image', meetingCoverFile)
       }
 
       let saved: Meeting
       if (editingMeeting) {
-        saved = await updateMeeting(editingMeeting.id, payload)
+        saved = await updateMeeting(editingMeeting.id, formData)
         toast.success('Encontro atualizado com sucesso!')
       } else {
-        saved = await createMeeting(payload)
+        saved = await createMeeting(formData)
         toast.success('Encontro criado com sucesso!')
       }
 
@@ -703,16 +776,32 @@ export default function MeetingsAndMaterials() {
           1. NETFLIX-STYLE HERO BANNER (Capa em Destaque no Topo)
          ========================================================================= */}
       <div className="relative rounded-3xl overflow-hidden bg-[#03151B] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
-        {/* Background Cover Image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={getMeetingHeroCover(heroMeeting)}
-            alt={heroMeeting?.title || 'Edvanced Business Club'}
-            className="w-full h-full object-cover object-center transform scale-105 filter brightness-75 contrast-110"
-          />
+        {/* Background Cover Image with Premium Fallback */}
+        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#06242E] via-[#03151B] to-[#0A3340]">
+          {getMeetingHeroCover(heroMeeting) ? (
+            <img
+              src={getMeetingHeroCover(heroMeeting)}
+              alt={heroMeeting?.title || 'Edvanced Business Club'}
+              className="w-full h-full object-cover object-center transform scale-105 filter brightness-75 contrast-110 transition-all duration-700"
+            />
+          ) : (
+            <div className="w-full h-full relative flex items-center justify-center">
+              {/* Elegant abstract geometric gold & navy background */}
+              <div className="absolute inset-0 bg-radial-gradient opacity-80" />
+              <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#D4AF37]/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px]" />
+              <div className="flex flex-col items-center justify-center text-center p-8 opacity-40">
+                <Sparkles className="w-20 h-20 text-[#D4AF37] mb-2" />
+                <span className="text-xl font-extrabold uppercase tracking-[0.3em] text-[#F5D77F]">
+                  Edvanced Business Club
+                </span>
+              </div>
+            </div>
+          )}
           {/* Multi-layer Netflix-style vignette */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-[#06242E]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/80 to-transparent w-full md:w-3/4" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/85 to-transparent w-full md:w-3/4" />
           {/* Golden Ambient Glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
         </div>
@@ -969,13 +1058,23 @@ export default function MeetingsAndMaterials() {
                           : 'border-teal-950 hover:border-[#D4AF37] shadow-lg'
                       }`}
                     >
-                      {/* Thumbnail Cover */}
+                      {/* Thumbnail Cover with Fallback */}
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
-                        <img
-                          src={getMeetingHeroCover(m)}
-                          alt={m.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                        />
+                        {getMeetingHeroCover(m) ? (
+                          <img
+                            src={getMeetingHeroCover(m)}
+                            alt={m.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#0A3340] via-[#06242E] to-[#03151B] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
+                            <Sparkles className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F] line-clamp-1">
+                              {m.event_name || 'Business Club'}
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
 
                         {/* Badges Top */}
@@ -1076,27 +1175,64 @@ export default function MeetingsAndMaterials() {
             </NetflixShelf>
           )}
 
+          {/* Info banner if filtered by selected meeting */}
+          {selectedMeeting && (
+            <div className="p-3.5 rounded-2xl bg-[#06242E] border border-[#D4AF37]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-teal-300">
+                    Visualizando materiais vinculados ao encontro:
+                  </span>
+                  <h4 className="font-extrabold text-xs text-white">{selectedMeeting.title}</h4>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedMeeting(null)
+                  setSearchParams({})
+                }}
+                className="text-xs text-[#F5D77F] hover:text-white hover:bg-white/10 h-8 self-end sm:self-auto"
+              >
+                Mostrar todos os materiais do Club &rarr;
+              </Button>
+            </div>
+          )}
+
           {/* CATEGORIA 2: PRATELEIRA DE FOTOS (Galeria de Imagens) */}
           {(acervoCategory === 'todos' || acervoCategory === 'photos') && (
             <NetflixShelf
-              title="Coberturas Fotográficas Oficiais (Fotos)"
-              subtitle="Álbuns em alta resolução dos jantares, imersões e solenidades"
+              title={
+                selectedMeeting
+                  ? `Fotos deste Encontro (${selectedMeeting.title})`
+                  : 'Coberturas Fotográficas Oficiais (Fotos)'
+              }
+              subtitle={
+                selectedMeeting
+                  ? 'Álbuns fotográficos em alta resolução deste dia'
+                  : 'Álbuns em alta resolução dos jantares, imersões e solenidades'
+              }
               icon={ImageIcon}
-              badge={`${photoMaterials.length} álbuns`}
+              badge={`${(selectedMeeting ? photoMaterials : allPhotoMaterials).length} fotos/álbuns`}
               action={
                 isAdmin
                   ? {
                       label: '+ Anexar Foto',
                       onClick: () => {
                         setNewMatType('photo')
+                        setNewMatMeetingId(selectedMeeting?.id || '')
                         setShowAddMaterialModal(true)
                       },
                     }
                   : undefined
               }
             >
-              {photoMaterials.length > 0 ? (
-                photoMaterials.map((item) => (
+              {(selectedMeeting ? photoMaterials : allPhotoMaterials).length > 0 ? (
+                (selectedMeeting ? photoMaterials : allPhotoMaterials).map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
@@ -1160,24 +1296,33 @@ export default function MeetingsAndMaterials() {
           {/* CATEGORIA 3: PRATELEIRA DE VÍDEOS (Gravações & Palestras) */}
           {(acervoCategory === 'todos' || acervoCategory === 'videos') && (
             <NetflixShelf
-              title="Gravações & Streaming VIP (Vídeos)"
-              subtitle="Palestras na íntegra, keynotes e gravações completas dos encontros"
+              title={
+                selectedMeeting
+                  ? `Vídeos deste Encontro (${selectedMeeting.title})`
+                  : 'Gravações & Streaming VIP (Vídeos)'
+              }
+              subtitle={
+                selectedMeeting
+                  ? 'Keynotes e sessões transmitidas deste encontro'
+                  : 'Palestras na íntegra, keynotes e gravações completas dos encontros'
+              }
               icon={Video}
-              badge={`${videoMaterials.length} vídeos`}
+              badge={`${(selectedMeeting ? videoMaterials : allVideoMaterials).length} vídeos`}
               action={
                 isAdmin
                   ? {
                       label: '+ Anexar Vídeo',
                       onClick: () => {
                         setNewMatType('video')
+                        setNewMatMeetingId(selectedMeeting?.id || '')
                         setShowAddMaterialModal(true)
                       },
                     }
                   : undefined
               }
             >
-              {videoMaterials.length > 0 ? (
-                videoMaterials.map((item) => (
+              {(selectedMeeting ? videoMaterials : allVideoMaterials).length > 0 ? (
+                (selectedMeeting ? videoMaterials : allVideoMaterials).map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
@@ -1240,24 +1385,33 @@ export default function MeetingsAndMaterials() {
           {/* CATEGORIA 4: PRATELEIRA DE DOCUMENTOS & PDFS */}
           {(acervoCategory === 'todos' || acervoCategory === 'documents') && (
             <NetflixShelf
-              title="Apresentações & PDFs Executivos (Documentos)"
-              subtitle="Slides apresentados pelos palestrantes, atas executivas e relatórios estratégicos"
+              title={
+                selectedMeeting
+                  ? `Documentos & PDFs deste Encontro`
+                  : 'Apresentações & PDFs Executivos (Documentos)'
+              }
+              subtitle={
+                selectedMeeting
+                  ? 'Apresentações e relatórios vinculados a este dia'
+                  : 'Slides apresentados pelos palestrantes, atas executivas e relatórios estratégicos'
+              }
               icon={FileText}
-              badge={`${docMaterials.length} arquivos`}
+              badge={`${(selectedMeeting ? docMaterials : allDocMaterials).length} arquivos`}
               action={
                 isAdmin
                   ? {
                       label: '+ Anexar Documento',
                       onClick: () => {
                         setNewMatType('document')
+                        setNewMatMeetingId(selectedMeeting?.id || '')
                         setShowAddMaterialModal(true)
                       },
                     }
                   : undefined
               }
             >
-              {docMaterials.length > 0 ? (
-                docMaterials.map((item) => (
+              {(selectedMeeting ? docMaterials : allDocMaterials).length > 0 ? (
+                (selectedMeeting ? docMaterials : allDocMaterials).map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setPreviewMedia(item)}
@@ -1590,13 +1744,13 @@ export default function MeetingsAndMaterials() {
                           return (
                             <div
                               key={ev.id}
-                              onClick={() => setSelectedCalendarEvent(ev)}
+                              onClick={() => handleCalendarEventClick(ev)}
                               className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border ${
                                 isOfficial
-                                  ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-xs'
-                                  : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400'
+                                  ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] hover:bg-[#06242E] shadow-xs'
+                                  : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400 hover:bg-teal-900'
                               }`}
-                              title={`${ev.title} (${ev.format} - ${ev.pricing})`}
+                              title={`${ev.title} (${ev.format} - ${ev.pricing}) - Clique para ver`}
                             >
                               <div className="flex items-center gap-1 truncate">
                                 <span
@@ -1666,11 +1820,11 @@ export default function MeetingsAndMaterials() {
                             return (
                               <div
                                 key={ev.id}
-                                onClick={() => setSelectedCalendarEvent(ev)}
+                                onClick={() => handleCalendarEventClick(ev)}
                                 className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-105 ${
                                   isOfficial
-                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/50 shadow-md'
-                                    : 'bg-teal-950 text-teal-100 border-teal-700/60'
+                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-md'
+                                    : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400'
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1 mb-1">
@@ -1759,11 +1913,11 @@ export default function MeetingsAndMaterials() {
                       return (
                         <div
                           key={ev.id}
-                          onClick={() => setSelectedCalendarEvent(ev)}
+                          onClick={() => handleCalendarEventClick(ev)}
                           className={`p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.01] flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                             isOfficial
-                              ? 'bg-[#03151B] text-white border-[#D4AF37]/50 shadow-xl'
-                              : 'bg-teal-950/70 text-teal-100 border-teal-700/60'
+                              ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-xl'
+                              : 'bg-teal-950/70 text-teal-100 border-teal-700/60 hover:border-teal-400'
                           }`}
                         >
                           <div className="space-y-2 min-w-0 flex-1">
@@ -1820,7 +1974,7 @@ export default function MeetingsAndMaterials() {
 
                           <div className="flex items-center gap-2">
                             <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs">
-                              Ver Detalhes &rarr;
+                              {isOfficial ? 'Acessar Encontro & Materiais →' : 'Ver Detalhes →'}
                             </Button>
                           </div>
                         </div>
@@ -2003,6 +2157,69 @@ export default function MeetingsAndMaterials() {
                   <div dangerouslySetInnerHTML={{ __html: detailMeeting.description }} />
                 </div>
               )}
+
+              {/* Materiais vinculados a este Encontro */}
+              <div className="space-y-2 pt-2 border-t border-teal-950">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Materiais & Mídias deste Encontro ({currentMeetingMaterials.length})
+                  </h4>
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setNewMatMeetingId(detailMeeting.id)
+                        setShowAddMaterialModal(true)
+                      }}
+                      className="h-6 text-[10px] bg-teal-900/80 hover:bg-teal-800 text-teal-200"
+                    >
+                      + Anexar Material
+                    </Button>
+                  )}
+                </div>
+
+                {currentMeetingMaterials.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    {currentMeetingMaterials.map((mat) => (
+                      <div
+                        key={mat.id}
+                        onClick={() => setPreviewMedia(mat)}
+                        className="p-2.5 rounded-xl bg-[#03151B] border border-teal-900/80 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {mat.type === 'photo' ? (
+                            <ImageIcon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+                          ) : mat.type === 'video' ? (
+                            <Video className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-bold text-xs text-white truncate group-hover:text-[#F5D77F]">
+                              {mat.title}
+                            </p>
+                            <span className="text-[10px] text-teal-300/70 uppercase">
+                              {mat.type === 'photo'
+                                ? 'Foto HD'
+                                : mat.type === 'video'
+                                  ? 'Gravação'
+                                  : 'PDF/Doc'}
+                            </span>
+                          </div>
+                        </div>
+                        <Eye className="w-3.5 h-3.5 text-[#D4AF37] opacity-60 group-hover:opacity-100 flex-shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 bg-[#03151B]/40 rounded-xl border border-teal-950 text-center">
+                    <p className="text-[11px] text-teal-200/60">
+                      Nenhum material anexado especificamente a este encontro ainda.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
@@ -2242,6 +2459,65 @@ export default function MeetingsAndMaterials() {
                     <option value="pago">Pago (Inscrição Extra)</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Upload da Imagem de Capa do Encontro */}
+              <div className="space-y-2 p-3 bg-[#03151B]/70 rounded-2xl border border-teal-900/60">
+                <Label className="text-teal-300 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
+                    Imagem de Capa do Encontro (Estilo Netflix / Formato 16:9)
+                  </span>
+                  {meetingCoverPreview && (
+                    <span className="text-[10px] text-[#F5D77F] font-semibold">
+                      Capa selecionada
+                    </span>
+                  )}
+                </Label>
+
+                {meetingCoverPreview && (
+                  <div className="relative aspect-[16/9] w-full max-h-40 rounded-xl overflow-hidden border border-[#D4AF37]/40 bg-black/40 group">
+                    <img
+                      src={meetingCoverPreview}
+                      alt="Preview da Capa"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setMeetingCoverFile(null)
+                          setMeetingCoverPreview('')
+                        }}
+                        className="text-[11px] h-7 px-3 bg-rose-600 hover:bg-rose-700"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover Imagem
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setMeetingCoverFile(file)
+                        const previewUrl = URL.createObjectURL(file)
+                        setMeetingCoverPreview(previewUrl)
+                      }
+                    }}
+                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#D4AF37] file:text-slate-950 hover:file:bg-[#F5D77F] file:cursor-pointer"
+                  />
+                </div>
+                <p className="text-[10px] text-teal-200/60">
+                  Formatos aceitos: JPG, PNG, WEBP. Tamanho máx.: 10MB. Se não enviada, será
+                  utilizado um gradiente premium padrão.
+                </p>
               </div>
 
               <div className="space-y-1">

@@ -13,6 +13,7 @@ interface AuthContextType {
     password?: string
     name: string
     role?: 'admin' | 'member'
+    status?: 'active' | 'suspended'
     company?: string
     phone?: string
     bio?: string
@@ -35,8 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (pb.authStore.isValid && pb.authStore.record) {
         const refreshed = await pb.collection('users').authRefresh<User>()
-        setUser(refreshed.record)
-        setToken(refreshed.token)
+        if (refreshed.record.status === 'suspended') {
+          pb.authStore.clear()
+          setUser(null)
+          setToken(null)
+        } else {
+          setUser(refreshed.record)
+          setToken(refreshed.token)
+        }
       } else {
         setUser(null)
         setToken(null)
@@ -65,6 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, pass: string) => {
     const authData = await pb.collection('users').authWithPassword<User>(email, pass)
+    if (authData.record.status === 'suspended') {
+      pb.authStore.clear()
+      setUser(null)
+      setToken(null)
+      throw new Error('Sua conta está suspensa. Entre em contato com a administração do Club.')
+    }
     setUser(authData.record)
     setToken(authData.token)
   }
@@ -74,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password?: string
     name: string
     role?: 'admin' | 'member'
+    status?: 'active' | 'suspended'
     company?: string
     phone?: string
     bio?: string
@@ -90,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       bio: data.bio || '',
       instagram: data.instagram || '',
       role: data.role || 'member',
+      status: data.status || 'active',
       verified: true,
     })
     return newRecord

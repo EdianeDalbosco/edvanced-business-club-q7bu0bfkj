@@ -29,6 +29,21 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
+  if (user.status === 'suspended') {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6 bg-white rounded-3xl border border-rose-200 shadow-md max-w-lg mx-auto my-12">
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mb-4">
+          <Crown className="w-8 h-8 text-rose-500" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-1">Acesso Suspenso</h2>
+        <p className="text-xs text-slate-500 max-w-sm mb-6 leading-relaxed">
+          Seu acesso à plataforma Edvanced Business Club foi temporariamente suspenso pela
+          administração. Por favor, entre em contato com a diretoria do Club para regularização.
+        </p>
+      </div>
+    )
+  }
+
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">

@@ -32,7 +32,8 @@ export default function Login() {
       toast.success('Bem-vindo(a) ao Edvanced Business Club!')
       navigate(from, { replace: true })
     } catch (err: any) {
-      toast.error('Credenciais inválidas. Verifique seu e-mail e senha.')
+      const msg = err?.message || 'Credenciais inválidas. Verifique seu e-mail e senha.'
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }

@@ -123,6 +123,7 @@ export async function createMemberByAdmin(data: {
   email: string
   password?: string
   role?: 'admin' | 'member'
+  status?: 'active' | 'suspended'
   company?: string
   phone?: string
   bio?: string
@@ -135,10 +136,28 @@ export async function createMemberByAdmin(data: {
     password: defaultPassword,
     passwordConfirm: defaultPassword,
     role: data.role || 'member',
+    status: data.status || 'active',
     company: data.company || '',
     phone: data.phone || '',
     bio: data.bio || '',
     instagram: data.instagram || '',
     verified: true,
+  })
+}
+
+export async function updateUserByAdmin(
+  userId: string,
+  data: Partial<User> | FormData,
+): Promise<User> {
+  return pb.collection('users').update<User>(userId, data)
+}
+
+export async function toggleMemberSuspension(
+  userId: string,
+  currentStatus?: 'active' | 'suspended',
+): Promise<User> {
+  const nextStatus = currentStatus === 'suspended' ? 'active' : 'suspended'
+  return pb.collection('users').update<User>(userId, {
+    status: nextStatus,
   })
 }

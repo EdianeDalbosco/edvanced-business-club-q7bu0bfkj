@@ -1,11 +1,13 @@
 import type { RecordModel } from 'pocketbase'
 
 export type UserRole = 'admin' | 'member'
+export type UserStatus = 'active' | 'suspended'
 
 export interface User extends RecordModel {
   email: string
   name: string
   role?: UserRole
+  status?: UserStatus
   company?: string
   phone?: string
   bio?: string

@@ -221,24 +221,12 @@ export default function Index() {
   // Hero background image based on meeting type or curated premium photos
   const getMeetingHeroCover = (meeting?: Meeting | null) => {
     if (!meeting) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20boardroom%20conference&color=teal'
+      return ''
     }
     if (meeting.cover_image) {
       return getFileUrl('meetings', meeting.id, meeting.cover_image)
     }
-    if (meeting.type === 'online') {
-      return 'https://img.usecurling.com/p/1600/900?q=executive%20broadcast%20studio&color=teal'
-    }
-    if (
-      meeting.location?.toLowerCase().includes('tangará') ||
-      meeting.location?.toLowerCase().includes('gala')
-    ) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20palace%20gala%20dinner&color=gold'
-    }
-    if (meeting.location?.toLowerCase().includes('fasano')) {
-      return 'https://img.usecurling.com/p/1600/900?q=luxury%20hotel%20executive%20summit&color=teal'
-    }
-    return 'https://img.usecurling.com/p/1600/900?q=business%20mastermind%20summit&color=teal'
+    return ''
   }
 
   const getMaterialCover = (mat: Material) => {
@@ -255,17 +243,31 @@ export default function Index() {
           1. NETFLIX-STYLE HERO BANNER (Capa em Destaque)
          ========================================================================= */}
       <div className="relative rounded-3xl overflow-hidden bg-[#03151B] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
-        {/* Background Cover Image with Cinematic Gradients */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={getMeetingHeroCover(heroMeeting)}
-            alt={heroMeeting?.title || 'Edvanced Business Club'}
-            className="w-full h-full object-cover object-center transform scale-105 filter brightness-75 contrast-110"
-          />
+        {/* Background Cover Image with Cinematic Gradients & Premium Fallback */}
+        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#06242E] via-[#03151B] to-[#0A3340]">
+          {getMeetingHeroCover(heroMeeting) ? (
+            <img
+              src={getMeetingHeroCover(heroMeeting)}
+              alt={heroMeeting?.title || 'Edvanced Business Club'}
+              className="w-full h-full object-cover object-center transform scale-105 filter brightness-75 contrast-110 transition-all duration-700"
+            />
+          ) : (
+            <div className="w-full h-full relative flex items-center justify-center">
+              <div className="absolute inset-0 bg-radial-gradient opacity-80" />
+              <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#D4AF37]/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+              <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px]" />
+              <div className="flex flex-col items-center justify-center text-center p-8 opacity-40">
+                <Sparkles className="w-20 h-20 text-[#D4AF37] mb-2" />
+                <span className="text-xl font-extrabold uppercase tracking-[0.3em] text-[#F5D77F]">
+                  Edvanced Business Club
+                </span>
+              </div>
+            </div>
+          )}
           {/* Multi-layer Netflix-style vignette: Top subtle, bottom deep darkness, left dark gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-[#06242E]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/80 to-transparent w-full md:w-3/4" />
-          <div className="absolute inset-0 bg-radial-gradient pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/85 to-transparent w-full md:w-3/4" />
           {/* Golden Ambient Glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
         </div>
@@ -523,13 +525,23 @@ export default function Index() {
                 onClick={() => navigate(`/encontros?id=${meeting.id}`)}
                 className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
               >
-                {/* Card Media Preview */}
+                {/* Card Media Preview with Fallback */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
-                  <img
-                    src={getMeetingHeroCover(meeting)}
-                    alt={meeting.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                  />
+                  {getMeetingHeroCover(meeting) ? (
+                    <img
+                      src={getMeetingHeroCover(meeting)}
+                      alt={meeting.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#0A3340] via-[#06242E] to-[#03151B] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
+                      <Sparkles className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F] line-clamp-1">
+                        {meeting.event_name || 'Business Club'}
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
 
                   {/* Top Badges */}

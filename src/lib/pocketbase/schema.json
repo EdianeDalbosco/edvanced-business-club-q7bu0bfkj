@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T20:21:35.147Z",
+  "generatedAt": "2026-08-28T20:32:02.110Z",
   "collections": [
     {
       "name": "users",
@@ -8,7 +8,7 @@
         "list": "@request.auth.id != ''",
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.email = 'edianedalbosco@gmail.com')",
-        "update": "id = @request.auth.id",
+        "update": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin' || @request.auth.email = 'edianedalbosco@gmail.com')",
         "delete": "id = @request.auth.id"
       },
       "fields": [
@@ -68,6 +68,13 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["active", "suspended"]
         }
       ],
       "indexes": [
