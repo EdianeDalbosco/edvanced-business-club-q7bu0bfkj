@@ -169,6 +169,7 @@ export default function MeetingsAndMaterials() {
   const [meetingLocation, setMeetingLocation] = useState('')
   const [meetingType, setMeetingType] = useState<'presencial' | 'online' | 'hibrido'>('presencial')
   const [meetingPricing, setMeetingPricing] = useState<'gratuito' | 'pago'>('gratuito')
+  const [meetingRegistrationUrl, setMeetingRegistrationUrl] = useState('')
   const [meetingSpeakers, setMeetingSpeakers] = useState('')
   const [meetingDesc, setMeetingDesc] = useState('')
   const [meetingCoverFile, setMeetingCoverFile] = useState<File | null>(null)
@@ -656,6 +657,7 @@ export default function MeetingsAndMaterials() {
     setMeetingLocation('')
     setMeetingType('presencial')
     setMeetingPricing('gratuito')
+    setMeetingRegistrationUrl('')
     setMeetingSpeakers('')
     setMeetingDesc('')
     setMeetingCoverFile(null)
@@ -672,6 +674,7 @@ export default function MeetingsAndMaterials() {
     setMeetingLocation(meeting.location || '')
     setMeetingType(meeting.type || 'presencial')
     setMeetingPricing(meeting.pricing || 'gratuito')
+    setMeetingRegistrationUrl(meeting.registration_url || '')
     setMeetingSpeakers(meeting.speakers || '')
     const cleanDesc = (meeting.description || '').replace(/^<p>/, '').replace(/<\/p>$/, '')
     setMeetingDesc(cleanDesc)
@@ -718,6 +721,7 @@ export default function MeetingsAndMaterials() {
       formData.append('location', meetingLocation)
       formData.append('type', meetingType)
       formData.append('pricing', meetingPricing)
+      formData.append('registration_url', meetingRegistrationUrl.trim())
       formData.append('speakers', meetingSpeakers || '')
       formData.append('description', meetingDesc ? `<p>${meetingDesc}</p>` : '')
 
@@ -2634,6 +2638,29 @@ export default function MeetingsAndMaterials() {
                   className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   required
                 />
+              </div>
+
+              {/* Link de Inscrição Externa */}
+              <div className="space-y-1 p-3 bg-[#03151B]/70 rounded-2xl border border-teal-900/60">
+                <Label className="text-[#F5D77F] font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ExternalLink className="w-4 h-4 text-[#D4AF37]" />
+                    Link de Inscrição Externa (Página Pública de Eventos)
+                  </span>
+                  <span className="text-[10px] text-teal-300 font-normal">
+                    Opcional / Recomendado
+                  </span>
+                </Label>
+                <Input
+                  placeholder="https://eventos.edvanced.com.br/... ou link Sympla/Hotmart/Formulário"
+                  value={meetingRegistrationUrl}
+                  onChange={(e) => setMeetingRegistrationUrl(e.target.value)}
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl placeholder:text-teal-200/40"
+                />
+                <p className="text-[10px] text-teal-200/60">
+                  Este link será exibido no botão "Inscrever-se" da aba pública de eventos para o
+                  público externo.
+                </p>
               </div>
 
               <div className="space-y-1">

@@ -45,7 +45,9 @@ export default function Members() {
   const { user: currentUser, isAdmin } = useAuth()
   const [members, setMembers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'todos' | 'active' | 'suspended'>('todos')
+  // Default to showing only active members (item 1 requirement)
+  const [statusFilter, setStatusFilter] = useState<'active' | 'suspended' | 'todos'>('active')
+  const [showInactive, setShowInactive] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   // Edit Member Modal State
@@ -92,11 +94,24 @@ export default function Members() {
 
     if (!matchSearch) return false
 
+    // If user is not admin, NEVER show suspended/inactive members
+    if (!isAdmin) {
+      return m.status !== 'suspended'
+    }
+
+    // Admin view: If showInactive is false (default), only show active members
+    if (!showInactive) {
+      return m.status !== 'suspended'
+    }
+
+    // When admin toggles showInactive = true, respect the status filter
     if (statusFilter === 'active' && m.status === 'suspended') return false
     if (statusFilter === 'suspended' && m.status !== 'suspended') return false
 
     return true
   })
+
+  const inactiveCount = members.filter((m) => m.status === 'suspended').length
 
   // Open Edit Modal
   const handleOpenEdit = (member: User) => {
@@ -244,21 +259,46 @@ export default function Members() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
-            >
-              <option value="todos">Todos os Status</option>
-              <option value="active">Apenas Ativos</option>
-              <option value="suspended">Apenas Inativos / Suspensos</option>
-            </select>
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
+              <Button
+                type="button"
+                variant={showInactive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  const nextVal = !showInactive
+                  setShowInactive(nextVal)
+                  if (!nextVal) {
+                    setStatusFilter('active')
+                  }
+                }}
+                className={`h-8 text-xs font-bold rounded-lg transition-all ${
+                  showInactive
+                    ? 'bg-[#06242E] hover:bg-[#0A3340] text-amber-300 border border-[#D4AF37]/50 shadow-xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                }`}
+              >
+                <UserX className="w-3.5 h-3.5 mr-1.5 text-[#D4AF37]" />
+                {showInactive ? 'Ocultar Inativos' : `Mostrar Inativos (${inactiveCount})`}
+              </Button>
+
+              {showInactive && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="h-8 px-2.5 text-xs rounded-lg bg-white border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
+                >
+                  <option value="todos">Todos (Ativos + Inativos)</option>
+                  <option value="active">Apenas Ativos</option>
+                  <option value="suspended">Apenas Inativos</option>
+                </select>
+              )}
+            </div>
           )}
 
-          <span className="text-xs text-slate-500 font-semibold whitespace-nowrap pl-2 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200">
-            {filteredMembers.length} membro(s)
+          <span className="text-xs text-slate-600 font-bold whitespace-nowrap bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+            {filteredMembers.length} membro(s) exibido(s)
           </span>
         </div>
       </div>

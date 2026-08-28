@@ -27,6 +27,18 @@ export interface Meeting extends RecordModel {
   speakers?: string
   description?: string
   cover_image?: string
+  registration_url?: string
+}
+
+export interface EdvancedCastEpisode extends RecordModel {
+  title: string
+  description?: string
+  video_url: string
+  thumbnail_url?: string
+  cover_image?: string
+  episode_number?: number
+  duration?: string
+  published_at?: string
 }
 
 export type MaterialType = 'photo' | 'video' | 'document'

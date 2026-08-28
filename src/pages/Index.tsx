@@ -89,7 +89,11 @@ export default function Index() {
         setMeetings(meets)
         setMaterials(mats)
         setApprovedDisclosures(appDiscs)
-        setMembers(memberList)
+        // Filter out suspended members from default public/dashboard view for regular members
+        const visibleMembers = isAdmin
+          ? memberList
+          : memberList.filter((m) => m.status !== 'suspended')
+        setMembers(visibleMembers)
 
         if (user) {
           const myItems = await getMemberDisclosures(user.id)

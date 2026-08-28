@@ -17,6 +17,7 @@ import Members from '@/pages/Members'
 import AdminApprovalQueue from '@/pages/AdminApprovalQueue'
 import AdminNewMember from '@/pages/AdminNewMember'
 import Profile from '@/pages/Profile'
+import PublicPortal from '@/pages/PublicPortal'
 import NotFound from '@/pages/NotFound'
 
 const App = () => (
@@ -26,16 +27,22 @@ const App = () => (
         <Toaster />
         <Sonner position="top-right" />
         <Routes>
-          <Route element={<Layout />}>
-            {/* Public or Protected Root */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              }
-            />
+          <Route path="/login" element={<Login />} />
+          {/* Public Routes without Authentication */}
+          <Route path="/publico" element={<PublicPortal />} />
+          <Route path="/eventos-publicos" element={<PublicPortal />} />
+          <Route path="/edvancedcast" element={<PublicPortal />} />
+
+          {/* Main App with Protected Layout */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Index />} />
 
             {/* Meetings & Materials */}
             <Route

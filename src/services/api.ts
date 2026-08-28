@@ -1,5 +1,5 @@
 import pb from '@/lib/pocketbase/client'
-import type { Meeting, Material, Disclosure, User } from '@/types'
+import type { Meeting, Material, Disclosure, User, EdvancedCastEpisode } from '@/types'
 
 // Helper to get file URL
 export function getFileUrl(collectionIdOrName: string, recordId: string, filename: string): string {
@@ -160,4 +160,32 @@ export async function toggleMemberSuspension(
   return pb.collection('users').update<User>(userId, {
     status: nextStatus,
   })
+}
+
+// EDVANCED CAST (PODCAST)
+export async function getEdvancedCastEpisodes(): Promise<EdvancedCastEpisode[]> {
+  return pb.collection('edvanced_cast').getFullList<EdvancedCastEpisode>({
+    sort: '-episode_number,-published_at,-created',
+  })
+}
+
+export async function getEdvancedCastEpisodeById(id: string): Promise<EdvancedCastEpisode> {
+  return pb.collection('edvanced_cast').getOne<EdvancedCastEpisode>(id)
+}
+
+export async function createEdvancedCastEpisode(
+  data: Partial<EdvancedCastEpisode> | FormData,
+): Promise<EdvancedCastEpisode> {
+  return pb.collection('edvanced_cast').create<EdvancedCastEpisode>(data)
+}
+
+export async function updateEdvancedCastEpisode(
+  id: string,
+  data: Partial<EdvancedCastEpisode> | FormData,
+): Promise<EdvancedCastEpisode> {
+  return pb.collection('edvanced_cast').update<EdvancedCastEpisode>(id, data)
+}
+
+export async function deleteEdvancedCastEpisode(id: string): Promise<boolean> {
+  return pb.collection('edvanced_cast').delete(id)
 }

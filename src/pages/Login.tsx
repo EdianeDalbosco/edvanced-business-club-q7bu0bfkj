@@ -1,6 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Crown, Lock, Mail, User, ArrowRight, ShieldCheck, Info } from 'lucide-react'
+import {
+  Crown,
+  Lock,
+  Mail,
+  User,
+  ArrowRight,
+  ShieldCheck,
+  Info,
+  Globe,
+  ExternalLink,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -119,6 +130,24 @@ export default function Login() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
+
+            {/* Link para a Área Pública sem login (Eventos abertos & EdvancedCast) */}
+            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-[#06242E] to-[#0A3340] text-white border border-[#D4AF37]/40 shadow-sm text-center space-y-2">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#F5D77F]">
+                <Globe className="w-4 h-4 text-[#D4AF37]" />
+                <span>Página Pública Aberta</span>
+              </div>
+              <p className="text-[11px] text-teal-100/80 leading-relaxed">
+                Quer ver a agenda de eventos abertos e assistir aos episódios do EdvancedCast?
+              </p>
+              <Link
+                to="/publico"
+                className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-xs"
+              >
+                <span>Acessar Página Pública</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
 
             {/* Notice about exclusive membership admission */}
             <div className="mt-5 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-start gap-2.5 text-xs text-amber-900">

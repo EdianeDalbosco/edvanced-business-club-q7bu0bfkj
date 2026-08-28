@@ -123,8 +123,13 @@ export default function Layout() {
       path: '/membros',
       icon: Users,
     },
+    {
+      label: 'Portal Público (Eventos & Cast)',
+      path: '/publico',
+      icon: ExternalLink,
+      badge: 'Aberto',
+    },
   ]
-
   const adminNavItems = [
     {
       label: 'Fila de Aprovação',
