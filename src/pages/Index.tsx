@@ -172,7 +172,7 @@ export default function Index() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* 1. Hero Welcome Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0B3D4E] via-[#0E4C60] to-[#082B38] border border-teal-900/50 text-white p-6 md:p-10 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#06242E] via-[#0A3340] to-[#03151B] border border-teal-950/70 text-white p-6 md:p-10 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
@@ -199,7 +199,7 @@ export default function Index() {
             <Link to="/encontros">
               <Button
                 variant="outline"
-                className="border-teal-700/60 bg-[#0B3D4E]/60 text-teal-100 hover:bg-[#0E4C60] hover:text-white text-xs font-semibold px-5 py-6 rounded-xl"
+                className="border-teal-800/60 bg-[#06242E]/70 text-teal-100 hover:bg-[#0A3340] hover:text-white text-xs font-semibold px-5 py-6 rounded-xl"
               >
                 Ver Acervo de Encontros
               </Button>
@@ -215,7 +215,7 @@ export default function Index() {
           {nextMeeting ? (
             <Card className="h-full border-slate-200/80 shadow-md hover:shadow-lg transition-all bg-white overflow-hidden flex flex-col justify-between">
               <div>
-                <CardHeader className="bg-[#0B3D4E] text-white p-6">
+                <CardHeader className="bg-[#06242E] text-white p-6">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold flex items-center gap-1.5">
@@ -352,7 +352,7 @@ export default function Index() {
               </CardHeader>
               <CardContent className="pt-2">
                 <Link to="/admin/aprovacao">
-                  <Button className="w-full bg-[#0B3D4E] hover:bg-[#0E4C60] text-white text-xs font-bold uppercase tracking-wider py-2.5">
+                  <Button className="w-full bg-[#06242E] hover:bg-[#0A3340] text-white text-xs font-bold uppercase tracking-wider py-2.5">
                     Abrir Fila de Aprovação
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -468,7 +468,7 @@ export default function Index() {
                   onClick={() => setSelectedMedia(item)}
                   className="group cursor-pointer bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex flex-col justify-between"
                 >
-                  <div className="relative h-44 bg-[#082B38] overflow-hidden flex items-center justify-center">
+                  <div className="relative h-44 bg-[#03151B] overflow-hidden flex items-center justify-center">
                     {isPhoto && item.url ? (
                       <img
                         src={item.url}
@@ -476,7 +476,7 @@ export default function Index() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : isVideo ? (
-                      <div className="w-full h-full bg-[#051C24] flex flex-col items-center justify-center text-white relative">
+                      <div className="w-full h-full bg-[#03151B] flex flex-col items-center justify-center text-white relative">
                         <img
                           src="https://img.usecurling.com/p/600/400?q=executive%20boardroom%20conference&color=teal"
                           alt="Video thumbnail"
@@ -607,7 +607,7 @@ export default function Index() {
                       rel="noopener noreferrer"
                       className="w-full"
                     >
-                      <Button className="w-full bg-[#0B3D4E] hover:bg-[#0E4C60] text-white text-xs font-semibold py-2">
+                      <Button className="w-full bg-[#06242E] hover:bg-[#0A3340] text-white text-xs font-semibold py-2">
                         Acessar Link / Inscrição
                         <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                       </Button>
@@ -655,7 +655,7 @@ export default function Index() {
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-xl overflow-hidden bg-[#082B38] flex items-center justify-center min-h-[300px]">
+            <div className="my-4 rounded-xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[300px]">
               {selectedMedia.type === 'photo' && selectedMedia.url && (
                 <img
                   src={selectedMedia.url}

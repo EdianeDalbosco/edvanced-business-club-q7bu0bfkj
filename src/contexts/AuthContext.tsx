@@ -16,6 +16,7 @@ interface AuthContextType {
     company?: string
     phone?: string
     bio?: string
+    instagram?: string
   }) => Promise<User>
   logout: () => void
   refreshUser: () => Promise<void>
@@ -76,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     company?: string
     phone?: string
     bio?: string
+    instagram?: string
   }): Promise<User> => {
     const password = data.password || 'Skip@Pass'
     const newRecord = await pb.collection('users').create<User>({
@@ -86,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       company: data.company || '',
       phone: data.phone || '',
       bio: data.bio || '',
+      instagram: data.instagram || '',
       role: data.role || 'member',
       verified: true,
     })

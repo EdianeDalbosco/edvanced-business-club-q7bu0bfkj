@@ -10,6 +10,7 @@ export interface User extends RecordModel {
   phone?: string
   bio?: string
   avatar?: string
+  instagram?: string
 }
 
 export interface Meeting extends RecordModel {

@@ -11,9 +11,11 @@ import {
   ShieldCheck,
   Crown,
   UserPlus,
+  Instagram,
+  User as UserIcon,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { getMembers } from '@/services/api'
+import { getMembers, getFileUrl } from '@/services/api'
 import type { User } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -47,6 +49,7 @@ export default function Members() {
     return (
       m.name?.toLowerCase().includes(q) ||
       m.company?.toLowerCase().includes(q) ||
+      m.instagram?.toLowerCase().includes(q) ||
       m.bio?.toLowerCase().includes(q) ||
       m.email?.toLowerCase().includes(q)
     )
@@ -60,6 +63,24 @@ export default function Members() {
       .slice(0, 2)
       .join('')
       .toUpperCase()
+  }
+
+  const formatInstagramLink = (handle?: string) => {
+    if (!handle) return ''
+    const clean = handle.replace(/^@/, '').trim()
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+      return clean
+    }
+    return `https://instagram.com/${clean}`
+  }
+
+  const formatInstagramDisplay = (handle?: string) => {
+    if (!handle) return ''
+    let clean = handle.trim()
+    if (clean.includes('instagram.com/')) {
+      clean = clean.split('instagram.com/')[1].replace(/\/$/, '')
+    }
+    return clean.startsWith('@') ? clean : `@${clean}`
   }
 
   return (
@@ -121,6 +142,13 @@ export default function Members() {
               <div>
                 <div className="p-6 border-b border-slate-100 flex items-start gap-4">
                   <Avatar className="w-14 h-14 ring-2 ring-[#D4AF37]/40 flex-shrink-0">
+                    {member.avatar ? (
+                      <AvatarImage
+                        src={getFileUrl('users', member.id, member.avatar)}
+                        alt={member.name}
+                        className="object-cover"
+                      />
+                    ) : null}
                     <AvatarFallback className="bg-gradient-to-br from-[#D4AF37] to-[#8C6D07] text-slate-950 font-bold text-base">
                       {getInitials(member.name)}
                     </AvatarFallback>
@@ -174,22 +202,76 @@ export default function Members() {
                         <span>{member.phone}</span>
                       </div>
                     )}
+
+                    {member.instagram && (
+                      <div className="flex items-center gap-2 text-slate-600 truncate">
+                        <Instagram className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                        <a
+                          href={formatInstagramLink(member.instagram)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-[#8C6D07] hover:underline truncate font-semibold text-[#8C6D07]"
+                        >
+                          {formatInstagramDisplay(member.instagram)}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 pt-0">
-                <a
-                  href={`mailto:${member.email}?subject=Contato%20via%20Edvanced%20Business%20Club`}
-                  className="w-full block"
-                >
-                  <Button
-                    variant="outline"
-                    className="w-full text-xs font-semibold border-slate-200 hover:bg-[#D4AF37] hover:text-slate-950 hover:border-[#D4AF37] transition-colors"
+              <div className="p-6 pt-0 space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <a
+                    href={`mailto:${member.email}?subject=Contato%20via%20Edvanced%20Business%20Club`}
+                    className="w-full block"
                   >
-                    Conectar via E-mail
-                  </Button>
-                </a>
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs font-semibold border-slate-200 hover:bg-[#D4AF37] hover:text-slate-950 hover:border-[#D4AF37] transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5 mr-1" /> E-mail
+                    </Button>
+                  </a>
+
+                  {member.instagram ? (
+                    <a
+                      href={formatInstagramLink(member.instagram)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full block"
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs font-semibold border-slate-200 hover:bg-[#06242E] hover:text-white hover:border-[#06242E] transition-colors"
+                      >
+                        <Instagram className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" /> Instagram
+                      </Button>
+                    </a>
+                  ) : member.phone ? (
+                    <a
+                      href={`https://wa.me/${member.phone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full block"
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs font-semibold border-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors"
+                      >
+                        <Phone className="w-3.5 h-3.5 mr-1" /> WhatsApp
+                      </Button>
+                    </a>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      disabled
+                      className="w-full text-xs text-slate-400 border-slate-200"
+                    >
+                      Membro VIP
+                    </Button>
+                  )}
+                </div>
               </div>
             </Card>
           )

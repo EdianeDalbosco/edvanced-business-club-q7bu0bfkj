@@ -430,7 +430,7 @@ export default function MeetingsAndMaterials() {
           <div className="flex items-center gap-2">
             <Button
               onClick={handleOpenAddMeeting}
-              className="bg-[#0B3D4E] hover:bg-[#0E4C60] text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-sm"
+              className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-sm border border-teal-900/60"
             >
               <Plus className="w-4 h-4 mr-1.5 text-[#D4AF37]" /> Novo Encontro
             </Button>
@@ -517,7 +517,7 @@ export default function MeetingsAndMaterials() {
                     }}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 relative group ${
                       isSelected
-                        ? 'bg-[#0B3D4E] text-white border-[#0B3D4E] shadow-xl ring-2 ring-[#D4AF37]/60'
+                        ? 'bg-[#06242E] text-white border-[#06242E] shadow-xl ring-2 ring-[#D4AF37]/60'
                         : 'bg-white text-slate-800 border-slate-200/80 hover:border-[#D4AF37]/60 hover:shadow-md'
                     }`}
                   >
@@ -831,14 +831,14 @@ export default function MeetingsAndMaterials() {
                           <div
                             key={item.id}
                             onClick={() => setPreviewItem(item)}
-                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#082B38] relative aspect-[4/3] shadow-xs hover:shadow-lg transition-all"
+                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#03151B] relative aspect-[4/3] shadow-xs hover:shadow-lg transition-all"
                           >
                             <img
                               src={item.url}
                               alt={item.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#082B38]/95 via-transparent to-transparent flex flex-col justify-end p-4">
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#03151B]/95 via-transparent to-transparent flex flex-col justify-end p-4">
                               <h4 className="text-xs font-bold text-white line-clamp-1 group-hover:text-[#F5D77F] transition-colors">
                                 {item.title}
                               </h4>
@@ -870,7 +870,7 @@ export default function MeetingsAndMaterials() {
                           <div
                             key={item.id}
                             onClick={() => setPreviewItem(item)}
-                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#082B38] relative aspect-[16/9] shadow-xs hover:shadow-lg transition-all"
+                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#03151B] relative aspect-[16/9] shadow-xs hover:shadow-lg transition-all"
                           >
                             <img
                               src="https://img.usecurling.com/p/600/350?q=executive%20summit%20stage&color=teal"
@@ -882,7 +882,7 @@ export default function MeetingsAndMaterials() {
                                 <Play className="w-5 h-5 fill-current ml-0.5" />
                               </div>
                             </div>
-                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#082B38]/95 p-3">
+                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#03151B]/95 p-3">
                               <h4 className="text-xs font-bold text-white line-clamp-1">
                                 {item.title}
                               </h4>
@@ -985,7 +985,7 @@ export default function MeetingsAndMaterials() {
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#082B38] flex items-center justify-center min-h-[350px]">
+            <div className="my-4 rounded-2xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[350px]">
               {previewItem.type === 'photo' && previewItem.url && (
                 <img
                   src={previewItem.url}
@@ -1154,7 +1154,7 @@ export default function MeetingsAndMaterials() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#0B3D4E] hover:bg-[#0E4C60] text-white font-bold text-xs"
+                  className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs"
                 >
                   {isSubmitting
                     ? 'Salvando...'

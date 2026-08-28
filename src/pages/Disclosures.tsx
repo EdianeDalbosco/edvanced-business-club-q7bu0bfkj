@@ -306,7 +306,7 @@ export default function Disclosures() {
                         rel="noopener noreferrer"
                         className="w-full block"
                       >
-                        <Button className="w-full bg-[#0B3D4E] hover:bg-[#0E4C60] text-white text-xs font-semibold py-2">
+                        <Button className="w-full bg-[#06242E] hover:bg-[#0A3340] text-white text-xs font-semibold py-2 border border-teal-900/60">
                           Acessar Página / Inscrição <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                         </Button>
                       </a>

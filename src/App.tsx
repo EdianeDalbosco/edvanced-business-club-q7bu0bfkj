@@ -15,6 +15,7 @@ import NewDisclosure from '@/pages/NewDisclosure'
 import Members from '@/pages/Members'
 import AdminApprovalQueue from '@/pages/AdminApprovalQueue'
 import AdminNewMember from '@/pages/AdminNewMember'
+import Profile from '@/pages/Profile'
 import NotFound from '@/pages/NotFound'
 
 const App = () => (
@@ -51,6 +52,16 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Disclosures />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Profile Page */}
+            <Route
+              path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

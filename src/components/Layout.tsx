@@ -19,10 +19,12 @@ import {
   Building2,
   Lock,
   UserCheck,
+  User,
+  Settings,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
-import { getPendingDisclosures, getMemberDisclosures } from '@/services/api'
+import { getPendingDisclosures, getMemberDisclosures, getFileUrl } from '@/services/api'
 import type { Disclosure } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -144,13 +146,13 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row antialiased selection:bg-[#D4AF37]/30 selection:text-slate-900">
       {/* Mobile Top Header */}
-      <header className="md:hidden bg-[#0B3D4E] text-white px-4 py-3.5 flex items-center justify-between border-b border-[#082B38] sticky top-0 z-50">
+      <header className="md:hidden bg-[#06242E] text-white px-4 py-3.5 flex items-center justify-between border-b border-[#03151B] sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-teal-100 hover:text-white hover:bg-[#0E4C60]"
+            className="text-teal-100 hover:text-white hover:bg-[#0A3340]"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
@@ -169,11 +171,20 @@ export default function Layout() {
 
         <div className="flex items-center gap-2">
           {user && (
-            <Avatar className="w-8 h-8 ring-2 ring-[#D4AF37]/50">
-              <AvatarFallback className="bg-[#D4AF37] text-slate-950 font-bold text-xs">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
+            <Link to="/perfil">
+              <Avatar className="w-8 h-8 ring-2 ring-[#D4AF37]/50">
+                {user.avatar ? (
+                  <AvatarImage
+                    src={getFileUrl('users', user.id, user.avatar)}
+                    alt={user.name}
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback className="bg-[#D4AF37] text-slate-950 font-bold text-xs">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           )}
         </div>
       </header>
@@ -181,22 +192,22 @@ export default function Layout() {
       {/* Sidebar Overlay (Mobile) */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-[#051C24]/80 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-[#03151B]/80 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar (Desktop & Mobile drawer) */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0B3D4E] text-slate-100 z-50 flex flex-col justify-between border-r border-[#082B38] transition-transform duration-300 ease-in-out ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#06242E] text-slate-100 z-50 flex flex-col justify-between border-r border-[#03151B] transition-transform duration-300 ease-in-out ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Top Logo / Brand Header */}
-        <div className="p-6 border-b border-[#082B38]/80 bg-gradient-to-b from-[#082B38] to-[#0B3D4E]">
+        <div className="p-6 border-b border-[#03151B]/90 bg-gradient-to-b from-[#03151B] to-[#06242E]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
-              <div className="w-full h-full bg-[#0B3D4E] rounded-[10px] flex items-center justify-center">
+              <div className="w-full h-full bg-[#06242E] rounded-[10px] flex items-center justify-center">
                 <Crown className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]/20" />
               </div>
             </div>
@@ -233,7 +244,7 @@ export default function Layout() {
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
                       isActive
                         ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-semibold shadow-md shadow-[#D4AF37]/20'
-                        : 'text-teal-50 hover:text-white hover:bg-[#0E4C60]/80'
+                        : 'text-teal-50 hover:text-white hover:bg-[#0A3340]/80'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -248,6 +259,31 @@ export default function Layout() {
                   </Link>
                 )
               })}
+
+              {/* Profile Link in Menu */}
+              {user && (
+                <Link
+                  to="/perfil"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+                    location.pathname === '/perfil'
+                      ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-semibold shadow-md shadow-[#D4AF37]/20'
+                      : 'text-teal-50 hover:text-white hover:bg-[#0A3340]/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <User
+                      className={`w-5 h-5 transition-transform group-hover:scale-110 ${
+                        location.pathname === '/perfil' ? 'text-slate-950' : 'text-[#D4AF37]'
+                      }`}
+                    />
+                    <span>Meu Perfil & Foto</span>
+                  </div>
+                  {location.pathname === '/perfil' && (
+                    <ChevronRight className="w-4 h-4 text-slate-950" />
+                  )}
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -307,17 +343,29 @@ export default function Layout() {
         </div>
 
         {/* Sidebar Footer / User Profile */}
-        <div className="p-4 border-t border-[#082B38] bg-[#082B38]/90">
+        <div className="p-4 border-t border-[#03151B] bg-[#03151B]/95">
           {user ? (
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar className="w-10 h-10 ring-2 ring-[#D4AF37]/40 flex-shrink-0">
+              <Link
+                to="/perfil"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 min-w-0 hover:opacity-90 transition-opacity flex-1 group"
+                title="Acessar e editar Meu Perfil"
+              >
+                <Avatar className="w-10 h-10 ring-2 ring-[#D4AF37]/50 flex-shrink-0">
+                  {user.avatar ? (
+                    <AvatarImage
+                      src={getFileUrl('users', user.id, user.avatar)}
+                      alt={user.name}
+                      className="object-cover"
+                    />
+                  ) : null}
                   <AvatarFallback className="bg-gradient-to-br from-[#D4AF37] to-[#8C6D07] text-slate-950 font-bold">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5 group-hover:text-[#F5D77F]">
                     {user.name}
                     {isAdmin && (
                       <span className="px-1.5 py-0.2 bg-[#D4AF37] text-slate-950 text-[9px] font-extrabold rounded">
@@ -327,7 +375,7 @@ export default function Layout() {
                   </p>
                   <p className="text-xs text-slate-400 truncate">{user.company || user.email}</p>
                 </div>
-              </div>
+              </Link>
 
               <Button
                 variant="ghost"
@@ -384,7 +432,7 @@ export default function Layout() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 shadow-xl border-slate-200" align="end">
-                <div className="p-4 bg-[#0B3D4E] text-white rounded-t-lg flex items-center justify-between">
+                <div className="p-4 bg-[#06242E] text-white rounded-t-lg flex items-center justify-between">
                   <h4 className="font-bold text-sm flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#D4AF37]" /> Notificações do Club
                   </h4>
@@ -467,6 +515,13 @@ export default function Layout() {
                     className="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded-xl"
                   >
                     <Avatar className="w-9 h-9 ring-2 ring-[#D4AF37]/50">
+                      {user.avatar ? (
+                        <AvatarImage
+                          src={getFileUrl('users', user.id, user.avatar)}
+                          alt={user.name}
+                          className="object-cover"
+                        />
+                      ) : null}
                       <AvatarFallback className="bg-gradient-to-br from-[#D4AF37] to-[#8C6D07] text-slate-950 font-bold text-xs">
                         {getInitials(user.name)}
                       </AvatarFallback>
@@ -485,6 +540,9 @@ export default function Layout() {
                     <p className="text-xs text-slate-500 font-normal">{user.email}</p>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/perfil')}>
+                    <User className="w-4 h-4 mr-2 text-[#8C6D07]" /> Meu Perfil & Foto
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/membros')}>
                     <Users className="w-4 h-4 mr-2 text-slate-500" /> Diretório de Membros
                   </DropdownMenuItem>

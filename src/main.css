@@ -27,8 +27,8 @@
     --primary: 46 65% 52%;
     --primary-foreground: 222 47% 11%;
 
-    /* Deep Azul Petróleo (#0B3D4E -> 195 75% 18%) */
-    --secondary: 195 75% 18%;
+    /* Darker Deep Azul Petróleo (#06242E -> 195 77% 10%) */
+    --secondary: 195 77% 10%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 214 32% 91%;
@@ -46,13 +46,13 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 195 75% 18%;
+    --sidebar-background: 195 77% 10%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 46 65% 52%;
-    --sidebar-primary-foreground: 195 75% 18%;
-    --sidebar-accent: 195 70% 25%;
+    --sidebar-primary-foreground: 195 77% 10%;
+    --sidebar-accent: 195 60% 16%;
     --sidebar-accent-foreground: 46 65% 70%;
-    --sidebar-border: 195 65% 14%;
+    --sidebar-border: 195 80% 6%;
     --sidebar-ring: 46 65% 52%;
 
     --chart-1: 34 100% 44%;

@@ -126,6 +126,7 @@ export async function createMemberByAdmin(data: {
   company?: string
   phone?: string
   bio?: string
+  instagram?: string
 }): Promise<User> {
   const defaultPassword = data.password || 'Skip@Pass'
   return pb.collection('users').create<User>({
@@ -137,6 +138,7 @@ export async function createMemberByAdmin(data: {
     company: data.company || '',
     phone: data.phone || '',
     bio: data.bio || '',
+    instagram: data.instagram || '',
     verified: true,
   })
 }

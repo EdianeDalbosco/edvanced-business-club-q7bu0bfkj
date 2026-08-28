@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Sparkles,
+  Instagram,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { createMemberByAdmin } from '@/services/api'
@@ -40,6 +41,7 @@ export default function AdminNewMember() {
   const [role, setRole] = useState<'member' | 'admin'>('member')
   const [company, setCompany] = useState('')
   const [phone, setPhone] = useState('')
+  const [instagram, setInstagram] = useState('')
   const [bio, setBio] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +65,7 @@ export default function AdminNewMember() {
         role,
         company: company.trim(),
         phone: phone.trim(),
+        instagram: instagram.trim(),
         bio: bio.trim(),
       })
 
@@ -92,7 +95,7 @@ export default function AdminNewMember() {
       </div>
 
       {/* Header Card */}
-      <div className="bg-gradient-to-r from-[#082B38] via-[#0B3D4E] to-[#082B38] border border-teal-900/60 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-[#03151B] via-[#06242E] to-[#03151B] border border-teal-950/80 text-white rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-semibold uppercase tracking-wider mb-3">
           <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
           Área Restrita da Diretoria
@@ -232,6 +235,24 @@ export default function AdminNewMember() {
                     placeholder="+55 (11) 98888-7777"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    className="pl-9 text-xs rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* Instagram */}
+              <div className="space-y-1.5 md:col-span-2">
+                <Label htmlFor="member-instagram" className="text-xs font-semibold text-slate-700">
+                  Instagram (Handle ou Perfil)
+                </Label>
+                <div className="relative">
+                  <Instagram className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]" />
+                  <Input
+                    id="member-instagram"
+                    type="text"
+                    placeholder="Ex: @mariana.vasconcellos ou https://instagram.com/mariana.vasconcellos"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
                     className="pl-9 text-xs rounded-xl"
                   />
                 </div>
