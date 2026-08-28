@@ -47,6 +47,9 @@ export async function getMaterialsByMeeting(meetingId: string): Promise<Material
     }
     return {
       id: r.id,
+      collectionId: r.collectionId || '',
+      collectionName: r.collectionName || 'materials',
+      meeting: r.meeting || r.meeting_id || '',
       meeting_id: r.meeting_id || r.meeting,
       title: r.title,
       description: r.description,
@@ -55,7 +58,7 @@ export async function getMaterialsByMeeting(meetingId: string): Promise<Material
       created: r.created,
       updated: r.updated,
       expand: r.expand,
-    } as Material
+    } as unknown as Material
   })
 }
 
@@ -71,6 +74,9 @@ export async function getAllMaterials(): Promise<Material[]> {
     }
     return {
       id: r.id,
+      collectionId: r.collectionId || '',
+      collectionName: r.collectionName || 'materials',
+      meeting: r.meeting || r.meeting_id || '',
       meeting_id: r.meeting_id || r.meeting,
       title: r.title,
       description: r.description,
@@ -79,7 +85,7 @@ export async function getAllMaterials(): Promise<Material[]> {
       created: r.created,
       updated: r.updated,
       expand: r.expand,
-    } as Material
+    } as unknown as Material
   })
 }
 

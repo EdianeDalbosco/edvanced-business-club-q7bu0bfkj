@@ -10,12 +10,9 @@ import {
   Video,
   Crown,
   Search,
-  Filter,
   Users,
   Mic,
-  Share2,
   Tv,
-  CheckCircle,
   Tag,
   ArrowRight,
   ShieldCheck,
@@ -39,6 +36,11 @@ import {
   Phone,
   Mail,
   FolderOpen,
+  Award,
+  TrendingUp,
+  Globe2,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -58,7 +60,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -84,11 +86,6 @@ export function getVideoEmbedUrl(url?: string): string | null {
   if (!url) return null
   const clean = url.trim()
 
-  // YouTube formats:
-  // - https://www.youtube.com/watch?v=VIDEO_ID
-  // - https://youtu.be/VIDEO_ID
-  // - https://www.youtube.com/embed/VIDEO_ID
-  // - https://www.youtube.com/shorts/VIDEO_ID
   const ytMatch = clean.match(
     /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/,
   )
@@ -96,15 +93,11 @@ export function getVideoEmbedUrl(url?: string): string | null {
     return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`
   }
 
-  // Vimeo formats:
-  // - https://vimeo.com/VIDEO_ID
-  // - https://player.vimeo.com/video/VIDEO_ID
   const vimeoMatch = clean.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/)
   if (vimeoMatch && vimeoMatch[1]) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`
   }
 
-  // Direct video file link (.mp4, .webm) or unknown iframe url
   if (clean.startsWith('http://') || clean.startsWith('https://')) {
     return clean
   }
@@ -154,7 +147,9 @@ export default function PublicPortal() {
 
   // Search and filters for Public Materials
   const [materialSearch, setMaterialSearch] = useState('')
-  const [materialTypeFilter, setMaterialTypeFilter] = useState<'todos' | 'photo' | 'video' | 'document'>('todos')
+  const [materialTypeFilter, setMaterialTypeFilter] = useState<
+    'todos' | 'photo' | 'video' | 'document'
+  >('todos')
   const [materialMeetingFilter, setMaterialMeetingFilter] = useState<string>('todos')
 
   // Video Player Modal
@@ -253,7 +248,6 @@ export default function PublicPortal() {
     return ''
   }
 
-  // Get Episode Cover URL or fallback
   const getEpisodeCoverUrl = (ep: EdvancedCastEpisode) => {
     if (ep.cover_image) {
       return getFileUrl('edvanced_cast', ep.id, ep.cover_image)
@@ -264,7 +258,6 @@ export default function PublicPortal() {
     return ''
   }
 
-  // Generate share URL and handlers
   const getEpisodeShareUrl = (ep: EdvancedCastEpisode) => {
     const origin = window.location.origin
     return `${origin}/publico?aba=podcast&episodio=${ep.id}`
@@ -298,7 +291,7 @@ export default function PublicPortal() {
       return {
         key: 'scheduled',
         label: 'Inscrições Abertas',
-        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
         icon: CalendarIcon,
       }
     }
@@ -311,21 +304,21 @@ export default function PublicPortal() {
       return {
         key: 'scheduled',
         label: 'Inscrições Abertas',
-        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
         icon: CalendarIcon,
       }
     } else if (now >= start && now <= end) {
       return {
         key: 'ongoing',
         label: 'Acontecendo Agora',
-        badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse',
+        badgeClass: 'bg-amber-500/20 text-[#F5D77F] border-[#D4AF37]/50 animate-pulse',
         icon: Hourglass,
       }
     } else {
       return {
         key: 'completed',
         label: 'Encerrado',
-        badgeClass: 'bg-slate-800 text-slate-300 border-slate-700',
+        badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700/60',
         icon: CalendarCheck2,
       }
     }
@@ -353,7 +346,7 @@ export default function PublicPortal() {
     return Array.from(monthMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime())
   }, [meetings])
 
-  // Filtered official Club meetings (strictly meetings, NEVER disclosures)
+  // Filtered official Club meetings
   const filteredEvents = useMemo(() => {
     return meetings.filter((m) => {
       const q = eventSearch.toLowerCase().trim()
@@ -399,7 +392,7 @@ export default function PublicPortal() {
     })
   }, [episodes, podcastSearch])
 
-  // Filtered Public Materials (Photos, Videos, Documents)
+  // Filtered Public Materials
   const filteredMaterials = useMemo(() => {
     return materials.filter((mat) => {
       const q = materialSearch.toLowerCase().trim()
@@ -422,20 +415,6 @@ export default function PublicPortal() {
       return true
     })
   }, [materials, materialSearch, materialTypeFilter, materialMeetingFilter])
-
-  // Materials grouped by meeting or standalone for nice presentation
-  const materialsByMeeting = useMemo(() => {
-    const map = new Map<string, { meeting: Meeting | null; items: Material[] }>()
-    filteredMaterials.forEach((mat) => {
-      const meetId = mat.meeting || (mat as any).meeting_id || 'sem_encontro'
-      if (!map.has(meetId)) {
-        const foundMeeting = meetings.find((m) => m.id === meetId) || mat.expand?.meeting || null
-        map.set(meetId, { meeting: foundMeeting, items: [] })
-      }
-      map.get(meetId)!.items.push(mat)
-    })
-    return Array.from(map.values())
-  }, [filteredMaterials, meetings])
 
   // Admin: Open Add/Edit Episode
   const handleOpenAddEpisode = () => {
@@ -485,7 +464,6 @@ export default function PublicPortal() {
     setIsSavingEpisode(true)
     try {
       if (castCoverFile) {
-        // Use FormData for file upload
         const formData = new FormData()
         formData.append('title', castTitle.trim())
         formData.append('description', castDesc.trim())
@@ -555,43 +533,56 @@ export default function PublicPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col antialiased selection:bg-[#D4AF37]/30 selection:text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#040B17] text-slate-100 flex flex-col antialiased selection:bg-[#D4AF37]/30 selection:text-white">
+      {/* Subtle Background Glows (pure dark blue & soft gold) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#122443]/60 via-[#0A1A33]/30 to-transparent rounded-full blur-3xl opacity-70" />
+        <div className="absolute top-[30%] -left-48 w-[600px] h-[600px] bg-[#0A1A33]/50 rounded-full blur-[140px] opacity-60" />
+        <div className="absolute top-[60%] -right-48 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[160px] opacity-80" />
+        <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.035]" />
+      </div>
+
       {/* =========================================================================
-          1. PUBLIC HEADER / TOP NAVIGATION
+          1. PUBLIC HEADER / TOP NAVIGATION (Pure Dark Navy + Gold Glow)
          ========================================================================= */}
-      <header className="bg-[#06242E] text-white sticky top-0 z-40 border-b border-[#03151B] shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="relative z-40 sticky top-0 bg-[#061020]/90 backdrop-blur-xl border-b border-[#D4AF37]/20 shadow-2xl shadow-black/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-22 flex items-center justify-between gap-4">
           {/* Brand Logo */}
           <Link to="/publico" className="flex items-center gap-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center transition-transform group-hover:scale-105">
-              <div className="w-full h-full bg-[#06242E] rounded-[10px] flex items-center justify-center">
-                <Crown className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]/20" />
+            <div className="relative">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[1.5px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center transition-all duration-300 group-hover:shadow-[#D4AF37]/40 group-hover:scale-105">
+                <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-[#F5D77F] drop-shadow-[0_2px_8px_rgba(212,175,55,0.4)]" />
+                </div>
               </div>
+              <div className="absolute -inset-1 bg-[#D4AF37]/20 rounded-2xl blur-sm -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
+
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="font-extrabold text-lg sm:text-xl tracking-wider text-white">
                   EDVANCED
                 </span>
-                <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#D4AF37]/20 text-[#F5D77F] border border-[#D4AF37]/40">
-                  PORTAL PÚBLICO
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest bg-[#D4AF37]/15 text-[#F5D77F] border border-[#D4AF37]/35 shadow-xs">
+                  <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
+                  Portal Oficial
                 </span>
               </div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold -mt-0.5">
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.28em] text-[#D4AF37] font-bold">
                 Business Club
               </p>
             </div>
           </Link>
 
-          {/* Tab Navigation Center */}
-          <div className="hidden md:flex items-center gap-1.5 bg-[#03151B]/80 p-1 rounded-2xl border border-teal-900/60 shadow-inner">
+          {/* Tab Navigation Center (Desktop) */}
+          <nav className="hidden md:flex items-center gap-1.5 bg-[#0A1A33]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-inner">
             <button
               type="button"
               onClick={() => setTab('eventos')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'eventos'
-                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
-                  : 'text-teal-100 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
@@ -601,36 +592,39 @@ export default function PublicPortal() {
             <button
               type="button"
               onClick={() => setTab('podcast')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'podcast'
-                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
-                  : 'text-teal-100 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <Mic className="w-4 h-4" />
               <span>EdvancedCast</span>
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span className="relative flex h-2 w-2 ml-0.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => setTab('materiais')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'materiais'
-                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
-                  : 'text-teal-100 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <FolderOpen className="w-4 h-4" />
-              <span>Materiais Públicos</span>
+              <span>Materiais & Galeria</span>
             </button>
-          </div>
+          </nav>
 
           {/* Right Action: Login / Member Area button */}
           <div className="flex items-center gap-3">
             {user ? (
               <Link to="/">
-                <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2">
+                <Button className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/20 hover:shadow-[#D4AF37]/40 flex items-center gap-2 transition-all">
                   <ShieldCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">Área de Membros VIP</span>
                   <span className="sm:hidden">Área VIP</span>
@@ -638,9 +632,11 @@ export default function PublicPortal() {
               </Link>
             ) : (
               <Link to="/login">
-                <Button className="bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md shadow-[#D4AF37]/20 flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  <span>Acesso VIP Membros</span>
+                <Button className="relative group overflow-hidden bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/20 hover:shadow-[#D4AF37]/40 flex items-center gap-2 transition-all">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Acesso VIP Membros</span>
+                  <span className="sm:hidden">Login</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </Link>
             )}
@@ -648,14 +644,14 @@ export default function PublicPortal() {
         </div>
 
         {/* Mobile Tab switcher */}
-        <div className="md:hidden flex border-t border-teal-950 bg-[#03151B]">
+        <div className="md:hidden flex border-t border-white/10 bg-[#061020]/95 backdrop-blur-lg">
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               activeTab === 'eventos'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
-                : 'border-transparent text-teal-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
@@ -664,22 +660,22 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               activeTab === 'podcast'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
-                : 'border-transparent text-teal-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Mic className="w-3.5 h-3.5" />
-            Podcast
+            EdvancedCast
           </button>
           <button
             type="button"
             onClick={() => setTab('materiais')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               activeTab === 'materiais'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
-                : 'border-transparent text-teal-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
@@ -689,111 +685,157 @@ export default function PublicPortal() {
       </header>
 
       {/* =========================================================================
-          2. HERO BANNER PÚBLICO (Dourado & Azul Petróleo Premium)
+          2. INSTITUTIONAL HERO SECTION (Deep Blue Gradient & Gold Luxury)
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#06242E] via-[#041B23] to-[#03151B] text-white py-12 md:py-16 px-4 border-b border-teal-950">
-        <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
-        <div className="absolute -top-24 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative max-w-5xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            Ecossistema de Alta Governança & Negócios
+      <section className="relative z-10 overflow-hidden border-b border-[#D4AF37]/20 py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center space-y-6">
+          {/* Top pill badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0A1A33]/90 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-lg shadow-black/40 backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
+            <span>Ecossistema de Alta Governança & Negócios</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.15]">
-            Edvanced Business Club &{' '}
-            <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] bg-clip-text text-transparent">
-              EdvancedCast
-            </span>
-          </h1>
+          {/* Main Hero Headline */}
+          <div className="space-y-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+              Edvanced Business Club &{' '}
+              <span className="bg-gradient-to-r from-[#FFF0B8] via-[#F5D77F] to-[#D4AF37] bg-clip-text text-transparent drop-shadow-sm">
+                EdvancedCast
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-slate-300/90 max-w-3xl mx-auto leading-relaxed font-normal">
+              Acompanhe a agenda de eventos oficiais com inscrições abertas ao mercado, assista aos
+              episódios exclusivos do videocast com líderes do setor e acesse a galeria de fotos e
+              gravações do Club.
+            </p>
+          </div>
 
-          <p className="text-sm sm:text-base text-teal-100/90 max-w-3xl mx-auto leading-relaxed">
-            Acompanhe a agenda de eventos oficiais abertos ao mercado, inscreva-se diretamente nos
-            próximos encontros e assista aos episódios completos do nosso videocast exclusivo com os
-            maiores líderes e investidores.
-          </p>
+          {/* Value props badges / pillars */}
+          <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
+            <div className="p-3 rounded-2xl bg-[#0A1A33]/60 border border-white/5 backdrop-blur-sm text-left flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-4 h-4 text-[#F5D77F]" />
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-white">Alta Governança</p>
+                <p className="text-[10px] text-slate-400">Padrão institucional</p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#0A1A33]/60 border border-white/5 backdrop-blur-sm text-left flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-4 h-4 text-[#F5D77F]" />
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-white">Geração de Valor</p>
+                <p className="text-[10px] text-slate-400">Negócios & M&A</p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#0A1A33]/60 border border-white/5 backdrop-blur-sm text-left flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-[#F5D77F]" />
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-white">Grandes Líderes</p>
+                <p className="text-[10px] text-slate-400">C-Level & Founders</p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#0A1A33]/60 border border-white/5 backdrop-blur-sm text-left flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0">
+                <Globe2 className="w-4 h-4 text-[#F5D77F]" />
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-white">Eventos Oficiais</p>
+                <p className="text-[10px] text-slate-400">Presencial & Online</p>
+              </div>
+            </div>
+          </div>
 
           {/* Quick tab switcher pill in hero */}
-          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => setTab('eventos')}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'eventos'
-                  ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/25 scale-105'
+                  : 'bg-[#0A1A33]/80 hover:bg-[#122443] text-slate-200 border border-white/10'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
-              Eventos Oficiais ({meetings.length})
+              <span>Eventos Oficiais ({meetings.length})</span>
             </button>
             <button
               onClick={() => setTab('podcast')}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'podcast'
-                  ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/25 scale-105'
+                  : 'bg-[#0A1A33]/80 hover:bg-[#122443] text-slate-200 border border-white/10'
               }`}
             >
               <Tv className="w-4 h-4" />
-              EdvancedCast ({episodes.length})
+              <span>EdvancedCast ({episodes.length})</span>
             </button>
             <button
               onClick={() => setTab('materiais')}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'materiais'
-                  ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/25 scale-105'
+                  : 'bg-[#0A1A33]/80 hover:bg-[#122443] text-slate-200 border border-white/10'
               }`}
             >
               <FolderOpen className="w-4 h-4" />
-              Materiais & Mídias ({materials.length})
+              <span>Materiais & Galeria ({materials.length})</span>
             </button>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          3. CONTEÚDO PRINCIPAL (ABA 1: EVENTOS vs ABA 2: EDVANCEDCAST)
+          3. MAIN CONTENT (TABS: EVENTOS / EDVANCEDCAST / MATERIAIS)
          ========================================================================= */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-8 animate-fade-in">
+      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-8 animate-fade-in">
         {/* =====================================================================
             ABA 1: EVENTOS OFICIAIS DO CLUB COM INSCRIÇÃO EXTERNA
            ===================================================================== */}
         {activeTab === 'eventos' && (
           <div className="space-y-8">
             {/* Top Toolbar: Search & Format Filters */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+            <div className="bg-[#0A1A33]/80 backdrop-blur-md p-6 rounded-3xl border border-[#D4AF37]/20 shadow-xl space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <CalendarIcon className="w-6 h-6 text-[#8C6D07]" />
-                    Eventos Oficiais Edvanced Business Club
+                  <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1px] flex items-center justify-center shadow-md">
+                      <div className="w-full h-full bg-[#061020] rounded-[11px] flex items-center justify-center">
+                        <CalendarIcon className="w-4 h-4 text-[#F5D77F]" />
+                      </div>
+                    </div>
+                    <span>Eventos Oficiais Edvanced Business Club</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Palestras, jantares de gala, summits e rodadas de negócios oficiais organizadas
-                    pela diretoria.
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Palestras magnas, jantares de gala, summits executivos e rodadas de negócios de
+                    alta governança.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30 shadow-inner">
                     {filteredEvents.length} evento(s) encontrado(s)
                   </span>
                 </div>
               </div>
 
               {/* Filters row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-white/10">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
-                    placeholder="Buscar evento por título, cidade, tema..."
+                    placeholder="Buscar por título, cidade, tema..."
                     value={eventSearch}
                     onChange={(e) => setEventSearch(e.target.value)}
-                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200 focus:border-[#D4AF37]"
+                    className="pl-9 text-xs rounded-xl bg-[#061020] border-slate-700/80 text-white placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   />
                 </div>
 
@@ -802,7 +844,7 @@ export default function PublicPortal() {
                   <select
                     value={eventFormat}
                     onChange={(e) => setEventFormat(e.target.value as any)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-[#061020] border border-slate-700/80 text-slate-200 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todos os Formatos</option>
                     <option value="presencial">📍 Apenas Presencial</option>
@@ -816,7 +858,7 @@ export default function PublicPortal() {
                   <select
                     value={eventPricing}
                     onChange={(e) => setEventPricing(e.target.value as any)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-[#061020] border border-slate-700/80 text-slate-200 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todas as Inscrições</option>
                     <option value="gratuito">🎟️ Apenas Gratuitos / Inclusos</option>
@@ -829,7 +871,7 @@ export default function PublicPortal() {
                   <select
                     value={eventMonth}
                     onChange={(e) => setEventMonth(e.target.value)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-[#061020] border border-slate-700/80 text-slate-200 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todos os Meses</option>
                     {availableMonths.map((m) => (
@@ -851,10 +893,10 @@ export default function PublicPortal() {
                   {eventSearch && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-slate-100 text-slate-700 gap-1 pr-1"
+                      className="text-[10px] bg-[#061020] text-slate-200 border border-slate-700 gap-1 pr-1"
                     >
                       Busca: "{eventSearch}"
-                      <button onClick={() => setEventSearch('')} className="hover:text-rose-500">
+                      <button onClick={() => setEventSearch('')} className="hover:text-rose-400">
                         <X className="w-3 h-3" />
                       </button>
                     </Badge>
@@ -862,12 +904,12 @@ export default function PublicPortal() {
                   {eventFormat !== 'todos' && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-[#D4AF37]/15 text-[#8C6D07] border border-[#D4AF37]/30 gap-1 pr-1"
+                      className="text-[10px] bg-[#D4AF37]/15 text-[#F5D77F] border border-[#D4AF37]/35 gap-1 pr-1"
                     >
                       Formato: {eventFormat}
                       <button
                         onClick={() => setEventFormat('todos')}
-                        className="hover:text-rose-500"
+                        className="hover:text-rose-400"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -876,12 +918,12 @@ export default function PublicPortal() {
                   {eventPricing !== 'todos' && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-[#06242E]/10 text-[#06242E] border border-[#06242E]/20 gap-1 pr-1"
+                      className="text-[10px] bg-[#122443] text-slate-200 border border-slate-700 gap-1 pr-1"
                     >
                       Cobrança: {eventPricing}
                       <button
                         onClick={() => setEventPricing('todos')}
-                        className="hover:text-rose-500"
+                        className="hover:text-rose-400"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -890,12 +932,12 @@ export default function PublicPortal() {
                   {eventMonth !== 'todos' && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-[#D4AF37]/20 text-[#8C6D07] border border-[#D4AF37]/40 gap-1 pr-1"
+                      className="text-[10px] bg-[#D4AF37]/20 text-[#F5D77F] border border-[#D4AF37]/40 gap-1 pr-1"
                     >
                       Mês: {availableMonths.find((m) => m.key === eventMonth)?.label || eventMonth}
                       <button
                         onClick={() => setEventMonth('todos')}
-                        className="hover:text-rose-500"
+                        className="hover:text-rose-400"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -908,7 +950,7 @@ export default function PublicPortal() {
                       setEventPricing('todos')
                       setEventMonth('todos')
                     }}
-                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold ml-2 flex items-center gap-1"
+                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold ml-2 flex items-center gap-1"
                   >
                     <RotateCcw className="w-3 h-3" /> Limpar filtros
                   </button>
@@ -916,7 +958,7 @@ export default function PublicPortal() {
               )}
             </div>
 
-            {/* Events Grid */}
+            {/* Events Grid (Executive Navy Cards with Gold Accent Borders) */}
             {filteredEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredEvents.map((event) => {
@@ -927,19 +969,19 @@ export default function PublicPortal() {
                   return (
                     <Card
                       key={event.id}
-                      className="border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group min-w-0"
+                      className="group relative border border-slate-800/90 bg-[#0A1A33]/90 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl hover:border-[#D4AF37]/60 hover:shadow-2xl hover:shadow-[#D4AF37]/10 transition-all duration-300 flex flex-col justify-between"
                     >
                       <div>
                         {/* Cover image */}
-                        <div className="relative aspect-[16/9] w-full bg-[#06242E] overflow-hidden">
+                        <div className="relative aspect-[16/9] w-full bg-[#061020] overflow-hidden">
                           {coverUrl ? (
                             <img
                               src={coverUrl}
                               alt={event.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B] flex flex-col items-center justify-center p-4 text-center">
+                            <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
                               <Sparkles className="w-8 h-8 text-[#D4AF37] mb-2 opacity-80" />
                               <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
                                 {event.event_name || 'Edvanced Business Club'}
@@ -947,11 +989,11 @@ export default function PublicPortal() {
                             </div>
                           )}
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-[#0A1A33]/30 to-transparent" />
 
                           {/* Top badges */}
                           <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
-                            <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
+                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
                               {event.type || 'Presencial'}
                             </Badge>
 
@@ -966,33 +1008,34 @@ export default function PublicPortal() {
 
                           {/* Bottom pricing */}
                           <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
-                            <span className="font-extrabold text-[#F5D77F] drop-shadow-sm">
+                            <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
+                              <CalendarIcon className="w-3 h-3 text-[#D4AF37]" />
                               {formatShortDate(event.start_date || event.date)}
                             </span>
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-black/60 border border-white/20">
-                              {event.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-[#061020]/90 border border-[#D4AF37]/30 text-slate-200">
+                              {event.pricing === 'pago' ? 'Inscrição Paga' : 'Acesso Gratuito'}
                             </span>
                           </div>
                         </div>
 
                         {/* Event Content */}
-                        <div className="p-5 space-y-3">
+                        <div className="p-5 sm:p-6 space-y-3">
                           {event.event_name && (
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#8C6D07] flex items-center gap-1">
-                              <Tag className="w-3 h-3 text-[#8C6D07]" />
+                            <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#F5D77F] flex items-center gap-1.5">
+                              <Tag className="w-3 h-3 text-[#D4AF37]" />
                               <span>{event.event_name}</span>
                             </p>
                           )}
 
-                          <h3 className="font-extrabold text-base text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                          <h3 className="font-extrabold text-base sm:text-lg text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
                             {event.title}
                           </h3>
 
                           {/* Location & Time */}
-                          <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+                          <div className="space-y-2 text-xs text-slate-300 pt-1">
                             <div className="flex items-start gap-2">
-                              <Clock className="w-3.5 h-3.5 text-[#8C6D07] flex-shrink-0 mt-0.5" />
-                              <span className="font-medium text-slate-700">
+                              <Clock className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                              <span className="text-slate-300">
                                 {formatDateString(event.start_date || event.date)} às{' '}
                                 {formatTimeString(event.start_date || event.date)}
                                 {event.end_date ? ` até ${formatTimeString(event.end_date)}` : ''}
@@ -1000,15 +1043,15 @@ export default function PublicPortal() {
                             </div>
 
                             <div className="flex items-start gap-2">
-                              <MapPin className="w-3.5 h-3.5 text-[#8C6D07] flex-shrink-0 mt-0.5" />
-                              <span className="truncate text-slate-700" title={event.location}>
+                              <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                              <span className="truncate text-slate-300" title={event.location}>
                                 {event.location}
                               </span>
                             </div>
 
                             {event.speakers && (
-                              <div className="flex items-start gap-2 text-slate-600">
-                                <Users className="w-3.5 h-3.5 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                              <div className="flex items-start gap-2 text-slate-300">
+                                <Users className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                                 <span className="line-clamp-1">{event.speakers}</span>
                               </div>
                             )}
@@ -1016,8 +1059,8 @@ export default function PublicPortal() {
                         </div>
                       </div>
 
-                      {/* Card Footer: Action Buttons (Link de Inscrição Externa) */}
-                      <div className="p-5 pt-0 space-y-2">
+                      {/* Card Footer: Action Buttons */}
+                      <div className="p-5 sm:p-6 pt-0 space-y-2 border-t border-white/5 mt-2">
                         {event.registration_url ? (
                           <a
                             href={event.registration_url}
@@ -1025,7 +1068,7 @@ export default function PublicPortal() {
                             rel="noopener noreferrer"
                             className="block w-full"
                           >
-                            <Button className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-md shadow-[#D4AF37]/20 flex items-center justify-center gap-2">
+                            <Button className="w-full bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center gap-2 transition-all">
                               <span>Garantir Inscrição / Ingressos</span>
                               <ExternalLink className="w-3.5 h-3.5" />
                             </Button>
@@ -1033,10 +1076,10 @@ export default function PublicPortal() {
                         ) : (
                           <Button
                             onClick={() => setSelectedEventModal(event)}
-                            className="w-full bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2"
+                            className="w-full bg-[#122443] hover:bg-[#1A335E] text-white border border-[#D4AF37]/30 hover:border-[#D4AF37] font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all"
                           >
                             <span>Ver Detalhes do Evento</span>
-                            <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
+                            <ArrowRight className="w-3.5 h-3.5 text-[#F5D77F]" />
                           </Button>
                         )}
 
@@ -1044,7 +1087,7 @@ export default function PublicPortal() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedEventModal(event)}
-                          className="w-full text-xs font-semibold text-slate-600 hover:text-slate-900"
+                          className="w-full text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5"
                         >
                           Mais Informações & Pauta
                         </Button>
@@ -1054,11 +1097,11 @@ export default function PublicPortal() {
                 })}
               </div>
             ) : (
-              <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
-                <CalendarIcon className="w-12 h-12 text-slate-300 mx-auto" />
-                <h3 className="font-bold text-slate-900 text-base">Nenhum evento encontrado</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Ajuste os filtros de formato e busca para ver a agenda de encontros oficiais.
+              <div className="bg-[#0A1A33]/70 backdrop-blur-md p-12 text-center rounded-3xl border border-slate-800 space-y-3">
+                <CalendarIcon className="w-12 h-12 text-slate-500 mx-auto" />
+                <h3 className="font-bold text-white text-base">Nenhum evento encontrado</h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  Ajuste os filtros de busca ou formato para ver a agenda de encontros oficiais.
                 </p>
               </div>
             )}
@@ -1071,20 +1114,20 @@ export default function PublicPortal() {
         {activeTab === 'podcast' && (
           <div className="space-y-8">
             {/* Top Toolbar Podcast */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+            <div className="bg-[#0A1A33]/80 backdrop-blur-md p-6 rounded-3xl border border-[#D4AF37]/20 shadow-xl space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-rose-500 text-white flex items-center justify-center shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-rose-700 text-white flex items-center justify-center shadow-md">
                       <Mic className="w-4 h-4" />
                     </div>
-                    <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                    <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
                       EdvancedCast — O Videocast Oficial
                     </h2>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Entrevistas com CEOs, conselheiros, fundadores e investidores do ecossistema de
-                    negócios.
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    Grandes entrevistas sobre governança, investimentos, M&A e liderança com os
+                    maiores nomes do mercado.
                   </p>
                 </div>
 
@@ -1092,36 +1135,36 @@ export default function PublicPortal() {
                   {isAdmin && (
                     <Button
                       onClick={handleOpenAddEpisode}
-                      className="bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl shadow-md"
+                      className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/20"
                     >
                       <Plus className="w-4 h-4 mr-1.5" />
                       Novo Episódio
                     </Button>
                   )}
 
-                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30 shadow-inner">
                     {filteredEpisodes.length} episódio(s)
                   </span>
                 </div>
               </div>
 
               {/* Search podcast */}
-              <div className="pt-2 border-t border-slate-100">
+              <div className="pt-3 border-t border-white/10">
                 <div className="relative max-w-md">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
                     placeholder="Buscar episódios por título, convidado ou tema..."
                     value={podcastSearch}
                     onChange={(e) => setPodcastSearch(e.target.value)}
-                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200"
+                    className="pl-9 text-xs rounded-xl bg-[#061020] border-slate-700/80 text-white placeholder:text-slate-500 focus:border-[#D4AF37]"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Featured Hero Player (se houver episódio selecionado ou primeiro episódio) */}
+            {/* Featured Hero Player (se houver episódios) */}
             {filteredEpisodes.length > 0 && (
-              <div className="rounded-3xl overflow-hidden bg-[#06242E] border border-[#D4AF37]/30 shadow-2xl text-white">
+              <div className="rounded-3xl overflow-hidden bg-[#0A1A33]/90 border border-[#D4AF37]/30 shadow-2xl text-white backdrop-blur-md">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                   {/* Left: Video Player Box */}
                   <div className="lg:col-span-7 aspect-video bg-black flex items-center justify-center relative overflow-hidden">
@@ -1162,10 +1205,10 @@ export default function PublicPortal() {
                               className="absolute inset-0 w-full h-full object-cover filter brightness-50"
                             />
                           ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020]" />
                           )}
                           <div className="relative z-10 p-8 text-center space-y-3">
-                            <Tv className="w-12 h-12 text-[#D4AF37] mx-auto animate-pulse" />
+                            <Tv className="w-12 h-12 text-[#F5D77F] mx-auto animate-pulse" />
                             <p className="text-sm font-bold text-white">Assistir ao Episódio</p>
                             <a
                               href={featuredEp.video_url}
@@ -1189,7 +1232,7 @@ export default function PublicPortal() {
                       <div className="lg:col-span-5 p-6 md:p-8 flex flex-col justify-between space-y-4">
                         <div className="space-y-3">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[10px] uppercase tracking-wider">
+                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[10px] uppercase tracking-wider">
                               Episódio{' '}
                               {featuredEp.episode_number
                                 ? `#${featuredEp.episode_number}`
@@ -1198,14 +1241,14 @@ export default function PublicPortal() {
                             {featuredEp.duration && (
                               <Badge
                                 variant="outline"
-                                className="text-teal-200 border-teal-700 text-[10px]"
+                                className="text-slate-300 border-slate-700 text-[10px] bg-[#061020]/60"
                               >
-                                <Clock className="w-3 h-3 mr-1 inline text-[#D4AF37]" />
+                                <Clock className="w-3 h-3 mr-1 inline text-[#F5D77F]" />
                                 {featuredEp.duration}
                               </Badge>
                             )}
                             {featuredEp.published_at && (
-                              <span className="text-xs text-teal-300/80">
+                              <span className="text-xs text-slate-400">
                                 {formatDateString(featuredEp.published_at)}
                               </span>
                             )}
@@ -1216,21 +1259,21 @@ export default function PublicPortal() {
                           </h3>
 
                           {featuredEp.description && (
-                            <p className="text-xs md:text-sm text-teal-100/80 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                            <p className="text-xs md:text-sm text-slate-300/90 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
                               {featuredEp.description}
                             </p>
                           )}
                         </div>
 
-                        <div className="pt-4 border-t border-teal-900/60 flex flex-wrap items-center justify-between gap-2">
+                        <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={(e) => handleCopyEpisodeLink(e, featuredEp)}
-                              className="border-teal-800 text-teal-100 hover:bg-teal-900 text-xs rounded-xl"
+                              className="border-slate-700 bg-[#061020]/70 text-slate-200 hover:text-white hover:bg-slate-800 text-xs rounded-xl"
                             >
-                              <Copy className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" />
+                              <Copy className="w-3.5 h-3.5 mr-1 text-[#F5D77F]" />
                               Copiar Link
                             </Button>
 
@@ -1238,7 +1281,7 @@ export default function PublicPortal() {
                               variant="outline"
                               size="sm"
                               onClick={(e) => handleShareWhatsApp(e, featuredEp)}
-                              className="border-emerald-800/80 bg-emerald-950/40 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
+                              className="border-emerald-700/80 bg-emerald-950/40 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
                             >
                               <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
                               WhatsApp
@@ -1251,7 +1294,7 @@ export default function PublicPortal() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleOpenEditEpisode(featuredEp)}
-                                className="h-8 text-xs text-teal-300 hover:text-white"
+                                className="h-8 text-xs text-slate-300 hover:text-white"
                               >
                                 <Edit2 className="w-3.5 h-3.5 mr-1" /> Editar
                               </Button>
@@ -1275,8 +1318,8 @@ export default function PublicPortal() {
 
             {/* Episodes List Grid */}
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <Tv className="w-5 h-5 text-[#8C6D07]" />
+              <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                <Tv className="w-5 h-5 text-[#F5D77F]" />
                 Todos os Episódios do EdvancedCast
               </h3>
 
@@ -1291,17 +1334,17 @@ export default function PublicPortal() {
                         key={ep.id}
                         onClick={() => {
                           setActiveVideoEpisode(ep)
-                          window.scrollTo({ top: 400, behavior: 'smooth' })
+                          window.scrollTo({ top: 380, behavior: 'smooth' })
                         }}
-                        className={`border bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group ${
+                        className={`group border bg-[#0A1A33]/90 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                           isSelected
-                            ? 'border-[#D4AF37] ring-2 ring-[#D4AF37] shadow-lg shadow-[#D4AF37]/20'
-                            : 'border-slate-200/90 hover:border-[#D4AF37]'
+                            ? 'border-[#D4AF37] ring-2 ring-[#D4AF37] shadow-2xl shadow-[#D4AF37]/20'
+                            : 'border-slate-800/90 hover:border-[#D4AF37]/60 hover:shadow-2xl hover:shadow-[#D4AF37]/10'
                         }`}
                       >
                         <div>
-                          {/* Thumbnail / Capa Customizada */}
-                          <div className="relative aspect-[16/9] w-full bg-[#06242E] overflow-hidden">
+                          {/* Thumbnail */}
+                          <div className="relative aspect-[16/9] w-full bg-[#061020] overflow-hidden">
                             {cover ? (
                               <img
                                 src={cover}
@@ -1309,26 +1352,25 @@ export default function PublicPortal() {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                               />
                             ) : (
-                              /* Fallback Premium Gradiente Dourado + Azul Petróleo */
-                              <div className="w-full h-full bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                                <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-[#D4AF37]/15 blur-xl pointer-events-none" />
+                              <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                                <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-[#D4AF37]/10 blur-xl pointer-events-none" />
                                 <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center mb-2 shadow-inner">
                                   <Mic className="w-5 h-5 text-[#F5D77F]" />
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F5D77F]">
                                   EdvancedCast
                                 </span>
-                                <span className="text-xs font-bold text-teal-100 mt-1 line-clamp-1 px-4">
+                                <span className="text-xs font-bold text-slate-200 mt-1 line-clamp-1 px-4">
                                   {ep.title}
                                 </span>
                               </div>
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
 
                             {/* Ep number */}
                             <div className="absolute top-3 left-3">
-                              <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
+                              <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
                                 Ep. {ep.episode_number ? `#${ep.episode_number}` : 'Extra'}
                               </Badge>
                             </div>
@@ -1341,14 +1383,14 @@ export default function PublicPortal() {
                               <button
                                 title="Copiar link do episódio"
                                 onClick={(e) => handleCopyEpisodeLink(e, ep)}
-                                className="w-7 h-7 rounded-full bg-black/60 hover:bg-[#D4AF37] text-white hover:text-slate-950 border border-white/20 hover:border-[#D4AF37] flex items-center justify-center backdrop-blur-sm transition-all"
+                                className="w-7 h-7 rounded-full bg-black/70 hover:bg-[#D4AF37] text-white hover:text-slate-950 border border-white/20 hover:border-[#D4AF37] flex items-center justify-center backdrop-blur-sm transition-all"
                               >
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 title="Compartilhar no WhatsApp"
                                 onClick={(e) => handleShareWhatsApp(e, ep)}
-                                className="w-7 h-7 rounded-full bg-black/60 hover:bg-emerald-600 text-white border border-white/20 hover:border-emerald-500 flex items-center justify-center backdrop-blur-sm transition-all"
+                                className="w-7 h-7 rounded-full bg-black/70 hover:bg-emerald-600 text-white border border-white/20 hover:border-emerald-500 flex items-center justify-center backdrop-blur-sm transition-all"
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
                               </button>
@@ -1356,33 +1398,33 @@ export default function PublicPortal() {
 
                             {/* Play overlay */}
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                              <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
                                 <Play className="w-5 h-5 fill-current ml-0.5" />
                               </div>
                             </div>
 
                             {/* Duration bottom */}
                             {ep.duration && (
-                              <div className="absolute bottom-2.5 right-3 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-[10px] text-white font-bold">
+                              <div className="absolute bottom-2.5 right-3 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-sm text-[10px] text-white font-bold border border-white/10">
                                 {ep.duration}
                               </div>
                             )}
                           </div>
 
                           {/* Info */}
-                          <div className="p-5 space-y-2">
+                          <div className="p-5 sm:p-6 space-y-2">
                             {ep.published_at && (
-                              <p className="text-[10px] font-semibold text-slate-500">
+                              <p className="text-[10px] font-semibold text-[#F5D77F]">
                                 {formatDateString(ep.published_at)}
                               </p>
                             )}
 
-                            <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                            <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
                               {ep.title}
                             </h4>
 
                             {ep.description && (
-                              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                              <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                                 {ep.description}
                               </p>
                             )}
@@ -1390,19 +1432,19 @@ export default function PublicPortal() {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
+                        <div className="p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-white/5 mt-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-[#8C6D07] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            <span className="text-xs font-bold text-[#F5D77F] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                               <Play className="w-3.5 h-3.5 fill-current" />
                               Assistir
                             </span>
 
-                            <span className="text-slate-300">&bull;</span>
+                            <span className="text-slate-600">&bull;</span>
 
                             <button
                               type="button"
                               onClick={(e) => handleShareWhatsApp(e, ep)}
-                              className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+                              className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
                               title="Compartilhar no WhatsApp"
                             >
                               <MessageCircle className="w-3 h-3" />
@@ -1419,7 +1461,7 @@ export default function PublicPortal() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleOpenEditEpisode(ep)}
-                                className="h-7 px-2 text-[11px] text-slate-600 hover:text-slate-900"
+                                className="h-7 px-2 text-[11px] text-slate-300 hover:text-white"
                               >
                                 <Edit2 className="w-3 h-3 mr-1" /> Editar
                               </Button>
@@ -1427,7 +1469,7 @@ export default function PublicPortal() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteEpisode(ep)}
-                                className="h-7 px-2 text-[11px] text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                className="h-7 px-2 text-[11px] text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </Button>
@@ -1439,10 +1481,10 @@ export default function PublicPortal() {
                   })}
                 </div>
               ) : (
-                <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
-                  <Mic className="w-12 h-12 text-slate-300 mx-auto" />
-                  <h3 className="font-bold text-slate-900 text-base">Nenhum episódio encontrado</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                <div className="bg-[#0A1A33]/70 backdrop-blur-md p-12 text-center rounded-3xl border border-slate-800 space-y-3">
+                  <Mic className="w-12 h-12 text-slate-500 mx-auto" />
+                  <h3 className="font-bold text-white text-base">Nenhum episódio encontrado</h3>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto">
                     Novos episódios do EdvancedCast estão sendo gravados e serão disponibilizados em
                     breve.
                   </p>
@@ -1451,7 +1493,6 @@ export default function PublicPortal() {
             </div>
           </div>
         )}
-      </main>
 
         {/* =====================================================================
             ABA 3: MATERIAIS PÚBLICOS DOS ENCONTROS OFICIAIS DO CLUB
@@ -1459,36 +1500,40 @@ export default function PublicPortal() {
         {activeTab === 'materiais' && (
           <div className="space-y-8 animate-fade-in">
             {/* Top Toolbar: Search & Format Filters */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+            <div className="bg-[#0A1A33]/80 backdrop-blur-md p-6 rounded-3xl border border-[#D4AF37]/20 shadow-xl space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <FolderOpen className="w-6 h-6 text-[#8C6D07]" />
-                    Galeria e Materiais Públicos do Club
+                  <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1px] flex items-center justify-center shadow-md">
+                      <div className="w-full h-full bg-[#061020] rounded-[11px] flex items-center justify-center">
+                        <FolderOpen className="w-4 h-4 text-[#F5D77F]" />
+                      </div>
+                    </div>
+                    <span>Galeria e Materiais Oficiais do Club</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
                     Fotos em alta definição, vídeos de cobertura e apresentações oficiais dos nossos
-                    encontros presenciais e digitais abertos ao público.
+                    encontros presenciais e summits.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-2 rounded-xl border border-[#D4AF37]/30 shadow-inner">
                     {filteredMaterials.length} material(is)
                   </span>
                 </div>
               </div>
 
               {/* Filters row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3 border-t border-white/10">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
                     placeholder="Buscar fotos, vídeos, temas..."
                     value={materialSearch}
                     onChange={(e) => setMaterialSearch(e.target.value)}
-                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200 focus:border-[#D4AF37]"
+                    className="pl-9 text-xs rounded-xl bg-[#061020] border-slate-700/80 text-white placeholder:text-slate-500 focus:border-[#D4AF37]"
                   />
                 </div>
 
@@ -1497,7 +1542,7 @@ export default function PublicPortal() {
                   <select
                     value={materialTypeFilter}
                     onChange={(e) => setMaterialTypeFilter(e.target.value as any)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-[#061020] border border-slate-700/80 text-slate-200 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todos os Formatos (Fotos & Vídeos)</option>
                     <option value="photo">📸 Apenas Fotos dos Encontros</option>
@@ -1511,7 +1556,7 @@ export default function PublicPortal() {
                   <select
                     value={materialMeetingFilter}
                     onChange={(e) => setMaterialMeetingFilter(e.target.value)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-[#061020] border border-slate-700/80 text-slate-200 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todos os Encontros Oficiais</option>
                     {meetings.map((m) => (
@@ -1524,16 +1569,18 @@ export default function PublicPortal() {
               </div>
 
               {/* Active filters pill list / reset */}
-              {(materialSearch || materialTypeFilter !== 'todos' || materialMeetingFilter !== 'todos') && (
+              {(materialSearch ||
+                materialTypeFilter !== 'todos' ||
+                materialMeetingFilter !== 'todos') && (
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="text-[11px] font-bold text-slate-400">Filtros ativos:</span>
                   {materialSearch && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-slate-100 text-slate-700 gap-1 pr-1"
+                      className="text-[10px] bg-[#061020] text-slate-200 border border-slate-700 gap-1 pr-1"
                     >
                       Busca: "{materialSearch}"
-                      <button onClick={() => setMaterialSearch('')} className="hover:text-rose-500">
+                      <button onClick={() => setMaterialSearch('')} className="hover:text-rose-400">
                         <X className="w-3 h-3" />
                       </button>
                     </Badge>
@@ -1541,12 +1588,17 @@ export default function PublicPortal() {
                   {materialTypeFilter !== 'todos' && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-[#D4AF37]/15 text-[#8C6D07] border border-[#D4AF37]/30 gap-1 pr-1"
+                      className="text-[10px] bg-[#D4AF37]/15 text-[#F5D77F] border border-[#D4AF37]/30 gap-1 pr-1"
                     >
-                      Tipo: {materialTypeFilter === 'photo' ? 'Fotos' : materialTypeFilter === 'video' ? 'Vídeos' : 'Documentos'}
+                      Tipo:{' '}
+                      {materialTypeFilter === 'photo'
+                        ? 'Fotos'
+                        : materialTypeFilter === 'video'
+                          ? 'Vídeos'
+                          : 'Documentos'}
                       <button
                         onClick={() => setMaterialTypeFilter('todos')}
-                        className="hover:text-rose-500"
+                        className="hover:text-rose-400"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -1555,12 +1607,14 @@ export default function PublicPortal() {
                   {materialMeetingFilter !== 'todos' && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-[#0A1A33]/10 text-[#0A1A33] border border-[#0A1A33]/20 gap-1 pr-1"
+                      className="text-[10px] bg-[#122443] text-slate-200 border border-slate-700 gap-1 pr-1"
                     >
-                      Encontro: {meetings.find((m) => m.id === materialMeetingFilter)?.title || materialMeetingFilter}
+                      Encontro:{' '}
+                      {meetings.find((m) => m.id === materialMeetingFilter)?.title ||
+                        materialMeetingFilter}
                       <button
                         onClick={() => setMaterialMeetingFilter('todos')}
-                        className="hover:text-rose-500"
+                        className="hover:text-rose-400"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -1572,7 +1626,7 @@ export default function PublicPortal() {
                       setMaterialTypeFilter('todos')
                       setMaterialMeetingFilter('todos')
                     }}
-                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold ml-2 flex items-center gap-1"
+                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold ml-2 flex items-center gap-1"
                   >
                     <RotateCcw className="w-3 h-3" /> Limpar filtros
                   </button>
@@ -1592,16 +1646,17 @@ export default function PublicPortal() {
                   const externalUrl = mat.external_url || ''
                   const ytId = isVideo ? getYouTubeId(externalUrl) : null
                   const ytThumb = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : ''
-                  const displayThumb = isPhoto ? fileUrl : (ytThumb || fileUrl)
+                  const displayThumb = isPhoto ? fileUrl : ytThumb || fileUrl
 
                   const relatedMeeting =
-                    mat.expand?.meeting || meetings.find((m) => m.id === mat.meeting || (mat as any).meeting_id)
+                    mat.expand?.meeting ||
+                    meetings.find((m) => m.id === mat.meeting || (mat as any).meeting_id)
 
                   return (
                     <Card
                       key={mat.id}
                       onClick={() => setPreviewMediaModal(mat)}
-                      className="border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl hover:border-[#D4AF37]/50 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                      className="group border border-slate-800/90 bg-[#0A1A33]/90 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl hover:border-[#D4AF37]/60 hover:shadow-2xl hover:shadow-[#D4AF37]/10 transition-all duration-300 flex flex-col justify-between cursor-pointer"
                     >
                       <div>
                         {/* Media Thumbnail Container */}
@@ -1610,16 +1665,16 @@ export default function PublicPortal() {
                             <img
                               src={displayThumb}
                               alt={mat.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95 group-hover:brightness-100"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#061020] to-[#030914] flex flex-col items-center justify-center p-6 text-center">
+                            <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
                               {isPhoto ? (
-                                <ImageIcon className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                                <ImageIcon className="w-10 h-10 text-[#F5D77F] mb-2 opacity-80" />
                               ) : isVideo ? (
-                                <Video className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                                <Video className="w-10 h-10 text-[#F5D77F] mb-2 opacity-80" />
                               ) : (
-                                <FileText className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                                <FileText className="w-10 h-10 text-[#F5D77F] mb-2 opacity-80" />
                               )}
                               <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F]">
                                 {mat.type.toUpperCase()}
@@ -1627,23 +1682,27 @@ export default function PublicPortal() {
                             </div>
                           )}
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
 
                           {/* Top Type Badge */}
                           <div className="absolute top-3 left-3">
-                            <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
+                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
                               {isPhoto && <ImageIcon className="w-3 h-3" />}
                               {isVideo && <Video className="w-3 h-3" />}
                               {isDoc && <FileText className="w-3 h-3" />}
                               <span>
-                                {isPhoto ? 'Foto Oficial' : isVideo ? 'Vídeo / Gravação' : 'Documento'}
+                                {isPhoto
+                                  ? 'Foto Oficial'
+                                  : isVideo
+                                    ? 'Vídeo / Gravação'
+                                    : 'Documento'}
                               </span>
                             </Badge>
                           </div>
 
                           {/* Center Play or Zoom Icon on Hover */}
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
                               {isVideo ? (
                                 <Play className="w-5 h-5 fill-current ml-0.5" />
                               ) : (
@@ -1661,13 +1720,13 @@ export default function PublicPortal() {
                         </div>
 
                         {/* Title & Description */}
-                        <div className="p-5 space-y-2">
-                          <h4 className="font-black text-sm text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                        <div className="p-5 sm:p-6 space-y-2">
+                          <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
                             {mat.title}
                           </h4>
 
                           {mat.description && (
-                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                            <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                               {mat.description}
                             </p>
                           )}
@@ -1675,12 +1734,12 @@ export default function PublicPortal() {
                       </div>
 
                       {/* Footer Info */}
-                      <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
-                        <span className="text-[11px] font-semibold text-slate-500">
+                      <div className="p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-white/5 mt-2">
+                        <span className="text-[11px] font-semibold text-slate-400">
                           {mat.created ? formatShortDate(mat.created) : 'Oficial do Club'}
                         </span>
 
-                        <span className="text-xs font-bold text-[#8C6D07] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        <span className="text-xs font-bold text-[#F5D77F] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                           <Eye className="w-3.5 h-3.5" />
                           Visualizar
                         </span>
@@ -1690,10 +1749,10 @@ export default function PublicPortal() {
                 })}
               </div>
             ) : (
-              <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
-                <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
-                <h3 className="font-bold text-slate-900 text-base">Nenhum material encontrado</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <div className="bg-[#0A1A33]/70 backdrop-blur-md p-12 text-center rounded-3xl border border-slate-800 space-y-3">
+                <FolderOpen className="w-12 h-12 text-slate-500 mx-auto" />
+                <h3 className="font-bold text-white text-base">Nenhum material encontrado</h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
                   Fotos e vídeos dos próximos encontros serão catalogados aqui após a realização de
                   cada evento.
                 </p>
@@ -1704,22 +1763,20 @@ export default function PublicPortal() {
       </main>
 
       {/* =========================================================================
-          4. PUBLIC FOOTER & OFFICIAL CLUB CONTACT INFO (PREMIUM NAVY & GOLD)
+          4. PUBLIC FOOTER & OFFICIAL CLUB CONTACT INFO (Pure Dark Navy + Gold)
          ========================================================================= */}
-      <footer className="bg-gradient-to-b from-[#0A1A33] via-[#061020] to-[#030914] text-slate-200 border-t border-slate-800/80 py-14 px-4 sm:px-6 lg:px-8 mt-16 shadow-2xl">
+      <footer className="relative z-10 bg-gradient-to-b from-[#0A1A33] via-[#061020] to-[#030812] text-slate-200 border-t border-[#D4AF37]/20 py-16 px-4 sm:px-6 lg:px-8 mt-20 shadow-2xl">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
           {/* Col 1: Club Brand Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
-                <div className="w-full h-full bg-[#0A1A33] rounded-[10px] flex items-center justify-center">
-                  <Crown className="w-5 h-5 text-[#D4AF37]" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[1.5px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
+                <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
+                  <Crown className="w-5 h-5 text-[#F5D77F]" />
                 </div>
               </div>
               <div>
-                <span className="font-black text-base tracking-wider text-white block">
-                  EDVANCED
-                </span>
+                <span className="font-black text-lg tracking-wider text-white block">EDVANCED</span>
                 <span className="text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-bold block -mt-0.5">
                   Business Club
                 </span>
@@ -1738,10 +1795,10 @@ export default function PublicPortal() {
 
           {/* Col 2: Public Navigation Links */}
           <div className="space-y-3 text-xs">
-            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5" /> Navegação do Portal
+            <p className="font-extrabold text-[#F5D77F] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#D4AF37]" /> Navegação do Portal
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               <li>
                 <button
                   type="button"
@@ -1749,7 +1806,7 @@ export default function PublicPortal() {
                     setTab('eventos')
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                   }}
-                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
                 >
                   <CalendarIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>Eventos Oficiais com Inscrição</span>
@@ -1762,7 +1819,7 @@ export default function PublicPortal() {
                     setTab('podcast')
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                   }}
-                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
                 >
                   <Mic className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>EdvancedCast (Videocast Oficial)</span>
@@ -1775,7 +1832,7 @@ export default function PublicPortal() {
                     setTab('materiais')
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                   }}
-                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
                 >
                   <FolderOpen className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>Materiais, Fotos e Gravações</span>
@@ -1784,7 +1841,7 @@ export default function PublicPortal() {
               <li className="pt-2 border-t border-slate-800">
                 <Link
                   to="/login"
-                  className="text-[#F5D77F] hover:text-white transition-colors font-bold flex items-center gap-1.5"
+                  className="text-[#F5D77F] hover:text-white transition-colors font-bold flex items-center gap-2"
                 >
                   <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>Portal VIP dos Membros &rarr;</span>
@@ -1795,15 +1852,15 @@ export default function PublicPortal() {
 
           {/* Col 3: Official Contact Details */}
           <div className="space-y-3 text-xs">
-            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" /> Contato Oficial do Club
+            <p className="font-extrabold text-[#F5D77F] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-[#D4AF37]" /> Contato Oficial do Club
             </p>
             <div className="space-y-2.5 text-slate-300">
               <a
                 href="https://wa.me/5511999999999"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900 transition-all group"
+                className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-emerald-500/50 hover:bg-[#0A1A33] transition-all group"
               >
                 <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform flex-shrink-0">
                   <MessageCircle className="w-4 h-4" />
@@ -1818,7 +1875,7 @@ export default function PublicPortal() {
                 href="https://instagram.com/edvancedbusinessclub"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-pink-500/50 hover:bg-slate-900 transition-all group"
+                className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-pink-500/50 hover:bg-[#0A1A33] transition-all group"
               >
                 <div className="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 group-hover:scale-105 transition-transform flex-shrink-0">
                   <Instagram className="w-4 h-4" />
@@ -1831,7 +1888,7 @@ export default function PublicPortal() {
 
               <a
                 href="mailto:contato@edvanced.com.br"
-                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-[#D4AF37]/50 hover:bg-slate-900 transition-all group"
+                className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37]/50 hover:bg-[#0A1A33] transition-all group"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#F5D77F] group-hover:scale-105 transition-transform flex-shrink-0">
                   <Mail className="w-4 h-4" />
@@ -1844,20 +1901,20 @@ export default function PublicPortal() {
             </div>
           </div>
 
-          {/* Col 4: Sede / Address & Admissions */}
+          {/* Col 4: Sede & Admissão */}
           <div className="space-y-3 text-xs">
-            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" /> Sede & Admissão
+            <p className="font-extrabold text-[#F5D77F] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" /> Sede & Admissão
             </p>
-            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+            <div className="p-3.5 rounded-2xl bg-[#061020] border border-slate-800 space-y-2">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-white text-[11px]">Sede Executiva</p>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
                     Av. Brigadeiro Faria Lima, 3477 — Itaim Bibi
                   </p>
-                  <p className="text-slate-500 text-[10px]">São Paulo - SP, Brasil</p>
+                  <p className="text-slate-400 text-[10px]">São Paulo - SP, Brasil</p>
                 </div>
               </div>
             </div>
@@ -1869,14 +1926,14 @@ export default function PublicPortal() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-8 mt-10 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto pt-8 mt-12 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
             &copy; {new Date().getFullYear()} Edvanced Business Club. Todos os direitos reservados.
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-3 text-[11px]">
             <span className="text-slate-400">Alta Governança Corporativa</span>
             <span>&bull;</span>
-            <span className="text-[#D4AF37] font-semibold">Ecossistema Exclusivo de Negócios</span>
+            <span className="text-[#F5D77F] font-semibold">Ecossistema Exclusivo de Negócios</span>
           </div>
         </div>
       </footer>
@@ -1889,10 +1946,10 @@ export default function PublicPortal() {
           open={!!previewMediaModal}
           onOpenChange={(open) => !open && setPreviewMediaModal(null)}
         >
-          <DialogContent className="max-w-3xl bg-[#061020] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-extrabold text-[10px]">
+                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
                   {previewMediaModal.type === 'photo'
                     ? 'Foto do Encontro'
                     : previewMediaModal.type === 'video'
@@ -1932,7 +1989,11 @@ export default function PublicPortal() {
                     />
                   ) : previewMediaModal.file_url ? (
                     <video
-                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      src={getFileUrl(
+                        'materials',
+                        previewMediaModal.id,
+                        previewMediaModal.file_url,
+                      )}
                       controls
                       autoPlay
                       className="w-full h-full object-contain"
@@ -1960,7 +2021,11 @@ export default function PublicPortal() {
                 <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
                   {previewMediaModal.file_url ? (
                     <img
-                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      src={getFileUrl(
+                        'materials',
+                        previewMediaModal.id,
+                        previewMediaModal.file_url,
+                      )}
                       alt={previewMediaModal.title}
                       className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
                     />
@@ -1980,7 +2045,7 @@ export default function PublicPortal() {
               )}
 
               {previewMediaModal.type === 'document' && (
-                <div className="p-8 rounded-2xl bg-[#030914] border border-slate-800 text-center space-y-4">
+                <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4">
                   <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
                   <div>
                     <h5 className="text-base font-bold text-white">{previewMediaModal.title}</h5>
@@ -1991,7 +2056,11 @@ export default function PublicPortal() {
                   </div>
                   {previewMediaModal.file_url && (
                     <a
-                      href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      href={getFileUrl(
+                        'materials',
+                        previewMediaModal.id,
+                        previewMediaModal.file_url,
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       download
@@ -2006,7 +2075,7 @@ export default function PublicPortal() {
             </div>
 
             {previewMediaModal.description && previewMediaModal.type !== 'document' && (
-              <div className="p-4 bg-[#030914] rounded-2xl border border-slate-800 text-xs text-slate-300 leading-relaxed">
+              <div className="p-4 bg-[#061020] rounded-2xl border border-slate-800 text-xs text-slate-300 leading-relaxed">
                 <p className="whitespace-pre-wrap">{previewMediaModal.description}</p>
               </div>
             )}
@@ -2027,7 +2096,7 @@ export default function PublicPortal() {
                   rel="noopener noreferrer"
                   download
                 >
-                  <Button className="bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md">
+                  <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md">
                     Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </a>
@@ -2045,10 +2114,10 @@ export default function PublicPortal() {
           open={!!selectedEventModal}
           onOpenChange={(open) => !open && setSelectedEventModal(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
+                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
                   {selectedEventModal.type || 'Presencial'}
                 </Badge>
                 <Badge
@@ -2077,14 +2146,14 @@ export default function PublicPortal() {
 
             <div className="space-y-4 my-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-[#F5D77F] font-semibold flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data & Horário
                   </p>
                   <p className="text-white font-bold">
                     {formatDateString(selectedEventModal.start_date || selectedEventModal.date)}
                   </p>
-                  <p className="text-teal-200">
+                  <p className="text-slate-300">
                     {formatTimeString(selectedEventModal.start_date || selectedEventModal.date)}
                     {selectedEventModal.end_date
                       ? ` até ${formatTimeString(selectedEventModal.end_date)}`
@@ -2092,8 +2161,8 @@ export default function PublicPortal() {
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-[#F5D77F] font-semibold flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#D4AF37]" /> Local / Transmissão
                   </p>
                   <p className="text-white font-bold">{selectedEventModal.location}</p>
@@ -2101,8 +2170,8 @@ export default function PublicPortal() {
               </div>
 
               {selectedEventModal.speakers && (
-                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
-                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-[#F5D77F] font-semibold flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
                   </p>
                   <p className="text-white">{selectedEventModal.speakers}</p>
@@ -2110,7 +2179,7 @@ export default function PublicPortal() {
               )}
 
               {selectedEventModal.description && (
-                <div className="p-4 bg-[#03151B]/70 rounded-2xl border border-teal-950 text-teal-100/90 max-h-52 overflow-y-auto leading-relaxed">
+                <div className="p-4 bg-[#061020]/90 rounded-2xl border border-slate-800 text-slate-200 max-h-52 overflow-y-auto leading-relaxed">
                   {selectedEventModal.description.startsWith('<') ? (
                     <div dangerouslySetInnerHTML={{ __html: selectedEventModal.description }} />
                   ) : (
@@ -2120,11 +2189,11 @@ export default function PublicPortal() {
               )}
             </div>
 
-            <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-teal-950">
+            <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setSelectedEventModal(null)}
-                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+                className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
               >
                 Fechar
               </Button>
@@ -2135,7 +2204,7 @@ export default function PublicPortal() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-lg shadow-[#D4AF37]/20">
+                  <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-lg shadow-[#D4AF37]/20">
                     Ir para Inscrição Externa <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </a>
@@ -2150,10 +2219,10 @@ export default function PublicPortal() {
          ========================================================================= */}
       {showPodcastModal && (
         <Dialog open={showPodcastModal} onOpenChange={setShowPodcastModal}>
-          <DialogContent className="max-w-xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider">
+                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider">
                   Curadoria do EdvancedCast
                 </Badge>
               </div>
@@ -2162,7 +2231,7 @@ export default function PublicPortal() {
                   ? 'Editar Episódio do Podcast'
                   : 'Publicar Novo Episódio do Podcast'}
               </DialogTitle>
-              <DialogDescription className="text-xs text-teal-200/70">
+              <DialogDescription className="text-xs text-slate-300">
                 Cadastre o link do vídeo (YouTube, Vimeo ou MP4) e detalhes do episódio para a aba
                 pública.
               </DialogDescription>
@@ -2171,12 +2240,12 @@ export default function PublicPortal() {
             <form onSubmit={handleSaveEpisode} className="space-y-4 pt-2 text-xs">
               {/* Título */}
               <div className="space-y-1">
-                <Label className="text-teal-300 font-semibold">Título do Episódio *</Label>
+                <Label className="text-[#F5D77F] font-semibold">Título do Episódio *</Label>
                 <Input
                   placeholder="Ex: EdvancedCast #03 — Governança e Captação de Recursos"
                   value={castTitle}
                   onChange={(e) => setCastTitle(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                   required
                 />
               </div>
@@ -2193,28 +2262,28 @@ export default function PublicPortal() {
                   placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
                   value={castVideoUrl}
                   onChange={(e) => setCastVideoUrl(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                   required
                 />
-                <p className="text-[10px] text-teal-200/60">
+                <p className="text-[10px] text-slate-400">
                   Insira o link padrão do YouTube ou Vimeo. Ele será reproduzido no player embutido
                   da plataforma.
                 </p>
               </div>
 
               {/* Upload de Capa / Thumbnail Própria */}
-              <div className="p-4 rounded-2xl bg-[#03151B] border border-teal-900 space-y-3">
+              <div className="p-4 rounded-2xl bg-[#061020] border border-slate-800 space-y-3">
                 <Label className="text-[#F5D77F] font-semibold flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
                     Capa / Thumbnail Própria do Episódio
                   </span>
-                  <span className="text-[10px] text-teal-300/70">JPG, PNG ou WebP</span>
+                  <span className="text-[10px] text-slate-400">JPG, PNG ou WebP</span>
                 </Label>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {/* Preview Box */}
-                  <div className="w-full sm:w-36 h-24 rounded-xl border border-teal-800 bg-[#06242E] overflow-hidden flex items-center justify-center flex-shrink-0 relative group">
+                  <div className="w-full sm:w-36 h-24 rounded-xl border border-slate-700 bg-[#0A1A33] overflow-hidden flex items-center justify-center flex-shrink-0 relative group">
                     {castCoverPreview ? (
                       <img
                         src={castCoverPreview}
@@ -2228,8 +2297,7 @@ export default function PublicPortal() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      /* Fallback Preview Premium */
-                      <div className="w-full h-full bg-gradient-to-br from-[#06242E] via-[#0A3340] to-[#03151B] flex flex-col items-center justify-center p-2 text-center">
+                      <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-2 text-center">
                         <Mic className="w-5 h-5 text-[#D4AF37] mb-1" />
                         <span className="text-[9px] font-bold text-[#F5D77F]">Capa Padrão</span>
                       </div>
@@ -2250,7 +2318,7 @@ export default function PublicPortal() {
                       <Button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-teal-950 hover:bg-teal-900 text-teal-100 border border-teal-800 text-xs py-1.5 px-3 rounded-xl flex items-center gap-1.5"
+                        className="bg-[#122443] hover:bg-[#1A335E] text-slate-100 border border-slate-700 text-xs py-1.5 px-3 rounded-xl flex items-center gap-1.5"
                       >
                         <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
                         <span>Selecionar Arquivo</span>
@@ -2280,7 +2348,7 @@ export default function PublicPortal() {
                       )}
                     </div>
 
-                    <p className="text-[10px] text-teal-300/60">
+                    <p className="text-[10px] text-slate-400">
                       Envie uma imagem em alta resolução (16:9). Se nenhuma imagem for enviada, será
                       utilizado o padrão visual premium dourado do Club.
                     </p>
@@ -2288,64 +2356,64 @@ export default function PublicPortal() {
                 </div>
 
                 {/* Ou URL Externa */}
-                <div className="pt-2 border-t border-teal-950 space-y-1">
-                  <Label className="text-[11px] text-teal-300/80">
+                <div className="pt-2 border-t border-slate-800 space-y-1">
+                  <Label className="text-[11px] text-slate-400">
                     Ou informe uma URL de imagem externa:
                   </Label>
                   <Input
                     placeholder="https://... (opcional)"
                     value={castThumbnailUrl}
                     onChange={(e) => setCastThumbnailUrl(e.target.value)}
-                    className="text-xs bg-[#06242E] border-teal-900 text-white rounded-xl h-8"
+                    className="text-xs bg-[#0A1A33] border-slate-700 text-white rounded-xl h-8"
                   />
                 </div>
               </div>
 
               {/* Duração Estimada */}
               <div className="space-y-1">
-                <Label className="text-teal-300 font-semibold">Duração Estimada</Label>
+                <Label className="text-[#F5D77F] font-semibold">Duração Estimada</Label>
                 <Input
                   placeholder="Ex: 45 min ou 01h 15m"
                   value={castDuration}
                   onChange={(e) => setCastDuration(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                 />
               </div>
 
               {/* Número do Episódio e Data de Publicação */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-teal-300 font-semibold">Número do Episódio</Label>
+                  <Label className="text-[#F5D77F] font-semibold">Número do Episódio</Label>
                   <Input
                     type="number"
                     placeholder="Ex: 1, 2, 3..."
                     value={castEpNumber}
                     onChange={(e) => setCastEpNumber(e.target.value ? Number(e.target.value) : '')}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                    className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-teal-300 font-semibold">Data de Publicação</Label>
+                  <Label className="text-[#F5D77F] font-semibold">Data de Publicação</Label>
                   <Input
                     type="date"
                     value={castPublishedAt}
                     onChange={(e) => setCastPublishedAt(e.target.value)}
-                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                    className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                   />
                 </div>
               </div>
 
               {/* Descrição */}
               <div className="space-y-1">
-                <Label className="text-teal-300 font-semibold">
+                <Label className="text-[#F5D77F] font-semibold">
                   Descrição / Sinopse do Episódio
                 </Label>
                 <Textarea
                   placeholder="Resumo dos tópicos discutidos, perfil dos convidados e destaques..."
                   value={castDesc}
                   onChange={(e) => setCastDesc(e.target.value)}
-                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  className="text-xs bg-[#061020] border-slate-700 text-white rounded-xl"
                   rows={4}
                 />
               </div>
@@ -2355,14 +2423,14 @@ export default function PublicPortal() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowPodcastModal(false)}
-                  className="text-xs border-teal-900 text-teal-200"
+                  className="text-xs border-slate-700 text-slate-300"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSavingEpisode}
-                  className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-5 rounded-xl shadow-md"
+                  className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 rounded-xl shadow-md"
                 >
                   {isSavingEpisode
                     ? 'Salvando...'
