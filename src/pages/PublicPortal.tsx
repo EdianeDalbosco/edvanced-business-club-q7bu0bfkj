@@ -33,18 +33,25 @@ import {
   Upload,
   Image as ImageIcon,
   RotateCcw,
+  FileText,
+  Eye,
+  Instagram,
+  Phone,
+  Mail,
+  FolderOpen,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   getMeetings,
   getEdvancedCastEpisodes,
+  getAllMaterials,
   getFileUrl,
   createEdvancedCastEpisode,
   updateEdvancedCastEpisode,
   deleteEdvancedCastEpisode,
 } from '@/services/api'
-import type { Meeting, EdvancedCastEpisode } from '@/types'
+import type { Meeting, EdvancedCastEpisode, Material } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +68,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+
+// Helper to extract YouTube video ID
+export function getYouTubeId(url?: string): string | null {
+  if (!url) return null
+  const clean = url.trim()
+  const ytMatch = clean.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/,
+  )
+  return ytMatch && ytMatch[1] ? ytMatch[1] : null
+}
 
 // Helper to convert YouTube / Vimeo url to embed URL
 export function getVideoEmbedUrl(url?: string): string | null {
@@ -110,14 +127,18 @@ export default function PublicPortal() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
 
-  // Tab switch: 'eventos' | 'podcast'
-  const activeTab = searchParams.get('aba') === 'podcast' ? 'podcast' : 'eventos'
-  const setTab = (tab: 'eventos' | 'podcast') => {
+  // Tab switch: 'eventos' | 'podcast' | 'materiais'
+  const rawTab = searchParams.get('aba')
+  const activeTab: 'eventos' | 'podcast' | 'materiais' =
+    rawTab === 'podcast' ? 'podcast' : rawTab === 'materiais' ? 'materiais' : 'eventos'
+
+  const setTab = (tab: 'eventos' | 'podcast' | 'materiais') => {
     setSearchParams({ aba: tab })
   }
 
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [episodes, setEpisodes] = useState<EdvancedCastEpisode[]>([])
+  const [materials, setMaterials] = useState<Material[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Search and filters for Public Events
@@ -131,8 +152,16 @@ export default function PublicPortal() {
   // Search for Podcast Episodes
   const [podcastSearch, setPodcastSearch] = useState('')
 
+  // Search and filters for Public Materials
+  const [materialSearch, setMaterialSearch] = useState('')
+  const [materialTypeFilter, setMaterialTypeFilter] = useState<'todos' | 'photo' | 'video' | 'document'>('todos')
+  const [materialMeetingFilter, setMaterialMeetingFilter] = useState<string>('todos')
+
   // Video Player Modal
   const [activeVideoEpisode, setActiveVideoEpisode] = useState<EdvancedCastEpisode | null>(null)
+
+  // Media Preview Modal (for Public Materials: Photo/Video/Document)
+  const [previewMediaModal, setPreviewMediaModal] = useState<Material | null>(null)
 
   // Event Details Modal
   const [selectedEventModal, setSelectedEventModal] = useState<Meeting | null>(null)
@@ -155,12 +184,14 @@ export default function PublicPortal() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const [meets, eps] = await Promise.all([
+      const [meets, eps, mats] = await Promise.all([
         getMeetings().catch(() => [] as Meeting[]),
         getEdvancedCastEpisodes().catch(() => [] as EdvancedCastEpisode[]),
+        getAllMaterials().catch(() => [] as Material[]),
       ])
       setMeetings(meets)
       setEpisodes(eps)
+      setMaterials(mats)
     } catch (err) {
       console.error('Erro ao carregar dados da página pública:', err)
     } finally {
@@ -368,6 +399,44 @@ export default function PublicPortal() {
     })
   }, [episodes, podcastSearch])
 
+  // Filtered Public Materials (Photos, Videos, Documents)
+  const filteredMaterials = useMemo(() => {
+    return materials.filter((mat) => {
+      const q = materialSearch.toLowerCase().trim()
+      const matchesSearch =
+        !q ||
+        mat.title?.toLowerCase().includes(q) ||
+        mat.description?.toLowerCase().includes(q) ||
+        mat.expand?.meeting?.title?.toLowerCase().includes(q) ||
+        mat.expand?.meeting?.event_name?.toLowerCase().includes(q)
+
+      if (!matchesSearch) return false
+
+      if (materialTypeFilter !== 'todos' && mat.type !== materialTypeFilter) return false
+
+      if (materialMeetingFilter !== 'todos') {
+        const matMeetId = mat.meeting || (mat as any).meeting_id
+        if (matMeetId !== materialMeetingFilter) return false
+      }
+
+      return true
+    })
+  }, [materials, materialSearch, materialTypeFilter, materialMeetingFilter])
+
+  // Materials grouped by meeting or standalone for nice presentation
+  const materialsByMeeting = useMemo(() => {
+    const map = new Map<string, { meeting: Meeting | null; items: Material[] }>()
+    filteredMaterials.forEach((mat) => {
+      const meetId = mat.meeting || (mat as any).meeting_id || 'sem_encontro'
+      if (!map.has(meetId)) {
+        const foundMeeting = meetings.find((m) => m.id === meetId) || mat.expand?.meeting || null
+        map.set(meetId, { meeting: foundMeeting, items: [] })
+      }
+      map.get(meetId)!.items.push(mat)
+    })
+    return Array.from(map.values())
+  }, [filteredMaterials, meetings])
+
   // Admin: Open Add/Edit Episode
   const handleOpenAddEpisode = () => {
     setEditingEpisode(null)
@@ -515,32 +584,45 @@ export default function PublicPortal() {
           </Link>
 
           {/* Tab Navigation Center */}
-          <div className="hidden md:flex items-center gap-2 bg-[#03151B]/80 p-1 rounded-2xl border border-teal-900/60 shadow-inner">
+          <div className="hidden md:flex items-center gap-1.5 bg-[#03151B]/80 p-1 rounded-2xl border border-teal-900/60 shadow-inner">
             <button
               type="button"
               onClick={() => setTab('eventos')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeTab === 'eventos'
                   ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
                   : 'text-teal-100 hover:text-white hover:bg-white/5'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
-              <span>Eventos do Business Club</span>
+              <span>Eventos do Club</span>
             </button>
 
             <button
               type="button"
               onClick={() => setTab('podcast')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeTab === 'podcast'
                   ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
                   : 'text-teal-100 hover:text-white hover:bg-white/5'
               }`}
             >
               <Mic className="w-4 h-4" />
-              <span>EdvancedCast (Podcast)</span>
+              <span>EdvancedCast</span>
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTab('materiais')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                activeTab === 'materiais'
+                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-md shadow-[#D4AF37]/20'
+                  : 'text-teal-100 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span>Materiais Públicos</span>
             </button>
           </div>
 
@@ -570,26 +652,38 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
               activeTab === 'eventos'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
                 : 'border-transparent text-teal-200'
             }`}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
-            Eventos do Club
+            Eventos
           </button>
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
               activeTab === 'podcast'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
                 : 'border-transparent text-teal-200'
             }`}
           >
             <Mic className="w-3.5 h-3.5" />
-            EdvancedCast
+            Podcast
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('materiais')}
+            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1 ${
+              activeTab === 'materiais'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#06242E]'
+                : 'border-transparent text-teal-200'
+            }`}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            Materiais
           </button>
         </div>
       </header>
@@ -625,7 +719,7 @@ export default function PublicPortal() {
           <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => setTab('eventos')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
                 activeTab === 'eventos'
                   ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
                   : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
@@ -636,14 +730,25 @@ export default function PublicPortal() {
             </button>
             <button
               onClick={() => setTab('podcast')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
                 activeTab === 'podcast'
                   ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
                   : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
               }`}
             >
               <Tv className="w-4 h-4" />
-              Assistir EdvancedCast ({episodes.length})
+              EdvancedCast ({episodes.length})
+            </button>
+            <button
+              onClick={() => setTab('materiais')}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'materiais'
+                  ? 'bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/25 scale-105'
+                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+              }`}
+            >
+              <FolderOpen className="w-4 h-4" />
+              Materiais & Mídias ({materials.length})
             </button>
           </div>
         </div>
@@ -1348,74 +1453,589 @@ export default function PublicPortal() {
         )}
       </main>
 
+        {/* =====================================================================
+            ABA 3: MATERIAIS PÚBLICOS DOS ENCONTROS OFICIAIS DO CLUB
+           ===================================================================== */}
+        {activeTab === 'materiais' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Top Toolbar: Search & Format Filters */}
+            <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <FolderOpen className="w-6 h-6 text-[#8C6D07]" />
+                    Galeria e Materiais Públicos do Club
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Fotos em alta definição, vídeos de cobertura e apresentações oficiais dos nossos
+                    encontros presenciais e digitais abertos ao público.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                    {filteredMaterials.length} material(is)
+                  </span>
+                </div>
+              </div>
+
+              {/* Filters row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    placeholder="Buscar fotos, vídeos, temas..."
+                    value={materialSearch}
+                    onChange={(e) => setMaterialSearch(e.target.value)}
+                    className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200 focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                {/* Tipo de Material */}
+                <div>
+                  <select
+                    value={materialTypeFilter}
+                    onChange={(e) => setMaterialTypeFilter(e.target.value as any)}
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                  >
+                    <option value="todos">Todos os Formatos (Fotos & Vídeos)</option>
+                    <option value="photo">📸 Apenas Fotos dos Encontros</option>
+                    <option value="video">🎥 Apenas Vídeos / Gravações</option>
+                    <option value="document">📄 Apenas Documentos & PDFs</option>
+                  </select>
+                </div>
+
+                {/* Encontro Relacionado */}
+                <div>
+                  <select
+                    value={materialMeetingFilter}
+                    onChange={(e) => setMaterialMeetingFilter(e.target.value)}
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                  >
+                    <option value="todos">Todos os Encontros Oficiais</option>
+                    {meetings.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        📅 {m.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Active filters pill list / reset */}
+              {(materialSearch || materialTypeFilter !== 'todos' || materialMeetingFilter !== 'todos') && (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-[11px] font-bold text-slate-400">Filtros ativos:</span>
+                  {materialSearch && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-slate-100 text-slate-700 gap-1 pr-1"
+                    >
+                      Busca: "{materialSearch}"
+                      <button onClick={() => setMaterialSearch('')} className="hover:text-rose-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {materialTypeFilter !== 'todos' && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-[#D4AF37]/15 text-[#8C6D07] border border-[#D4AF37]/30 gap-1 pr-1"
+                    >
+                      Tipo: {materialTypeFilter === 'photo' ? 'Fotos' : materialTypeFilter === 'video' ? 'Vídeos' : 'Documentos'}
+                      <button
+                        onClick={() => setMaterialTypeFilter('todos')}
+                        className="hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {materialMeetingFilter !== 'todos' && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] bg-[#0A1A33]/10 text-[#0A1A33] border border-[#0A1A33]/20 gap-1 pr-1"
+                    >
+                      Encontro: {meetings.find((m) => m.id === materialMeetingFilter)?.title || materialMeetingFilter}
+                      <button
+                        onClick={() => setMaterialMeetingFilter('todos')}
+                        className="hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  <button
+                    onClick={() => {
+                      setMaterialSearch('')
+                      setMaterialTypeFilter('todos')
+                      setMaterialMeetingFilter('todos')
+                    }}
+                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold ml-2 flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Limpar filtros
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Public Materials Grid */}
+            {filteredMaterials.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMaterials.map((mat) => {
+                  const isPhoto = mat.type === 'photo'
+                  const isVideo = mat.type === 'video'
+                  const isDoc = mat.type === 'document'
+
+                  const fileUrl = mat.file_url ? getFileUrl('materials', mat.id, mat.file_url) : ''
+                  const externalUrl = mat.external_url || ''
+                  const ytId = isVideo ? getYouTubeId(externalUrl) : null
+                  const ytThumb = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : ''
+                  const displayThumb = isPhoto ? fileUrl : (ytThumb || fileUrl)
+
+                  const relatedMeeting =
+                    mat.expand?.meeting || meetings.find((m) => m.id === mat.meeting || (mat as any).meeting_id)
+
+                  return (
+                    <Card
+                      key={mat.id}
+                      onClick={() => setPreviewMediaModal(mat)}
+                      className="border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl hover:border-[#D4AF37]/50 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                    >
+                      <div>
+                        {/* Media Thumbnail Container */}
+                        <div className="relative aspect-[16/10] w-full bg-[#061020] overflow-hidden">
+                          {displayThumb ? (
+                            <img
+                              src={displayThumb}
+                              alt={mat.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95 group-hover:brightness-100"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#061020] to-[#030914] flex flex-col items-center justify-center p-6 text-center">
+                              {isPhoto ? (
+                                <ImageIcon className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                              ) : isVideo ? (
+                                <Video className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                              ) : (
+                                <FileText className="w-10 h-10 text-[#D4AF37] mb-2 opacity-80" />
+                              )}
+                              <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F]">
+                                {mat.type.toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+
+                          {/* Top Type Badge */}
+                          <div className="absolute top-3 left-3">
+                            <Badge className="bg-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
+                              {isPhoto && <ImageIcon className="w-3 h-3" />}
+                              {isVideo && <Video className="w-3 h-3" />}
+                              {isDoc && <FileText className="w-3 h-3" />}
+                              <span>
+                                {isPhoto ? 'Foto Oficial' : isVideo ? 'Vídeo / Gravação' : 'Documento'}
+                              </span>
+                            </Badge>
+                          </div>
+
+                          {/* Center Play or Zoom Icon on Hover */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                              {isVideo ? (
+                                <Play className="w-5 h-5 fill-current ml-0.5" />
+                              ) : (
+                                <Eye className="w-5 h-5" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Bottom Meeting Name if available */}
+                          {relatedMeeting && (
+                            <div className="absolute bottom-2.5 left-3 right-3 text-[11px] font-bold text-[#F5D77F] drop-shadow line-clamp-1">
+                              📅 {relatedMeeting.title}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Title & Description */}
+                        <div className="p-5 space-y-2">
+                          <h4 className="font-black text-sm text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                            {mat.title}
+                          </h4>
+
+                          {mat.description && (
+                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                              {mat.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer Info */}
+                      <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          {mat.created ? formatShortDate(mat.created) : 'Oficial do Club'}
+                        </span>
+
+                        <span className="text-xs font-bold text-[#8C6D07] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <Eye className="w-3.5 h-3.5" />
+                          Visualizar
+                        </span>
+                      </div>
+                    </Card>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
+                <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="font-bold text-slate-900 text-base">Nenhum material encontrado</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Fotos e vídeos dos próximos encontros serão catalogados aqui após a realização de
+                  cada evento.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
       {/* =========================================================================
-          4. PUBLIC FOOTER
+          4. PUBLIC FOOTER & OFFICIAL CLUB CONTACT INFO (PREMIUM NAVY & GOLD)
          ========================================================================= */}
-      <footer className="bg-[#03151B] text-teal-100/80 border-t border-teal-950 py-12 px-4 mt-16">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[2px] flex items-center justify-center">
-                <div className="w-full h-full bg-[#06242E] rounded-[10px] flex items-center justify-center">
+      <footer className="bg-gradient-to-b from-[#0A1A33] via-[#061020] to-[#030914] text-slate-200 border-t border-slate-800/80 py-14 px-4 sm:px-6 lg:px-8 mt-16 shadow-2xl">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+          {/* Col 1: Club Brand Info */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[2px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center">
+                <div className="w-full h-full bg-[#0A1A33] rounded-[10px] flex items-center justify-center">
                   <Crown className="w-5 h-5 text-[#D4AF37]" />
                 </div>
               </div>
-              <span className="font-extrabold text-base tracking-wider text-white">
-                EDVANCED BUSINESS CLUB
+              <div>
+                <span className="font-black text-base tracking-wider text-white block">
+                  EDVANCED
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-bold block -mt-0.5">
+                  Business Club
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              O ecossistema exclusivo de alta governança corporativa, conexões estratégicas e
+              aceleração de negócios para grandes empresários, líderes e investidores.
+            </p>
+            <div className="pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#D4AF37]/10 text-[#F5D77F] border border-[#D4AF37]/30">
+                <Sparkles className="w-3 h-3 text-[#D4AF37]" /> Experiência Executiva VIP
               </span>
             </div>
-            <p className="text-xs text-teal-200/60 leading-relaxed">
-              O clube de negócios e alta governança corporativa para líderes, empresários e
-              investidores de grande impacto.
-            </p>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <p className="font-bold text-white uppercase tracking-wider text-[11px] text-[#D4AF37]">
-              Navegação Pública
+          {/* Col 2: Public Navigation Links */}
+          <div className="space-y-3 text-xs">
+            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5" /> Navegação do Portal
             </p>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2">
               <li>
                 <button
                   type="button"
-                  onClick={() => setTab('eventos')}
-                  className="hover:text-white transition-colors"
+                  onClick={() => {
+                    setTab('eventos')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
                 >
-                  &bull; Eventos Oficiais com Inscrição
+                  <CalendarIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Eventos Oficiais com Inscrição</span>
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => setTab('podcast')}
-                  className="hover:text-white transition-colors"
+                  onClick={() => {
+                    setTab('podcast')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
                 >
-                  &bull; EdvancedCast (Videocast)
+                  <Mic className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>EdvancedCast (Videocast Oficial)</span>
                 </button>
               </li>
               <li>
-                <Link to="/login" className="hover:text-[#F5D77F] transition-colors font-semibold">
-                  &bull; Acesso VIP para Membros Cadastrados &rarr;
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab('materiais')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-1.5 text-slate-300"
+                >
+                  <FolderOpen className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Materiais, Fotos e Gravações</span>
+                </button>
+              </li>
+              <li className="pt-2 border-t border-slate-800">
+                <Link
+                  to="/login"
+                  className="text-[#F5D77F] hover:text-white transition-colors font-bold flex items-center gap-1.5"
+                >
+                  <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Portal VIP dos Membros &rarr;</span>
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <p className="font-bold text-white uppercase tracking-wider text-[11px] text-[#D4AF37]">
-              Admissão & Curadoria
+          {/* Col 3: Official Contact Details */}
+          <div className="space-y-3 text-xs">
+            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" /> Contato Oficial do Club
             </p>
-            <p className="text-teal-200/60 leading-relaxed">
-              Dúvidas sobre admissão, patrocínios de encontros ou participação no EdvancedCast?
-              Entre em contato com nossa curadoria.
+            <div className="space-y-2.5 text-slate-300">
+              <a
+                href="https://wa.me/5511999999999"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900 transition-all group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform flex-shrink-0">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-[11px]">WhatsApp Concierge</span>
+                  <span className="text-[11px] text-emerald-300">+55 (11) 99999-9999</span>
+                </div>
+              </a>
+
+              <a
+                href="https://instagram.com/edvancedbusinessclub"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-pink-500/50 hover:bg-slate-900 transition-all group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 group-hover:scale-105 transition-transform flex-shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-[11px]">Instagram Oficial</span>
+                  <span className="text-[11px] text-pink-300">@edvancedbusinessclub</span>
+                </div>
+              </a>
+
+              <a
+                href="mailto:contato@edvanced.com.br"
+                className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-[#D4AF37]/50 hover:bg-slate-900 transition-all group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#F5D77F] group-hover:scale-105 transition-transform flex-shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-[11px]">E-mail de Contato</span>
+                  <span className="text-[11px] text-slate-300">contato@edvanced.com.br</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          {/* Col 4: Sede / Address & Admissions */}
+          <div className="space-y-3 text-xs">
+            <p className="font-extrabold text-white uppercase tracking-wider text-[11px] text-[#D4AF37] flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" /> Sede & Admissão
+            </p>
+            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-white text-[11px]">Sede Executiva</p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Av. Brigadeiro Faria Lima, 3477 — Itaim Bibi
+                  </p>
+                  <p className="text-slate-500 text-[10px]">São Paulo - SP, Brasil</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Interessado em candidatar-se ao quadro de membros ou propor uma pauta no EdvancedCast?
+              Entre em contato direto com a Diretoria de Relações Institucionais.
             </p>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-teal-950 text-center text-xs text-teal-200/40">
-          &copy; {new Date().getFullYear()} Edvanced Business Club. Todos os direitos reservados.
+        <div className="max-w-7xl mx-auto pt-8 mt-10 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div>
+            &copy; {new Date().getFullYear()} Edvanced Business Club. Todos os direitos reservados.
+          </div>
+          <div className="flex items-center gap-4 text-[11px]">
+            <span className="text-slate-400">Alta Governança Corporativa</span>
+            <span>&bull;</span>
+            <span className="text-[#D4AF37] font-semibold">Ecossistema Exclusivo de Negócios</span>
+          </div>
         </div>
       </footer>
+
+      {/* =========================================================================
+          MODAL PREVIEW DE MÍDIA / MATERIAL PÚBLICO (FOTO / VÍDEO / DOCUMENTO)
+         ========================================================================= */}
+      {previewMediaModal && (
+        <Dialog
+          open={!!previewMediaModal}
+          onOpenChange={(open) => !open && setPreviewMediaModal(null)}
+        >
+          <DialogContent className="max-w-3xl bg-[#061020] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-extrabold text-[10px]">
+                  {previewMediaModal.type === 'photo'
+                    ? 'Foto do Encontro'
+                    : previewMediaModal.type === 'video'
+                      ? 'Vídeo Oficial'
+                      : 'Documento'}
+                </Badge>
+                {previewMediaModal.created && (
+                  <span className="text-[11px] text-slate-400 font-semibold">
+                    {formatDateString(previewMediaModal.created)}
+                  </span>
+                )}
+              </div>
+
+              <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
+                {previewMediaModal.title}
+              </DialogTitle>
+
+              {previewMediaModal.expand?.meeting && (
+                <p className="text-xs font-bold text-[#F5D77F] flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Encontro: {previewMediaModal.expand.meeting.title}</span>
+                </p>
+              )}
+            </DialogHeader>
+
+            {/* Media Player or Large Image */}
+            <div className="my-4">
+              {previewMediaModal.type === 'video' && (
+                <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-inner">
+                  {getVideoEmbedUrl(previewMediaModal.external_url) ? (
+                    <iframe
+                      src={getVideoEmbedUrl(previewMediaModal.external_url)!}
+                      title={previewMediaModal.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : previewMediaModal.file_url ? (
+                    <video
+                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
+                      <Video className="w-10 h-10 mb-2 text-[#D4AF37]" />
+                      <p className="text-xs">Vídeo não disponível para reprodução direta.</p>
+                      {previewMediaModal.external_url && (
+                        <a
+                          href={previewMediaModal.external_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 text-xs text-[#F5D77F] underline font-bold flex items-center gap-1"
+                        >
+                          Abrir link externo <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {previewMediaModal.type === 'photo' && (
+                <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                  {previewMediaModal.file_url ? (
+                    <img
+                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      alt={previewMediaModal.title}
+                      className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+                    />
+                  ) : previewMediaModal.external_url ? (
+                    <img
+                      src={previewMediaModal.external_url}
+                      alt={previewMediaModal.title}
+                      className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <div className="p-12 text-center text-slate-400">
+                      <ImageIcon className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
+                      <p className="text-xs">Imagem não encontrada.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {previewMediaModal.type === 'document' && (
+                <div className="p-8 rounded-2xl bg-[#030914] border border-slate-800 text-center space-y-4">
+                  <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
+                  <div>
+                    <h5 className="text-base font-bold text-white">{previewMediaModal.title}</h5>
+                    <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                      {previewMediaModal.description ||
+                        'Documento oficial disponibilizado para consulta.'}
+                    </p>
+                  </div>
+                  {previewMediaModal.file_url && (
+                    <a
+                      href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                    >
+                      <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-5 rounded-xl shadow-md">
+                        Baixar Arquivo / Documento
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {previewMediaModal.description && previewMediaModal.type !== 'document' && (
+              <div className="p-4 bg-[#030914] rounded-2xl border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                <p className="whitespace-pre-wrap">{previewMediaModal.description}</p>
+              </div>
+            )}
+
+            <DialogFooter className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewMediaModal(null)}
+                className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                Fechar
+              </Button>
+
+              {previewMediaModal.file_url && (
+                <a
+                  href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                >
+                  <Button className="bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md">
+                    Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                  </Button>
+                </a>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* =========================================================================
           MODAL DETALHES DO EVENTO PÚBLICO
