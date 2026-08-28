@@ -103,10 +103,7 @@ export default function MeetingsAndMaterials() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Main navigation tab: "acervo" (Materiais por Categoria) or "calendario" (Calendário Unificado)
-  const initialView =
-    window.location.pathname === '/calendario' || searchParams.get('aba') === 'calendario'
-      ? 'calendario'
-      : 'acervo'
+  const initialView = searchParams.get('aba') === 'calendario' ? 'calendario' : 'acervo'
   const [mainView, setMainView] = useState<'acervo' | 'calendario'>(initialView)
 
   // Export ICS handler
@@ -253,10 +250,10 @@ export default function MeetingsAndMaterials() {
     const q = searchParams.get('busca')
     if (q) setAcervoSearch(q)
     const viewParam = searchParams.get('aba')
-    if (viewParam === 'calendario' || window.location.pathname === '/calendario') {
+    if (viewParam === 'calendario') {
       setMainView('calendario')
-    } else if (viewParam === 'acervo') {
-      setMainView('acervo')
+    } else if (viewParam === 'acervo' || (!viewParam && !searchParams.get('id'))) {
+      // default to acervo if not specified
     }
   }, [searchParams])
 

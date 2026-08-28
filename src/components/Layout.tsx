@@ -240,11 +240,7 @@ export default function Layout() {
             </p>
             <nav className="space-y-1">
               {navItems.map((item) => {
-                const isActive =
-                  location.pathname === item.path ||
-                  (item.path === '/calendario' &&
-                    location.pathname === '/encontros' &&
-                    location.search.includes('aba=calendario'))
+                const isActive = location.pathname === item.path
                 const Icon = item.icon
                 return (
                   <Link

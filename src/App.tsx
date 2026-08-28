@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import Index from '@/pages/Index'
 import Login from '@/pages/Login'
 import Meetings from '@/pages/Meetings'
+import CalendarPage from '@/pages/Calendar'
 import Disclosures from '@/pages/Disclosures'
 import NewDisclosure from '@/pages/NewDisclosure'
 import Members from '@/pages/Members'
@@ -51,7 +52,7 @@ const App = () => (
               path="/calendario"
               element={
                 <ProtectedRoute>
-                  <Meetings />
+                  <CalendarPage />
                 </ProtectedRoute>
               }
             />
