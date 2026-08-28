@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Users,
   Building2,
@@ -9,7 +10,9 @@ import {
   ExternalLink,
   ShieldCheck,
   Crown,
+  UserPlus,
 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { getMembers } from '@/services/api'
 import type { User } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 
 export default function Members() {
+  const { isAdmin } = useAuth()
   const [members, setMembers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -75,6 +79,17 @@ export default function Members() {
             Business Club.
           </p>
         </div>
+
+        {isAdmin && (
+          <div className="flex-shrink-0">
+            <Link to="/admin/membros/novo">
+              <Button className="bg-gradient-to-r from-[#D4AF37] to-[#B89324] hover:from-[#C5A028] hover:to-[#A37E17] text-slate-950 font-bold text-xs uppercase tracking-wider py-2.5 px-4 shadow-md shadow-[#D4AF37]/20 rounded-xl">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Cadastrar Novo Membro
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Search Filter */}

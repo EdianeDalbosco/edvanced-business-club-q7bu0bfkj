@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T18:53:07.323Z",
+  "generatedAt": "2026-08-28T19:43:58.498Z",
   "collections": [
     {
       "name": "users",
@@ -7,7 +7,7 @@
       "apiRules": {
         "list": "@request.auth.id != ''",
         "view": "@request.auth.id != ''",
-        "create": "",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.email = 'edianedalbosco@gmail.com')",
         "update": "id = @request.auth.id",
         "delete": "id = @request.auth.id"
       },

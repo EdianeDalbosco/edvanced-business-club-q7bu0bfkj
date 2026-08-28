@@ -124,6 +124,11 @@ export default function Layout() {
       icon: ShieldCheck,
       count: pendingCount,
     },
+    {
+      label: 'Cadastrar Novo Membro',
+      path: '/admin/membros/novo',
+      icon: UserCheck,
+    },
   ]
 
   const getInitials = (name?: string) => {
@@ -487,9 +492,14 @@ export default function Layout() {
                     <Megaphone className="w-4 h-4 mr-2 text-slate-500" /> Minhas Divulgações
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin/aprovacao')}>
-                      <ShieldCheck className="w-4 h-4 mr-2 text-[#D4AF37]" /> Fila de Aprovação
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin/aprovacao')}>
+                        <ShieldCheck className="w-4 h-4 mr-2 text-[#D4AF37]" /> Fila de Aprovação
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/membros/novo')}>
+                        <UserCheck className="w-4 h-4 mr-2 text-[#D4AF37]" /> Cadastrar Novo Membro
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

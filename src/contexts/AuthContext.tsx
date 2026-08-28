@@ -8,14 +8,15 @@ interface AuthContextType {
   isLoading: boolean
   isAdmin: boolean
   login: (email: string, pass: string) => Promise<void>
-  signup: (data: {
+  registerMemberAsAdmin: (data: {
     email: string
-    password: string
+    password?: string
     name: string
+    role?: 'admin' | 'member'
     company?: string
     phone?: string
     bio?: string
-  }) => Promise<void>
+  }) => Promise<User>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -67,25 +68,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(authData.token)
   }
 
-  const signup = async (data: {
+  const registerMemberAsAdmin = async (data: {
     email: string
-    password: string
+    password?: string
     name: string
+    role?: 'admin' | 'member'
     company?: string
     phone?: string
     bio?: string
-  }) => {
-    await pb.collection('users').create({
+  }): Promise<User> => {
+    const password = data.password || 'Skip@Pass'
+    const newRecord = await pb.collection('users').create<User>({
       email: data.email,
-      password: data.password,
-      passwordConfirm: data.password,
+      password: password,
+      passwordConfirm: password,
       name: data.name,
       company: data.company || '',
       phone: data.phone || '',
       bio: data.bio || '',
-      role: 'member',
+      role: data.role || 'member',
+      verified: true,
     })
-    await login(data.email, data.password)
+    return newRecord
   }
 
   const logout = () => {
@@ -104,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAdmin,
         login,
-        signup,
+        registerMemberAsAdmin,
         logout,
         refreshUser,
       }}

@@ -106,3 +106,26 @@ export async function getMembers(): Promise<User[]> {
 export async function updateProfile(userId: string, data: Partial<User> | FormData): Promise<User> {
   return pb.collection('users').update<User>(userId, data)
 }
+
+export async function createMemberByAdmin(data: {
+  name: string
+  email: string
+  password?: string
+  role?: 'admin' | 'member'
+  company?: string
+  phone?: string
+  bio?: string
+}): Promise<User> {
+  const defaultPassword = data.password || 'Skip@Pass'
+  return pb.collection('users').create<User>({
+    name: data.name,
+    email: data.email,
+    password: defaultPassword,
+    passwordConfirm: defaultPassword,
+    role: data.role || 'member',
+    company: data.company || '',
+    phone: data.phone || '',
+    bio: data.bio || '',
+    verified: true,
+  })
+}
