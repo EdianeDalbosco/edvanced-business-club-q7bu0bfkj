@@ -28,6 +28,8 @@ export default function NewDisclosure() {
   const [eventDate, setEventDate] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   const [contactLink, setContactLink] = useState('')
+  const [formatType, setFormatType] = useState<'presencial' | 'online' | 'hibrido'>('presencial')
+  const [pricingType, setPricingType] = useState<'gratuito' | 'pago'>('gratuito')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +51,8 @@ export default function NewDisclosure() {
       formData.append('content', content.trim())
       formData.append('status', 'pending')
       formData.append('member', user.id)
+      formData.append('format', formatType)
+      formData.append('pricing', pricingType)
 
       if (eventDate) {
         formData.append('event_date', new Date(eventDate).toISOString())
@@ -139,6 +143,46 @@ export default function NewDisclosure() {
               <p className="text-[11px] text-slate-400">
                 Seja claro e destaque a exclusividade ou relevância para os empresários do Club.
               </p>
+            </div>
+
+            {/* Format and Pricing Selects */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="formatType"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-700"
+                >
+                  Formato do Evento *
+                </Label>
+                <select
+                  id="formatType"
+                  value={formatType}
+                  onChange={(e) => setFormatType(e.target.value as any)}
+                  className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-background ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="presencial">Presencial</option>
+                  <option value="online">Online</option>
+                  <option value="hibrido">Híbrido</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="pricingType"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-700"
+                >
+                  Cobrança / Acesso *
+                </Label>
+                <select
+                  id="pricingType"
+                  value={pricingType}
+                  onChange={(e) => setPricingType(e.target.value as any)}
+                  className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-background ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="gratuito">Gratuito (Exclusivo / Free)</option>
+                  <option value="pago">Pago / Com Inscrição</option>
+                </select>
+              </div>
             </div>
 
             {/* Date & Location Grid */}

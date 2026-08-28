@@ -21,6 +21,7 @@ export interface Meeting extends RecordModel {
   end_date?: string
   location: string
   type?: 'presencial' | 'online' | 'hibrido'
+  pricing?: 'gratuito' | 'pago'
   speakers?: string
   description?: string
   cover_image?: string
@@ -52,6 +53,8 @@ export interface Disclosure extends RecordModel {
   event_date?: string
   event_location?: string
   contact_link?: string
+  format?: 'presencial' | 'online' | 'hibrido'
+  pricing?: 'gratuito' | 'pago'
   expand?: {
     member?: User
   }

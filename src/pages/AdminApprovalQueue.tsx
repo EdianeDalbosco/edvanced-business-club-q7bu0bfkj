@@ -435,28 +435,48 @@ export default function AdminApprovalQueue() {
                 </p>
               </div>
 
-              {(selectedDisclosure.event_date || selectedDisclosure.event_location) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {selectedDisclosure.event_date && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                        Data do Evento
-                      </span>
-                      <span className="font-semibold text-slate-800">
-                        {formatDateString(selectedDisclosure.event_date)}
-                      </span>
-                    </div>
-                  )}
-                  {selectedDisclosure.event_location && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                        Local
-                      </span>
-                      <span className="font-semibold text-slate-800">
-                        {selectedDisclosure.event_location}
-                      </span>
-                    </div>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    Formato & Cobrança
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                      {selectedDisclosure.format || 'Presencial'}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] uppercase font-bold ${
+                        selectedDisclosure.pricing === 'pago'
+                          ? 'text-amber-700 border-amber-300 bg-amber-50'
+                          : 'text-emerald-700 border-emerald-300 bg-emerald-50'
+                      }`}
+                    >
+                      {selectedDisclosure.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {selectedDisclosure.event_date && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      Data do Evento
+                    </span>
+                    <span className="font-semibold text-slate-800">
+                      {formatDateString(selectedDisclosure.event_date)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {selectedDisclosure.event_location && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    Local / Plataforma
+                  </span>
+                  <span className="font-semibold text-slate-800">
+                    {selectedDisclosure.event_location}
+                  </span>
                 </div>
               )}
 

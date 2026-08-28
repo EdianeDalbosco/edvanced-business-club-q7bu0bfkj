@@ -174,6 +174,44 @@ export default function Disclosures() {
                     <div className="p-5 space-y-4 text-xs text-slate-600">
                       <p className="leading-relaxed line-clamp-4">{item.content}</p>
 
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] uppercase font-bold text-slate-700 bg-slate-100"
+                        >
+                          {item.format || 'Presencial'}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] uppercase font-bold ${
+                            item.pricing === 'pago'
+                              ? 'text-amber-800 border-amber-300 bg-amber-50'
+                              : 'text-emerald-800 border-emerald-300 bg-emerald-50'
+                          }`}
+                        >
+                          {item.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] uppercase font-bold text-slate-700 bg-slate-100"
+                        >
+                          {item.format || 'Presencial'}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] uppercase font-bold ${
+                            item.pricing === 'pago'
+                              ? 'text-amber-800 border-amber-300 bg-amber-50'
+                              : 'text-emerald-800 border-emerald-300 bg-emerald-50'
+                          }`}
+                        >
+                          {item.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                        </Badge>
+                      </div>
+
                       {(item.event_date || item.event_location) && (
                         <div className="p-3 bg-slate-50 rounded-2xl space-y-1.5 text-[11px] border border-slate-100">
                           {item.event_date && (

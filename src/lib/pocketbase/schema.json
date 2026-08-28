@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T20:12:31.291Z",
+  "generatedAt": "2026-08-28T20:21:35.147Z",
   "collections": [
     {
       "name": "users",
@@ -160,6 +160,13 @@
           "type": "date",
           "required": false,
           "system": false
+        },
+        {
+          "name": "pricing",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["gratuito", "pago"]
         }
       ],
       "indexes": ["CREATE INDEX idx_meetings_date ON meetings (date DESC)"]
@@ -313,6 +320,20 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "format",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["presencial", "online", "hibrido"]
+        },
+        {
+          "name": "pricing",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["gratuito", "pago"]
         }
       ],
       "indexes": [

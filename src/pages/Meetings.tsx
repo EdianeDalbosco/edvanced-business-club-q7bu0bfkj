@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   MapPin,
   Image as ImageIcon,
   Video,
   FileText,
   Download,
-  Filter,
   Search,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   Users,
   Play,
@@ -22,23 +22,26 @@ import {
   CalendarCheck2,
   Hourglass,
   Tag,
+  LayoutGrid,
+  Info,
+  CalendarDays,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   getMeetings,
-  getMaterialsByMeeting,
   getAllMaterials,
+  getApprovedDisclosures,
   createMaterial,
   createMeeting,
   updateMeeting,
   deleteMeeting,
+  getFileUrl,
 } from '@/services/api'
-import type { Meeting, Material } from '@/types'
+import type { Meeting, Material, Disclosure } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+
 import {
   Dialog,
   DialogContent,
@@ -48,38 +51,94 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { format, isPast, isFuture, isWithinInterval } from 'date-fns'
+import NetflixShelf from '@/components/NetflixShelf'
+import {
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  addDays,
+  subDays,
+  parseISO,
+} from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
 
+// Unified UnifiedEvent type for Calendar view
+export type UnifiedEvent = {
+  id: string
+  origin: 'meeting' | 'disclosure'
+  title: string
+  subtitle?: string
+  date: string // ISO string
+  endDate?: string // ISO string
+  location?: string
+  format: 'presencial' | 'online' | 'hibrido'
+  pricing: 'gratuito' | 'pago'
+  speakers?: string
+  description?: string
+  contactLink?: string
+  authorName?: string
+  authorCompany?: string
+  coverImage?: string
+  originalMeeting?: Meeting
+  originalDisclosure?: Disclosure
+}
+
 export default function MeetingsAndMaterials() {
-  const { isAdmin } = useAuth()
+  const { user, isAdmin } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Main navigation tab: "acervo" (Materiais por Categoria) or "calendario" (Calendário Unificado)
+  const [mainView, setMainView] = useState<'acervo' | 'calendario'>('acervo')
 
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [materials, setMaterials] = useState<Material[]>([])
+  const [disclosures, setDisclosures] = useState<Disclosure[]>([])
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
-  const [activeTab, setActiveTab] = useState<'photos' | 'videos' | 'documents'>('photos')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Filters
-  const [typeFilter, setTypeFilter] = useState<string>('todos')
-  const [statusFilter, setStatusFilter] = useState<string>('todos')
-  const [yearFilter, setYearFilter] = useState<string>('todos')
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('busca') || '')
+  // Media preview modal (Fotos / Vídeos / Docs)
+  const [previewMedia, setPreviewMedia] = useState<Material | null>(null)
 
-  // Media preview modal
-  const [previewItem, setPreviewItem] = useState<Material | null>(null)
+  // Meeting detail modal (Mais informações do encontro)
+  const [detailMeeting, setDetailMeeting] = useState<Meeting | null>(null)
 
-  // Admin Create/Edit Meeting Modal
+  // Event detail modal for Calendar click
+  const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<UnifiedEvent | null>(null)
+
+  // ==========================================
+  // FILTERS FOR ACERVO & SHELVES
+  // ==========================================
+  const [acervoSearch, setAcervoSearch] = useState(searchParams.get('busca') || '')
+  const [acervoCategory, setAcervoCategory] = useState<
+    'todos' | 'encontros' | 'photos' | 'videos' | 'documents'
+  >('todos')
+
+  // ==========================================
+  // FILTERS FOR CALENDAR (Requested by user)
+  // Evento (nome), Dia/Semana/Mês, Local, Presencial/Online, Pago/Gratuito
+  // ==========================================
+  const [calendarViewMode, setCalendarViewMode] = useState<'mes' | 'semana' | 'dia'>('mes')
+  const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(new Date())
+  const [calSearchName, setCalSearchName] = useState('')
+  const [calLocationFilter, setCalLocationFilter] = useState('todos')
+  const [calFormatFilter, setCalFormatFilter] = useState('todos') // todos | presencial | online | hibrido
+  const [calPricingFilter, setCalPricingFilter] = useState('todos') // todos | gratuito | pago
+  const [calOriginFilter, setCalOriginFilter] = useState('todos') // todos | club | members
+
+  // ==========================================
+  // ADMIN MODALS (Create/Edit Meeting & Material)
+  // ==========================================
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null)
   const [meetingTitle, setMeetingTitle] = useState('')
@@ -88,18 +147,19 @@ export default function MeetingsAndMaterials() {
   const [meetingEndDate, setMeetingEndDate] = useState('')
   const [meetingLocation, setMeetingLocation] = useState('')
   const [meetingType, setMeetingType] = useState<'presencial' | 'online' | 'hibrido'>('presencial')
+  const [meetingPricing, setMeetingPricing] = useState<'gratuito' | 'pago'>('gratuito')
   const [meetingSpeakers, setMeetingSpeakers] = useState('')
   const [meetingDesc, setMeetingDesc] = useState('')
 
-  // Admin New Material Modal
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false)
   const [newMatTitle, setNewMatTitle] = useState('')
   const [newMatType, setNewMatType] = useState<'photo' | 'video' | 'document'>('photo')
   const [newMatUrl, setNewMatUrl] = useState('')
   const [newMatDesc, setNewMatDesc] = useState('')
+  const [newMatMeetingId, setNewMatMeetingId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Align minutes to 15-minute step helper
+  // 15-minute alignment helper
   const roundToNearest15Min = (date: Date = new Date()): string => {
     const minutes = date.getMinutes()
     const roundedMinutes = Math.round(minutes / 15) * 15
@@ -107,7 +167,6 @@ export default function MeetingsAndMaterials() {
     newDate.setMinutes(roundedMinutes)
     newDate.setSeconds(0)
     newDate.setMilliseconds(0)
-    // Format to yyyy-MM-ddTHH:mm for datetime-local
     const pad = (n: number) => (n < 10 ? '0' + n : n)
     const yyyy = newDate.getFullYear()
     const MM = pad(newDate.getMonth() + 1)
@@ -117,7 +176,6 @@ export default function MeetingsAndMaterials() {
     return `${yyyy}-${MM}-${dd}T${hh}:${mm}`
   }
 
-  // Convert stored ISO string to datetime-local input string
   const toDateTimeLocalString = (isoStr?: string) => {
     if (!isoStr) return ''
     try {
@@ -135,12 +193,17 @@ export default function MeetingsAndMaterials() {
     }
   }
 
-  const loadData = async () => {
+  const loadAllData = async () => {
     setIsLoading(true)
     try {
-      const [meets, mats] = await Promise.all([getMeetings(), getAllMaterials()])
+      const [meets, mats, appDiscs] = await Promise.all([
+        getMeetings(),
+        getAllMaterials(),
+        getApprovedDisclosures(),
+      ])
       setMeetings(meets)
       setMaterials(mats)
+      setDisclosures(appDiscs)
 
       const targetId = searchParams.get('id')
       if (targetId) {
@@ -150,26 +213,41 @@ export default function MeetingsAndMaterials() {
         setSelectedMeeting(meets[0])
       }
     } catch (err) {
-      console.error(err)
+      console.error('Erro ao carregar dados:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    loadData()
+    loadAllData()
   }, [])
 
   useEffect(() => {
     const q = searchParams.get('busca')
-    if (q) setSearchTerm(q)
+    if (q) setAcervoSearch(q)
+    const viewParam = searchParams.get('aba')
+    if (viewParam === 'calendario') {
+      setMainView('calendario')
+    }
   }, [searchParams])
 
+  // Helpers de formatação
   const formatDateString = (dateStr?: string) => {
     if (!dateStr) return ''
     try {
       const d = new Date(dateStr)
       return format(d, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    } catch {
+      return dateStr
+    }
+  }
+
+  const formatShortDate = (dateStr?: string) => {
+    if (!dateStr) return ''
+    try {
+      const d = new Date(dateStr)
+      return format(d, 'dd MMM yyyy', { locale: ptBR })
     } catch {
       return dateStr
     }
@@ -185,7 +263,7 @@ export default function MeetingsAndMaterials() {
     }
   }
 
-  // Meeting Status Logic (Agendado / Em andamento / Realizado)
+  // Meeting Status Logic
   const getMeetingStatus = (meeting: Meeting) => {
     const now = new Date()
     const startStr = meeting.start_date || meeting.date
@@ -193,77 +271,299 @@ export default function MeetingsAndMaterials() {
       return {
         key: 'scheduled',
         label: 'Agendado',
-        badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-        cardBadgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-        icon: Calendar,
+        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        cardClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        icon: CalendarIcon,
       }
     }
 
-    const startDate = new Date(startStr)
-    let endDate = meeting.end_date ? new Date(meeting.end_date) : null
+    const start = new Date(startStr)
+    const end = meeting.end_date
+      ? new Date(meeting.end_date)
+      : new Date(start.getTime() + 2.5 * 60 * 60 * 1000)
 
-    // Default duration to 2.5 hours if end_date is missing or invalid
-    if (!endDate || isNaN(endDate.getTime())) {
-      endDate = new Date(startDate.getTime() + 2.5 * 60 * 60 * 1000)
-    }
-
-    if (now < startDate) {
+    if (now < start) {
       return {
         key: 'scheduled',
         label: 'Próximo Encontro',
         badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-        cardBadgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-        icon: Calendar,
+        cardClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        icon: CalendarIcon,
       }
-    } else if (now >= startDate && now <= endDate) {
+    } else if (now >= start && now <= end) {
       return {
         key: 'ongoing',
         label: 'Em Andamento',
         badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse',
-        cardBadgeClass: 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse',
+        cardClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
         icon: Hourglass,
       }
     } else {
       return {
         key: 'completed',
         label: 'Realizado',
-        badgeClass: 'bg-teal-900/60 text-teal-200 border-teal-700/50',
-        cardBadgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+        badgeClass: 'bg-teal-950/80 text-teal-200 border-teal-700/50',
+        cardClass: 'bg-slate-800/80 text-slate-300 border-slate-700',
         icon: CalendarCheck2,
       }
     }
   }
 
-  // Filtered meetings
-  const filteredMeetings = meetings.filter((m) => {
-    const matchesSearch =
-      searchTerm === '' ||
-      m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.event_name && m.event_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (m.speakers && m.speakers.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      m.location.toLowerCase().includes(searchTerm.toLowerCase())
+  // Cover image resolver
+  const getMeetingHeroCover = (meeting?: Meeting | null) => {
+    if (!meeting) {
+      return 'https://img.usecurling.com/p/1600/900?q=luxury%20boardroom%20conference&color=teal'
+    }
+    if (meeting.cover_image) {
+      return getFileUrl('meetings', meeting.id, meeting.cover_image)
+    }
+    if (meeting.type === 'online') {
+      return 'https://img.usecurling.com/p/1600/900?q=executive%20broadcast%20studio&color=teal'
+    }
+    if (
+      meeting.location?.toLowerCase().includes('tangará') ||
+      meeting.location?.toLowerCase().includes('gala')
+    ) {
+      return 'https://img.usecurling.com/p/1600/900?q=luxury%20palace%20gala%20dinner&color=gold'
+    }
+    if (meeting.location?.toLowerCase().includes('fasano')) {
+      return 'https://img.usecurling.com/p/1600/900?q=luxury%20hotel%20executive%20summit&color=teal'
+    }
+    return 'https://img.usecurling.com/p/1600/900?q=business%20mastermind%20summit&color=teal'
+  }
 
-    const matchesType = typeFilter === 'todos' || m.type === typeFilter
-
-    const status = getMeetingStatus(m).key
-    const matchesStatus = statusFilter === 'todos' || status === statusFilter
-
-    const mYear = new Date(m.start_date || m.date).getFullYear().toString()
-    const matchesYear = yearFilter === 'todos' || mYear === yearFilter
-
-    return matchesSearch && matchesType && matchesStatus && matchesYear
+  // Hero Meeting prioritization (upcoming first, else latest)
+  const sortedMeetings = [...meetings].sort((a, b) => {
+    const timeA = new Date(a.start_date || a.date).getTime()
+    const timeB = new Date(b.start_date || b.date).getTime()
+    return timeB - timeA
   })
 
-  // Materials of currently selected meeting
-  const currentMeetingMaterials = materials.filter(
-    (mat) => selectedMeeting && mat.meeting === selectedMeeting.id,
+  const now = new Date()
+  const upcomingOrOngoing = sortedMeetings
+    .filter((m) => {
+      const start = new Date(m.start_date || m.date)
+      const end = m.end_date
+        ? new Date(m.end_date)
+        : new Date(start.getTime() + 2.5 * 60 * 60 * 1000)
+      return end >= now
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.start_date || a.date).getTime() - new Date(b.start_date || b.date).getTime(),
+    )[0]
+
+  const heroMeeting = selectedMeeting || upcomingOrOngoing || sortedMeetings[0] || null
+
+  // Categorized materials
+  const photoMaterials = useMemo(
+    () =>
+      materials.filter(
+        (m) =>
+          m.type === 'photo' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
+      ),
+    [materials, acervoSearch],
   )
 
-  const photos = currentMeetingMaterials.filter((m) => m.type === 'photo')
-  const videos = currentMeetingMaterials.filter((m) => m.type === 'video')
-  const documents = currentMeetingMaterials.filter((m) => m.type === 'document')
+  const videoMaterials = useMemo(
+    () =>
+      materials.filter(
+        (m) =>
+          m.type === 'video' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
+      ),
+    [materials, acervoSearch],
+  )
 
-  // Open modal for new meeting
+  const docMaterials = useMemo(
+    () =>
+      materials.filter(
+        (m) =>
+          m.type === 'document' &&
+          (acervoSearch === '' ||
+            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
+      ),
+    [materials, acervoSearch],
+  )
+
+  const filteredMeetingsList = useMemo(
+    () =>
+      meetings.filter(
+        (m) =>
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.event_name && m.event_name.toLowerCase().includes(acervoSearch.toLowerCase())) ||
+          (m.speakers && m.speakers.toLowerCase().includes(acervoSearch.toLowerCase())) ||
+          m.location.toLowerCase().includes(acervoSearch.toLowerCase()),
+      ),
+    [meetings, acervoSearch],
+  )
+
+  // =========================================================================
+  // UNIFIED CALENDAR EVENTS MAPPING (Meetings in Dark Navy + Disclosures in Teal)
+  // =========================================================================
+  const unifiedEvents: UnifiedEvent[] = useMemo(() => {
+    const list: UnifiedEvent[] = []
+
+    // 1. Official Club Meetings (Business Club - Azul Escuro)
+    meetings.forEach((m) => {
+      const dateStr = m.start_date || m.date
+      if (dateStr) {
+        list.push({
+          id: `meeting-${m.id}`,
+          origin: 'meeting',
+          title: m.title,
+          subtitle: m.event_name || 'Encontro Oficial Edvanced Business Club',
+          date: dateStr,
+          endDate: m.end_date,
+          location: m.location,
+          format: m.type || 'presencial',
+          pricing: m.pricing || 'gratuito',
+          speakers: m.speakers,
+          description: m.description,
+          coverImage: m.cover_image,
+          originalMeeting: m,
+        })
+      }
+    })
+
+    // 2. Approved Disclosures of Members (Eventos dos Membros)
+    disclosures.forEach((d) => {
+      // Use event_date if present, else fallback to created
+      const dateStr = d.event_date || d.created
+      if (dateStr) {
+        list.push({
+          id: `disclosure-${d.id}`,
+          origin: 'disclosure',
+          title: d.title,
+          subtitle: `Membro: ${d.expand?.member?.name || 'Membro do Club'}`,
+          date: dateStr,
+          location: d.event_location || 'A definir / Online',
+          format:
+            d.format ||
+            (d.event_location?.toLowerCase().includes('online') ||
+            d.event_location?.toLowerCase().includes('zoom')
+              ? 'online'
+              : 'presencial'),
+          pricing: d.pricing || 'gratuito',
+          description: d.content,
+          contactLink: d.contact_link,
+          authorName: d.expand?.member?.name,
+          authorCompany: d.expand?.member?.company,
+          originalDisclosure: d,
+        })
+      }
+    })
+
+    return list
+  }, [meetings, disclosures])
+
+  // Unique locations for calendar filter
+  const uniqueLocations = useMemo(() => {
+    const set = new Set<string>()
+    unifiedEvents.forEach((e) => {
+      if (e.location && e.location.trim()) {
+        set.add(e.location.trim())
+      }
+    })
+    return Array.from(set)
+  }, [unifiedEvents])
+
+  // Filtered Calendar Events
+  const filteredCalendarEvents = useMemo(() => {
+    return unifiedEvents.filter((ev) => {
+      // Filter by name / search
+      if (
+        calSearchName.trim() &&
+        !ev.title.toLowerCase().includes(calSearchName.toLowerCase()) &&
+        !(ev.subtitle && ev.subtitle.toLowerCase().includes(calSearchName.toLowerCase())) &&
+        !(ev.location && ev.location.toLowerCase().includes(calSearchName.toLowerCase())) &&
+        !(ev.speakers && ev.speakers.toLowerCase().includes(calSearchName.toLowerCase()))
+      ) {
+        return false
+      }
+
+      // Filter by origin (Club vs Membros)
+      if (calOriginFilter === 'club' && ev.origin !== 'meeting') return false
+      if (calOriginFilter === 'members' && ev.origin !== 'disclosure') return false
+
+      // Filter by format (Presencial vs Online vs Hibrido)
+      if (calFormatFilter !== 'todos' && ev.format !== calFormatFilter) return false
+
+      // Filter by pricing (Gratuito vs Pago)
+      if (calPricingFilter !== 'todos' && ev.pricing !== calPricingFilter) return false
+
+      // Filter by location
+      if (
+        calLocationFilter !== 'todos' &&
+        (!ev.location || !ev.location.toLowerCase().includes(calLocationFilter.toLowerCase()))
+      ) {
+        return false
+      }
+
+      return true
+    })
+  }, [
+    unifiedEvents,
+    calSearchName,
+    calOriginFilter,
+    calFormatFilter,
+    calPricingFilter,
+    calLocationFilter,
+  ])
+
+  // ==========================================
+  // CALENDAR NAVIGATION HANDLERS
+  // ==========================================
+  const handlePrevDate = () => {
+    if (calendarViewMode === 'mes') {
+      setCurrentCalendarDate((prev) => subMonths(prev, 1))
+    } else if (calendarViewMode === 'semana') {
+      setCurrentCalendarDate((prev) => subWeeks(prev, 1))
+    } else {
+      setCurrentCalendarDate((prev) => subDays(prev, 1))
+    }
+  }
+
+  const handleNextDate = () => {
+    if (calendarViewMode === 'mes') {
+      setCurrentCalendarDate((prev) => addMonths(prev, 1))
+    } else if (calendarViewMode === 'semana') {
+      setCurrentCalendarDate((prev) => addWeeks(prev, 1))
+    } else {
+      setCurrentCalendarDate((prev) => addDays(prev, 1))
+    }
+  }
+
+  const handleToday = () => {
+    setCurrentCalendarDate(new Date())
+  }
+
+  // Days list for Month View
+  const monthDays = useMemo(() => {
+    const monthStart = startOfMonth(currentCalendarDate)
+    const monthEnd = endOfMonth(currentCalendarDate)
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 })
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 })
+    return eachDayOfInterval({ start: startDate, end: endDate })
+  }, [currentCalendarDate])
+
+  // Days list for Week View
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(currentCalendarDate, { weekStartsOn: 0 })
+    const end = endOfWeek(currentCalendarDate, { weekStartsOn: 0 })
+    return eachDayOfInterval({ start, end })
+  }, [currentCalendarDate])
+
+  // ==========================================
+  // ADMIN MEETING / MATERIAL CREATION
+  // ==========================================
   const handleOpenAddMeeting = () => {
     const nowRounded = roundToNearest15Min(new Date())
     const laterDate = new Date()
@@ -278,12 +578,12 @@ export default function MeetingsAndMaterials() {
     setMeetingEndDate(endRounded)
     setMeetingLocation('')
     setMeetingType('presencial')
+    setMeetingPricing('gratuito')
     setMeetingSpeakers('')
     setMeetingDesc('')
     setShowMeetingModal(true)
   }
 
-  // Open modal for editing existing meeting
   const handleOpenEditMeeting = (meeting: Meeting) => {
     setEditingMeeting(meeting)
     setMeetingTitle(meeting.title || '')
@@ -292,14 +592,13 @@ export default function MeetingsAndMaterials() {
     setMeetingEndDate(toDateTimeLocalString(meeting.end_date))
     setMeetingLocation(meeting.location || '')
     setMeetingType(meeting.type || 'presencial')
+    setMeetingPricing(meeting.pricing || 'gratuito')
     setMeetingSpeakers(meeting.speakers || '')
-    // Strip <p> wrapper for clean textarea edit
     const cleanDesc = (meeting.description || '').replace(/^<p>/, '').replace(/<\/p>$/, '')
     setMeetingDesc(cleanDesc)
     setShowMeetingModal(true)
   }
 
-  // Handle Save Meeting (Create or Update)
   const handleSaveMeeting = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!meetingTitle || !meetingStartDate || !meetingLocation) {
@@ -325,6 +624,7 @@ export default function MeetingsAndMaterials() {
         end_date: endIso || undefined,
         location: meetingLocation,
         type: meetingType,
+        pricing: meetingPricing,
         speakers: meetingSpeakers,
         description: meetingDesc ? `<p>${meetingDesc}</p>` : '',
       }
@@ -339,7 +639,7 @@ export default function MeetingsAndMaterials() {
       }
 
       setShowMeetingModal(false)
-      await loadData()
+      await loadAllData()
       setSelectedMeeting(saved)
     } catch (err: any) {
       toast.error('Erro ao salvar encontro: ' + err.message)
@@ -348,7 +648,6 @@ export default function MeetingsAndMaterials() {
     }
   }
 
-  // Handle Delete Meeting
   const handleDeleteMeeting = async (meeting: Meeting) => {
     if (!window.confirm(`Tem certeza que deseja excluir o encontro "${meeting.title}"?`)) {
       return
@@ -356,7 +655,7 @@ export default function MeetingsAndMaterials() {
     try {
       await deleteMeeting(meeting.id)
       toast.success('Encontro excluído com sucesso!')
-      await loadData()
+      await loadAllData()
       if (selectedMeeting?.id === meeting.id) {
         setSelectedMeeting(null)
       }
@@ -365,11 +664,11 @@ export default function MeetingsAndMaterials() {
     }
   }
 
-  // Handle Add Material (Admin)
   const handleAddMaterial = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedMeeting) {
-      toast.error('Selecione um encontro primeiro.')
+    const targetMeetingId = newMatMeetingId || selectedMeeting?.id
+    if (!targetMeetingId) {
+      toast.error('Selecione um encontro para vincular o material.')
       return
     }
     if (!newMatTitle || !newMatUrl) {
@@ -383,14 +682,14 @@ export default function MeetingsAndMaterials() {
         type: newMatType,
         url: newMatUrl,
         description: newMatDesc,
-        meeting: selectedMeeting.id,
+        meeting: targetMeetingId,
       })
       toast.success('Material adicionado ao acervo com sucesso!')
       setShowAddMaterialModal(false)
       setNewMatTitle('')
       setNewMatUrl('')
       setNewMatDesc('')
-      await loadData()
+      await loadAllData()
     } catch (err: any) {
       toast.error('Erro ao adicionar material: ' + err.message)
     } finally {
@@ -398,608 +697,1185 @@ export default function MeetingsAndMaterials() {
     }
   }
 
-  // Simulate download all
-  const handleDownloadAll = () => {
-    toast.success(`Iniciando download dos arquivos do encontro: ${selectedMeeting?.title}`)
-    currentMeetingMaterials.forEach((m) => {
-      if (m.url) {
-        window.open(m.url, '_blank')
-      }
-    })
-  }
-
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Top Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#8C6D07] text-xs font-semibold uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            Acervo Executivo Edvanced
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Encontros, Fotos & Vídeos Oficiais
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 max-w-2xl">
-            Acesse as coberturas fotográficas dos encontros presenciais, assista às gravações dos
-            encontros online e baixe apresentações em PDF com horários de 15 em 15 minutos.
-          </p>
-        </div>
-
-        {isAdmin && (
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleOpenAddMeeting}
-              className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-sm border border-teal-900/60"
-            >
-              <Plus className="w-4 h-4 mr-1.5 text-[#D4AF37]" /> Novo Encontro
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Filtrar por tema, evento, local..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200"
+    <div className="space-y-10 -mt-2 sm:-mt-4 pb-16 animate-fade-in text-slate-100">
+      {/* =========================================================================
+          1. NETFLIX-STYLE HERO BANNER (Capa em Destaque no Topo)
+         ========================================================================= */}
+      <div className="relative rounded-3xl overflow-hidden bg-[#03151B] border border-[#D4AF37]/25 shadow-2xl min-h-[440px] md:min-h-[520px] flex flex-col justify-end">
+        {/* Background Cover Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={getMeetingHeroCover(heroMeeting)}
+            alt={heroMeeting?.title || 'Edvanced Business Club'}
+            className="w-full h-full object-cover object-center transform scale-105 filter brightness-75 contrast-110"
           />
+          {/* Multi-layer Netflix-style vignette */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-[#06242E]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#03151B] via-[#03151B]/80 to-transparent w-full md:w-3/4" />
+          {/* Golden Ambient Glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-36 text-xs rounded-xl bg-slate-50">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos Status</SelectItem>
-              <SelectItem value="scheduled">Agendados / Futuros</SelectItem>
-              <SelectItem value="ongoing">Em Andamento</SelectItem>
-              <SelectItem value="completed">Realizados</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Hero Content Overlaid */}
+        <div className="relative z-10 p-6 md:p-12 max-w-3xl space-y-4 md:space-y-6">
+          {/* Top Pill / Badges */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37] text-slate-950 text-xs font-black uppercase tracking-wider shadow-lg shadow-[#D4AF37]/20">
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <span>Acervo & Encontros VIP</span>
+            </div>
 
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-36 text-xs rounded-xl bg-slate-50">
-              <SelectValue placeholder="Formato" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos Formatos</SelectItem>
-              <SelectItem value="presencial">Presencial</SelectItem>
-              <SelectItem value="online">Online VIP</SelectItem>
-              <SelectItem value="hibrido">Híbrido</SelectItem>
-            </SelectContent>
-          </Select>
+            {heroMeeting && (
+              <>
+                <Badge className="bg-white/15 backdrop-blur-md text-white border-white/25 font-bold uppercase text-[10px] tracking-wider">
+                  {heroMeeting.type || 'Presencial'}
+                </Badge>
 
-          <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger className="w-full sm:w-32 text-xs rounded-xl bg-slate-50">
-              <SelectValue placeholder="Ano" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos Anos</SelectItem>
-              <SelectItem value="2026">2026</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+                <Badge
+                  variant="outline"
+                  className={`font-bold uppercase text-[10px] tracking-wider ${
+                    heroMeeting.pricing === 'pago'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  }`}
+                >
+                  {heroMeeting.pricing === 'pago' ? 'Pago / Exclusivo' : 'Acesso Gratuito'}
+                </Badge>
 
-      {/* Main Split Layout: Left Meeting Timeline & Right Media Gallery */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEFT: Meeting Timeline / List (4 Cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#D4AF37]" />
-              Cronograma de Encontros ({filteredMeetings.length})
-            </h3>
+                {(() => {
+                  const status = getMeetingStatus(heroMeeting)
+                  const StatusIcon = status.icon
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={`font-bold uppercase text-[10px] flex items-center gap-1.5 ${status.badgeClass}`}
+                    >
+                      <StatusIcon className="w-3 h-3" />
+                      {status.label}
+                    </Badge>
+                  )
+                })()}
+              </>
+            )}
+
+            <span className="text-xs font-medium text-teal-200/90 hidden sm:inline-block">
+              &bull; Fotos, Gravações & Cronograma
+            </span>
           </div>
 
-          <div className="space-y-3 max-h-[750px] overflow-y-auto pr-1">
-            {filteredMeetings.length > 0 ? (
-              filteredMeetings.map((meeting) => {
-                const isSelected = selectedMeeting?.id === meeting.id
-                const meetMats = materials.filter((mat) => mat.meeting === meeting.id)
-                const status = getMeetingStatus(meeting)
-                const StatusIcon = status.icon
-
-                return (
-                  <div
-                    key={meeting.id}
-                    onClick={() => {
-                      setSelectedMeeting(meeting)
-                      setSearchParams({ id: meeting.id })
-                    }}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 relative group ${
-                      isSelected
-                        ? 'bg-[#06242E] text-white border-[#06242E] shadow-xl ring-2 ring-[#D4AF37]/60'
-                        : 'bg-white text-slate-800 border-slate-200/80 hover:border-[#D4AF37]/60 hover:shadow-md'
-                    }`}
-                  >
-                    {/* Top tags row: Format + Status Badge */}
-                    <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider ${
-                            isSelected
-                              ? 'bg-[#D4AF37] text-slate-950'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {meeting.type || 'Presencial'}
-                        </span>
-
-                        {/* Status Badge */}
-                        <span
-                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border inline-flex items-center gap-1 ${
-                            isSelected ? status.badgeClass : status.cardBadgeClass
-                          }`}
-                        >
-                          <StatusIcon className="w-3 h-3" />
-                          {status.label}
-                        </span>
-                      </div>
-
-                      <span
-                        className={`text-[11px] font-medium ${
-                          isSelected ? 'text-amber-200' : 'text-slate-400'
-                        }`}
-                      >
-                        {formatDateString(meeting.start_date || meeting.date)}
-                      </span>
-                    </div>
-
-                    {/* Item 4: Destacar o título do encontro e logo abaixo o nome do evento */}
-                    <div className="space-y-1 mb-2.5">
-                      <h4
-                        className={`font-black text-base leading-snug tracking-tight ${
-                          isSelected ? 'text-white' : 'text-slate-900 group-hover:text-[#8C6D07]'
-                        }`}
-                      >
-                        {meeting.title}
-                      </h4>
-                      {meeting.event_name && (
-                        <p
-                          className={`text-xs font-semibold flex items-center gap-1.5 ${
-                            isSelected ? 'text-[#F5D77F]' : 'text-[#8C6D07]'
-                          }`}
-                        >
-                          <Tag className="w-3 h-3 flex-shrink-0" />
-                          <span>{meeting.event_name}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Schedule times: 15 min steps display */}
-                    <div
-                      className={`flex items-center gap-1.5 text-xs mb-1.5 ${
-                        isSelected ? 'text-teal-100' : 'text-slate-600'
-                      }`}
-                    >
-                      <Clock className="w-3.5 h-3.5 flex-shrink-0 text-[#D4AF37]" />
-                      <span>
-                        {formatTimeString(meeting.start_date || meeting.date)}
-                        {meeting.end_date ? ` às ${formatTimeString(meeting.end_date)}` : ''}
-                      </span>
-                    </div>
-
-                    <div
-                      className={`flex items-center gap-2 text-xs truncate ${
-                        isSelected ? 'text-slate-300' : 'text-slate-500'
-                      }`}
-                    >
-                      <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[#D4AF37]" />
-                      <span className="truncate">{meeting.location}</span>
-                    </div>
-
-                    <div
-                      className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[11px] ${
-                        isSelected ? 'border-teal-800/60' : 'border-slate-200/40'
-                      }`}
-                    >
-                      <span className={isSelected ? 'text-teal-200/80' : 'text-slate-500'}>
-                        {meetMats.length} material(is) disponível(is)
-                      </span>
-                      <ChevronRight
-                        className={`w-4 h-4 transition-transform ${
-                          isSelected
-                            ? 'text-[#D4AF37] translate-x-1'
-                            : 'text-slate-400 group-hover:translate-x-1'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                <p className="text-slate-400 text-xs">
-                  Nenhum encontro encontrado com os filtros atuais.
+          {/* Title & Event Series */}
+          {heroMeeting ? (
+            <div className="space-y-2">
+              {heroMeeting.event_name && (
+                <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-[#D4AF37] flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>{heroMeeting.event_name}</span>
                 </p>
+              )}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white leading-[1.1] tracking-tight drop-shadow-md">
+                {heroMeeting.title}
+              </h1>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+                Encontros & Materiais Oficiais
+              </h1>
+              <p className="text-teal-100 text-sm md:text-base">
+                Assista a palestras gravadas, baixe apresentações em PDF e visualize fotos em alta
+                resolução.
+              </p>
+            </div>
+          )}
+
+          {/* Meeting Metadata */}
+          {heroMeeting && (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs md:text-sm text-teal-100/90">
+              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
+                <span className="font-semibold">
+                  {formatDateString(heroMeeting.start_date || heroMeeting.date)}
+                </span>
+                <span className="text-teal-300">
+                  às {formatTimeString(heroMeeting.start_date || heroMeeting.date)}
+                  {heroMeeting.end_date ? ` até ${formatTimeString(heroMeeting.end_date)}` : ''}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                <span className="truncate max-w-[240px]" title={heroMeeting.location}>
+                  {heroMeeting.location}
+                </span>
+              </div>
+
+              {heroMeeting.speakers && (
+                <div className="flex items-center gap-2 bg-[#03151B]/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                  <Users className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="truncate max-w-[220px]" title={heroMeeting.speakers}>
+                    {heroMeeting.speakers}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Short Description */}
+          {heroMeeting?.description && (
+            <div
+              className="text-xs md:text-sm text-slate-300 line-clamp-2 max-w-2xl leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: heroMeeting.description }}
+            />
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            {heroMeeting && (
+              <Button
+                onClick={() => setDetailMeeting(heroMeeting)}
+                className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-black text-xs md:text-sm uppercase tracking-wider px-6 py-6 rounded-xl shadow-xl shadow-[#D4AF37]/30 flex items-center gap-2 group transition-all hover:scale-105"
+              >
+                <Info className="w-4 h-4 mr-1" />
+                <span>Ver Detalhes do Encontro</span>
+              </Button>
+            )}
+
+            <Button
+              onClick={() => {
+                setMainView('calendario')
+                setSearchParams({ aba: 'calendario' })
+              }}
+              variant="outline"
+              className="border-white/30 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md text-xs md:text-sm font-bold px-5 py-6 rounded-xl transition-all flex items-center gap-2"
+            >
+              <CalendarDays className="w-4 h-4 text-[#D4AF37]" />
+              Abrir Calendário Geral
+            </Button>
+
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleOpenAddMeeting}
+                  className="bg-[#06242E] hover:bg-[#0A3340] border border-[#D4AF37]/40 text-white font-bold text-xs px-4 py-6 rounded-xl"
+                >
+                  <Plus className="w-4 h-4 mr-1 text-[#D4AF37]" />
+                  Novo Encontro
+                </Button>
+                <Button
+                  onClick={() => {
+                    setNewMatMeetingId(heroMeeting?.id || '')
+                    setShowAddMaterialModal(true)
+                  }}
+                  className="bg-teal-900/60 hover:bg-teal-800 border border-teal-700 text-teal-100 font-bold text-xs px-4 py-6 rounded-xl"
+                >
+                  <Plus className="w-4 h-4 mr-1 text-[#D4AF37]" />
+                  Adicionar Mídia
+                </Button>
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* RIGHT: Meeting Details & Media Gallery (8 Cols) */}
-        <div className="lg:col-span-8">
-          {selectedMeeting ? (
-            <div className="space-y-6">
-              {/* Meeting Header Banner */}
-              {(() => {
-                const status = getMeetingStatus(selectedMeeting)
-                const StatusIcon = status.icon
-                return (
-                  <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm space-y-6">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                      <div className="space-y-2.5 max-w-2xl">
-                        {/* Status & Date Tag */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px]">
-                            {selectedMeeting.type || 'Presencial'}
-                          </Badge>
+      {/* =========================================================================
+          2. SELEÇÃO PRINCIPAL: PRATELEIRAS POR CATEGORIA vs ABA CALENDÁRIO
+         ========================================================================= */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-teal-950/80 pb-4">
+        <div className="flex items-center gap-2 bg-[#06242E] p-1.5 rounded-2xl border border-teal-900/60 shadow-inner w-full sm:w-auto">
+          <Button
+            type="button"
+            onClick={() => {
+              setMainView('acervo')
+              setSearchParams({})
+            }}
+            className={`flex-1 sm:flex-none text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all ${
+              mainView === 'acervo'
+                ? 'bg-[#D4AF37] text-slate-950 shadow-md shadow-[#D4AF37]/20 font-black'
+                : 'bg-transparent text-teal-200 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4 mr-2" />
+            Materiais por Categoria
+          </Button>
 
-                          <Badge
-                            variant="outline"
-                            className={`font-bold uppercase text-[10px] flex items-center gap-1 ${status.cardBadgeClass}`}
+          <Button
+            type="button"
+            onClick={() => {
+              setMainView('calendario')
+              setSearchParams({ aba: 'calendario' })
+            }}
+            className={`flex-1 sm:flex-none text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all ${
+              mainView === 'calendario'
+                ? 'bg-[#D4AF37] text-slate-950 shadow-md shadow-[#D4AF37]/20 font-black'
+                : 'bg-transparent text-teal-200 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <CalendarDays className="w-4 h-4 mr-2" />
+            Calendário Integrado do Club
+          </Button>
+        </div>
+
+        {mainView === 'acervo' && (
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Buscar por tema, foto, gravação..."
+              value={acervoSearch}
+              onChange={(e) => setAcervoSearch(e.target.value)}
+              className="pl-9 text-xs rounded-xl bg-[#06242E] border-teal-950 text-white placeholder:text-slate-400"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* =========================================================================
+          3. VISÃO A: MATERIAIS SEPARADOS POR CATEGORIA (Estilo Capa Netflix)
+         ========================================================================= */}
+      {mainView === 'acervo' && (
+        <div className="space-y-12 animate-fade-in">
+          {/* CATEGORIA 1: PRATELEIRA DE ENCONTROS OFICIAIS */}
+          {(acervoCategory === 'todos' || acervoCategory === 'encontros') && (
+            <NetflixShelf
+              title="Encontros Oficiais & Masterminds"
+              subtitle="Imersões presenciais, rodadas executivas e webinars exclusivos"
+              icon={CalendarIcon}
+              badge={`${filteredMeetingsList.length} encontros`}
+              action={
+                isAdmin
+                  ? {
+                      label: '+ Cadastrar Encontro',
+                      onClick: handleOpenAddMeeting,
+                    }
+                  : undefined
+              }
+            >
+              {filteredMeetingsList.length > 0 ? (
+                filteredMeetingsList.map((m) => {
+                  const status = getMeetingStatus(m)
+                  const StatusIcon = status.icon
+                  const isHero = heroMeeting?.id === m.id
+
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => {
+                        setSelectedMeeting(m)
+                        setDetailMeeting(m)
+                      }}
+                      className={`group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between ${
+                        isHero
+                          ? 'border-[#D4AF37] ring-1 ring-[#D4AF37] shadow-xl shadow-[#D4AF37]/15'
+                          : 'border-teal-950 hover:border-[#D4AF37] shadow-lg'
+                      }`}
+                    >
+                      {/* Thumbnail Cover */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
+                        <img
+                          src={getMeetingHeroCover(m)}
+                          alt={m.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
+
+                        {/* Badges Top */}
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#D4AF37] text-slate-950 tracking-wider shadow">
+                            {m.type || 'Presencial'}
+                          </span>
+
+                          <span
+                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border inline-flex items-center gap-1 backdrop-blur-md ${status.cardClass}`}
                           >
                             <StatusIcon className="w-3 h-3" />
                             {status.label}
-                          </Badge>
-
-                          <span className="text-xs text-slate-500 font-medium">
-                            {formatDateString(selectedMeeting.start_date || selectedMeeting.date)}
                           </span>
                         </div>
 
-                        {/* Title & Event Name Prominence */}
-                        <div className="space-y-1">
-                          <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight">
-                            {selectedMeeting.title}
-                          </h2>
-                          {selectedMeeting.event_name && (
-                            <p className="text-sm md:text-base font-bold text-[#8C6D07] flex items-center gap-2">
-                              <Tag className="w-4 h-4 text-[#D4AF37]" />
-                              <span>Evento: {selectedMeeting.event_name}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Top Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        {currentMeetingMaterials.length > 0 && (
-                          <Button
-                            onClick={handleDownloadAll}
-                            variant="outline"
-                            size="sm"
-                            className="text-xs font-semibold border-slate-300 hover:bg-slate-50"
-                          >
-                            <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Materiais
-                          </Button>
-                        )}
-                        {isAdmin && (
-                          <>
-                            <Button
-                              onClick={() => handleOpenEditMeeting(selectedMeeting)}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs font-semibold border-slate-300 hover:bg-slate-100"
-                              title="Editar este encontro"
-                            >
-                              <Edit2 className="w-3.5 h-3.5 mr-1 text-slate-600" /> Editar
-                            </Button>
-                            <Button
-                              onClick={() => handleDeleteMeeting(selectedMeeting)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                              title="Excluir encontro"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              onClick={() => setShowAddMaterialModal(true)}
-                              size="sm"
-                              className="bg-[#D4AF37] hover:bg-[#B89324] text-slate-950 font-bold text-xs"
-                            >
-                              <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Mídia
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Details Grid (Horário início/fim com 15 min, Local e Palestrantes) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-2">
-                      {/* Horário Início e Previsão Fim */}
-                      <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                        <Clock className="w-4 h-4 text-[#8C6D07] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-slate-800">Horário do Encontro</p>
-                          <p className="text-slate-600 mt-0.5">
-                            Início:{' '}
-                            {formatTimeString(selectedMeeting.start_date || selectedMeeting.date)}
-                          </p>
-                          {selectedMeeting.end_date && (
-                            <p className="text-slate-500 text-[11px]">
-                              Previsão Fim: {formatTimeString(selectedMeeting.end_date)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                        <MapPin className="w-4 h-4 text-[#8C6D07] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-slate-800">Local do Encontro</p>
-                          <p
-                            className="text-slate-600 mt-0.5 truncate max-w-[200px]"
-                            title={selectedMeeting.location}
-                          >
-                            {selectedMeeting.location}
-                          </p>
-                        </div>
-                      </div>
-
-                      {selectedMeeting.speakers ? (
-                        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                          <Users className="w-4 h-4 text-[#8C6D07] mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-bold text-slate-800">Palestrantes & Convidados</p>
-                            <p
-                              className="text-slate-600 mt-0.5 truncate max-w-[200px]"
-                              title={selectedMeeting.speakers}
-                            >
-                              {selectedMeeting.speakers}
-                            </p>
+                        {/* Play / Inspect Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            <Eye className="w-5 h-5 text-slate-950" />
                           </div>
                         </div>
-                      ) : (
-                        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                          <Sparkles className="w-4 h-4 text-[#8C6D07] mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-bold text-slate-800">Clube de Negócios</p>
-                            <p className="text-slate-600 mt-0.5">Edvanced Business Club</p>
-                          </div>
+
+                        {/* Bottom Date */}
+                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-teal-100">
+                          <span className="font-semibold text-[#F5D77F]">
+                            {formatShortDate(m.start_date || m.date)}
+                          </span>
+                          <span>{formatTimeString(m.start_date || m.date)}</span>
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    {selectedMeeting.description && (
-                      <div
-                        className="text-xs md:text-sm text-slate-600 prose prose-slate max-w-none pt-2 border-t border-slate-100"
-                        dangerouslySetInnerHTML={{ __html: selectedMeeting.description }}
-                      />
-                    )}
-                  </div>
-                )
-              })()}
+                      {/* Card Content */}
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          {m.event_name && (
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37] line-clamp-1 flex items-center gap-1 mb-1">
+                              <Tag className="w-3 h-3 flex-shrink-0" />
+                              <span>{m.event_name}</span>
+                            </p>
+                          )}
+                          <h3 className="font-black text-sm text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
+                            {m.title}
+                          </h3>
+                        </div>
 
-              {/* Media Gallery with Tabs: Fotos, Vídeos, Documentos */}
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
-                <Tabs
-                  defaultValue="photos"
-                  className="w-full"
-                  onValueChange={(v) => setActiveTab(v as any)}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                    <div>
-                      <h3 className="font-extrabold text-base text-slate-900">
-                        Galeria de Mídia do Encontro
-                      </h3>
-                      <p className="text-xs text-slate-500">
-                        {currentMeetingMaterials.length} item(ns) anexados a este evento
-                      </p>
-                    </div>
+                        <div className="space-y-1.5 text-xs text-teal-100/80 pt-2 border-t border-teal-950">
+                          <div className="flex items-center gap-1.5 text-[11px] truncate">
+                            <MapPin className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                            <span className="truncate" title={m.location}>
+                              {m.location}
+                            </span>
+                          </div>
 
-                    <TabsList className="bg-slate-100 p-1 rounded-xl">
-                      <TabsTrigger
-                        value="photos"
-                        className="text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs rounded-lg px-3 py-1.5"
-                      >
-                        <ImageIcon className="w-3.5 h-3.5 mr-1.5 text-[#8C6D07]" />
-                        Fotos ({photos.length})
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="videos"
-                        className="text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs rounded-lg px-3 py-1.5"
-                      >
-                        <Video className="w-3.5 h-3.5 mr-1.5 text-rose-600" />
-                        Vídeos ({videos.length})
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="documents"
-                        className="text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs rounded-lg px-3 py-1.5"
-                      >
-                        <FileText className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
-                        Documentos ({documents.length})
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
-                  {/* TAB: PHOTOS */}
-                  <TabsContent value="photos" className="pt-6">
-                    {photos.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {photos.map((item) => (
-                          <div
-                            key={item.id}
-                            onClick={() => setPreviewItem(item)}
-                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#03151B] relative aspect-[4/3] shadow-xs hover:shadow-lg transition-all"
-                          >
-                            <img
-                              src={item.url}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#03151B]/95 via-transparent to-transparent flex flex-col justify-end p-4">
-                              <h4 className="text-xs font-bold text-white line-clamp-1 group-hover:text-[#F5D77F] transition-colors">
-                                {item.title}
-                              </h4>
-                              {item.description && (
-                                <p className="text-[10px] text-teal-100 line-clamp-1 mt-0.5">
-                                  {item.description}
-                                </p>
-                              )}
-                              <span className="text-[10px] text-[#D4AF37] font-semibold mt-1 flex items-center gap-1">
-                                <Eye className="w-3 h-3" /> Ver em alta resolução
+                          {m.speakers && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-300 truncate">
+                              <Users className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                              <span className="truncate" title={m.speakers}>
+                                {m.speakers}
                               </span>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-12 text-center text-slate-400 space-y-2">
-                        <ImageIcon className="w-10 h-10 mx-auto text-slate-300" />
-                        <p className="text-xs">Nenhuma foto anexada a este encontro.</p>
-                      </div>
-                    )}
-                  </TabsContent>
+                          )}
+                        </div>
 
-                  {/* TAB: VIDEOS */}
-                  <TabsContent value="videos" className="pt-6">
-                    {videos.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {videos.map((item) => (
+                        {/* Admin Action Buttons inline */}
+                        {isAdmin && (
                           <div
-                            key={item.id}
-                            onClick={() => setPreviewItem(item)}
-                            className="group cursor-pointer rounded-2xl overflow-hidden border border-slate-200/80 bg-[#03151B] relative aspect-[16/9] shadow-xs hover:shadow-lg transition-all"
+                            className="pt-2 border-t border-teal-950/60 flex items-center justify-end gap-1.5"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <img
-                              src="https://img.usecurling.com/p/600/350?q=executive%20summit%20stage&color=teal"
-                              alt="Video cover"
-                              className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                <Play className="w-5 h-5 fill-current ml-0.5" />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenEditMeeting(m)}
+                              className="h-7 px-2 text-[11px] text-teal-300 hover:text-white hover:bg-white/10"
+                            >
+                              <Edit2 className="w-3 h-3 mr-1" /> Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteMeeting(m)}
+                              className="h-7 px-2 text-[11px] text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                  <p className="text-xs text-slate-400">Nenhum encontro encontrado.</p>
+                </div>
+              )}
+            </NetflixShelf>
+          )}
+
+          {/* CATEGORIA 2: PRATELEIRA DE FOTOS (Galeria de Imagens) */}
+          {(acervoCategory === 'todos' || acervoCategory === 'photos') && (
+            <NetflixShelf
+              title="Coberturas Fotográficas Oficiais (Fotos)"
+              subtitle="Álbuns em alta resolução dos jantares, imersões e solenidades"
+              icon={ImageIcon}
+              badge={`${photoMaterials.length} álbuns`}
+              action={
+                isAdmin
+                  ? {
+                      label: '+ Anexar Foto',
+                      onClick: () => {
+                        setNewMatType('photo')
+                        setShowAddMaterialModal(true)
+                      },
+                    }
+                  : undefined
+              }
+            >
+              {photoMaterials.length > 0 ? (
+                photoMaterials.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setPreviewMedia(item)}
+                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#03151B]">
+                      {item.url ? (
+                        <img
+                          src={item.url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-teal-950/40">
+                          <ImageIcon className="w-8 h-8 text-[#D4AF37]" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/30" />
+
+                      <div className="absolute top-2.5 left-2.5">
+                        <Badge className="text-[9px] uppercase font-bold tracking-wider bg-[#D4AF37] text-slate-950">
+                          Foto HD
+                        </Badge>
+                      </div>
+
+                      <div className="absolute bottom-2 right-2 text-[10px] text-teal-200/90 flex items-center gap-1 bg-[#03151B]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                        <Eye className="w-3 h-3 text-[#D4AF37]" />
+                        <span>Ver álbum</span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <h4 className="font-bold text-xs text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
+                          {item.title}
+                        </h4>
+                        {item.description && (
+                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                        <span className="font-medium">Galeria Edvanced</span>
+                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                          Abrir Foto &rarr;
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                  <p className="text-xs text-slate-400">Nenhuma foto cadastrada no acervo.</p>
+                </div>
+              )}
+            </NetflixShelf>
+          )}
+
+          {/* CATEGORIA 3: PRATELEIRA DE VÍDEOS (Gravações & Palestras) */}
+          {(acervoCategory === 'todos' || acervoCategory === 'videos') && (
+            <NetflixShelf
+              title="Gravações & Streaming VIP (Vídeos)"
+              subtitle="Palestras na íntegra, keynotes e gravações completas dos encontros"
+              icon={Video}
+              badge={`${videoMaterials.length} vídeos`}
+              action={
+                isAdmin
+                  ? {
+                      label: '+ Anexar Vídeo',
+                      onClick: () => {
+                        setNewMatType('video')
+                        setShowAddMaterialModal(true)
+                      },
+                    }
+                  : undefined
+              }
+            >
+              {videoMaterials.length > 0 ? (
+                videoMaterials.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setPreviewMedia(item)}
+                    className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                  >
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#03151B]">
+                      <img
+                        src="https://img.usecurling.com/p/600/380?q=executive%20keynote%20stage&color=teal"
+                        alt="Video Cover"
+                        className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#06242E] via-transparent to-black/40" />
+
+                      <div className="absolute top-2.5 left-2.5">
+                        <Badge className="text-[9px] uppercase font-bold tracking-wider bg-rose-600 text-white">
+                          Gravação na Íntegra
+                        </Badge>
+                      </div>
+
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
+                          <Play className="w-5 h-5 fill-current ml-0.5" />
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-2 right-2 text-[10px] text-teal-200/90 flex items-center gap-1 bg-[#03151B]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                        <span>Assistir streaming</span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <h4 className="font-bold text-xs text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
+                          {item.title}
+                        </h4>
+                        {item.description && (
+                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                        <span className="font-medium">Edvanced Player</span>
+                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                          Reproduzir &rarr;
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                  <p className="text-xs text-slate-400">Nenhum vídeo cadastrado no acervo.</p>
+                </div>
+              )}
+            </NetflixShelf>
+          )}
+
+          {/* CATEGORIA 4: PRATELEIRA DE DOCUMENTOS & PDFS */}
+          {(acervoCategory === 'todos' || acervoCategory === 'documents') && (
+            <NetflixShelf
+              title="Apresentações & PDFs Executivos (Documentos)"
+              subtitle="Slides apresentados pelos palestrantes, atas executivas e relatórios estratégicos"
+              icon={FileText}
+              badge={`${docMaterials.length} arquivos`}
+              action={
+                isAdmin
+                  ? {
+                      label: '+ Anexar Documento',
+                      onClick: () => {
+                        setNewMatType('document')
+                        setShowAddMaterialModal(true)
+                      },
+                    }
+                  : undefined
+              }
+            >
+              {docMaterials.length > 0 ? (
+                docMaterials.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setPreviewMedia(item)}
+                    className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#06242E] border border-teal-950 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
+                  >
+                    <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-[#0A3340] to-[#03151B] flex flex-col items-center justify-center text-teal-100 p-4 text-center">
+                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 mb-2 group-hover:scale-110 transition-transform">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5D77F]">
+                        Documento Executivo (PDF)
+                      </span>
+
+                      <div className="absolute top-2.5 left-2.5">
+                        <Badge className="text-[9px] uppercase font-bold tracking-wider bg-blue-600 text-white">
+                          Slides / PDF
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <h4 className="font-bold text-xs text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
+                          {item.title}
+                        </h4>
+                        {item.description && (
+                          <p className="text-[11px] text-teal-200/70 line-clamp-2 mt-1">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-teal-950 flex items-center justify-between text-[10px] text-teal-300/80">
+                        <span className="font-medium">Material de Apoio</span>
+                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                          <Download className="w-3 h-3" /> Baixar
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="w-full p-8 text-center bg-[#06242E] rounded-2xl border border-teal-950">
+                  <p className="text-xs text-slate-400">Nenhum documento ou PDF anexado.</p>
+                </div>
+              )}
+            </NetflixShelf>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          4. VISÃO B: ABA DE CALENDÁRIO UNIFICADO (Requisitos: Encontros + Divulgações + Filtros)
+         ========================================================================= */}
+      {mainView === 'calendario' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header do Calendário com Filtros Completos */}
+          <div className="bg-[#06242E] border border-teal-950 rounded-3xl p-6 space-y-6 shadow-xl">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge className="bg-[#D4AF37] text-slate-950 font-bold uppercase text-[10px]">
+                    Calendário Geral de Eventos
+                  </Badge>
+                  <span className="text-xs text-teal-300/80">
+                    {filteredCalendarEvents.length} evento(s) no calendário
+                  </span>
+                </div>
+                <h2 className="text-xl md:text-2xl font-black text-white">
+                  Agenda Oficial do Business Club & Eventos dos Membros
+                </h2>
+                <p className="text-xs text-teal-200/70">
+                  Os encontros oficiais aparecem destacados em{' '}
+                  <span className="text-[#F5D77F] font-bold">Azul Escuro / Dourado VIP</span> e os
+                  eventos dos membros em{' '}
+                  <span className="text-teal-300 font-bold">Verde Petróleo</span>.
+                </p>
+              </div>
+
+              {/* Controles de Navegação de Data & Alternância Dia / Semana / Mês */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* View Mode: Dia / Semana / Mês */}
+                <div className="flex items-center bg-[#03151B] p-1 rounded-xl border border-teal-900/60">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarViewMode('mes')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      calendarViewMode === 'mes'
+                        ? 'bg-[#D4AF37] text-slate-950'
+                        : 'text-teal-200 hover:text-white'
+                    }`}
+                  >
+                    Mês
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarViewMode('semana')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      calendarViewMode === 'semana'
+                        ? 'bg-[#D4AF37] text-slate-950'
+                        : 'text-teal-200 hover:text-white'
+                    }`}
+                  >
+                    Semana
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarViewMode('dia')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      calendarViewMode === 'dia'
+                        ? 'bg-[#D4AF37] text-slate-950'
+                        : 'text-teal-200 hover:text-white'
+                    }`}
+                  >
+                    Dia
+                  </button>
+                </div>
+
+                {/* Prev / Today / Next */}
+                <div className="flex items-center gap-1 bg-[#03151B] p-1 rounded-xl border border-teal-900/60">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePrevDate}
+                    className="h-8 w-8 text-teal-100 hover:text-white hover:bg-white/10"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleToday}
+                    className="h-8 text-xs font-bold text-[#D4AF37] hover:bg-white/10"
+                  >
+                    Hoje
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNextDate}
+                    className="h-8 w-8 text-teal-100 hover:text-white hover:bg-white/10"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div className="px-3 py-1.5 rounded-xl bg-[#03151B] border border-teal-900/60 text-xs font-black text-white uppercase tracking-wider min-w-[140px] text-center">
+                  {format(currentCalendarDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                </div>
+              </div>
+            </div>
+
+            {/* BARRA DE FILTROS DO CALENDÁRIO (Evento, Local, Presencial/Online, Pago/Gratuito, Origem) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-4 border-t border-teal-950">
+              {/* 1. Busca por Nome de Evento */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                  Nome do Evento
+                </Label>
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    placeholder="Filtrar evento..."
+                    value={calSearchName}
+                    onChange={(e) => setCalSearchName(e.target.value)}
+                    className="pl-8 text-xs h-9 bg-[#03151B] border-teal-900/80 text-white placeholder:text-slate-500 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* 2. Origem (Business Club vs Membros) */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                  Origem do Evento
+                </Label>
+                <select
+                  value={calOriginFilter}
+                  onChange={(e) => setCalOriginFilter(e.target.value)}
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                >
+                  <option value="todos">Todos (Club & Membros)</option>
+                  <option value="club">Apenas Edvanced Business Club</option>
+                  <option value="members">Apenas Eventos dos Membros</option>
+                </select>
+              </div>
+
+              {/* 3. Formato: Presencial ou Online */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                  Presencial / Online
+                </Label>
+                <select
+                  value={calFormatFilter}
+                  onChange={(e) => setCalFormatFilter(e.target.value)}
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                >
+                  <option value="todos">Todos os Formatos</option>
+                  <option value="presencial">Presencial</option>
+                  <option value="online">Online</option>
+                  <option value="hibrido">Híbrido</option>
+                </select>
+              </div>
+
+              {/* 4. Cobrança: Pago ou Gratuito */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                  Pago / Gratuito
+                </Label>
+                <select
+                  value={calPricingFilter}
+                  onChange={(e) => setCalPricingFilter(e.target.value)}
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                >
+                  <option value="todos">Todos (Gratuito & Pago)</option>
+                  <option value="gratuito">Apenas Gratuitos / Inclusos</option>
+                  <option value="pago">Apenas Pagos / Inscrição</option>
+                </select>
+              </div>
+
+              {/* 5. Local */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                  Localização
+                </Label>
+                <select
+                  value={calLocationFilter}
+                  onChange={(e) => setCalLocationFilter(e.target.value)}
+                  className="w-full h-9 px-2.5 text-xs rounded-xl bg-[#03151B] border border-teal-900/80 text-white focus:outline-hidden"
+                >
+                  <option value="todos">Todos os Locais</option>
+                  {uniqueLocations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Legenda Visual */}
+            <div className="flex flex-wrap items-center gap-4 text-xs pt-2 text-teal-200/80">
+              <span className="font-semibold text-slate-400">Legenda:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#06242E] border-2 border-[#D4AF37]" />
+                <span className="text-white font-medium">Business Club (Oficial)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-teal-800 border-2 border-teal-400" />
+                <span className="text-white font-medium">Eventos dos Membros</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] uppercase font-bold text-emerald-300 border-emerald-500/40"
+                >
+                  Gratuito
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="text-[9px] uppercase font-bold text-amber-300 border-amber-500/40"
+                >
+                  Pago
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* =========================================================================
+              MODO 1: VISÃO DE MÊS (Month Grid)
+             ========================================================================= */}
+          {calendarViewMode === 'mes' && (
+            <div className="bg-[#06242E] border border-teal-950 rounded-3xl overflow-hidden shadow-xl">
+              {/* Weekday headers */}
+              <div className="grid grid-cols-7 border-b border-teal-950 bg-[#03151B]/80 text-center text-xs font-bold uppercase tracking-wider text-teal-300 py-3">
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+              </div>
+
+              {/* Month calendar cells */}
+              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-teal-950/60 bg-[#06242E]">
+                {monthDays.map((day, idx) => {
+                  const isCurrentMonth = isSameMonth(day, currentCalendarDate)
+                  const isToday = isSameDay(day, new Date())
+
+                  const dayEvents = filteredCalendarEvents.filter((ev) => {
+                    try {
+                      return isSameDay(parseISO(ev.date), day)
+                    } catch {
+                      return false
+                    }
+                  })
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`min-h-[120px] p-2 flex flex-col justify-between transition-colors ${
+                        isCurrentMonth
+                          ? 'bg-[#06242E]/70'
+                          : 'bg-[#03151B]/40 text-slate-600 opacity-60'
+                      } ${isToday ? 'ring-2 ring-inset ring-[#D4AF37]/80' : ''}`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span
+                          className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
+                            isToday
+                              ? 'bg-[#D4AF37] text-slate-950 font-black'
+                              : isCurrentMonth
+                                ? 'text-teal-100'
+                                : 'text-slate-600'
+                          }`}
+                        >
+                          {format(day, 'd')}
+                        </span>
+                        {dayEvents.length > 0 && (
+                          <span className="text-[10px] font-extrabold text-[#D4AF37]">
+                            {dayEvents.length}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Event Chips */}
+                      <div className="space-y-1 overflow-y-auto max-h-[90px] no-scrollbar">
+                        {dayEvents.map((ev) => {
+                          const isOfficial = ev.origin === 'meeting'
+                          return (
+                            <div
+                              key={ev.id}
+                              onClick={() => setSelectedCalendarEvent(ev)}
+                              className={`p-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all hover:scale-[1.02] truncate border ${
+                                isOfficial
+                                  ? 'bg-[#03151B] text-white border-[#D4AF37]/50 hover:border-[#D4AF37] shadow-xs'
+                                  : 'bg-teal-950 text-teal-100 border-teal-700/60 hover:border-teal-400'
+                              }`}
+                              title={`${ev.title} (${ev.format} - ${ev.pricing})`}
+                            >
+                              <div className="flex items-center gap-1 truncate">
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                    isOfficial ? 'bg-[#D4AF37]' : 'bg-teal-400'
+                                  }`}
+                                />
+                                <span className="truncate">{ev.title}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-[9px] text-teal-300/80 mt-0.5">
+                                <span>{formatTimeString(ev.date)}</span>
+                                <span className="uppercase text-[8px] font-extrabold text-[#F5D77F]">
+                                  {ev.format}
+                                </span>
                               </div>
                             </div>
-                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#03151B]/95 p-3">
-                              <h4 className="text-xs font-bold text-white line-clamp-1">
-                                {item.title}
-                              </h4>
-                              <p className="text-[10px] text-teal-100 line-clamp-1">
-                                {item.description || 'Assista à gravação completa'}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
-                    ) : (
-                      <div className="py-12 text-center text-slate-400 space-y-2">
-                        <Video className="w-10 h-10 mx-auto text-slate-300" />
-                        <p className="text-xs">Nenhum vídeo cadastrado para este encontro.</p>
-                      </div>
-                    )}
-                  </TabsContent>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
-                  {/* TAB: DOCUMENTS */}
-                  <TabsContent value="documents" className="pt-6">
-                    {documents.length > 0 ? (
-                      <div className="space-y-3">
-                        {documents.map((item) => (
-                          <div
-                            key={item.id}
-                            className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50 hover:bg-white hover:border-[#D4AF37]/50 transition-all flex items-center justify-between gap-4"
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
-                                <FileText className="w-5 h-5" />
-                              </div>
-                              <div className="min-w-0">
-                                <h4 className="text-xs font-bold text-slate-900 truncate">
-                                  {item.title}
+          {/* =========================================================================
+              MODO 2: VISÃO DE SEMANA (Week Columns)
+             ========================================================================= */}
+          {calendarViewMode === 'semana' && (
+            <div className="bg-[#06242E] border border-teal-950 rounded-3xl overflow-hidden shadow-xl p-4">
+              <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                {weekDays.map((day, idx) => {
+                  const isToday = isSameDay(day, new Date())
+                  const dayEvents = filteredCalendarEvents.filter((ev) => {
+                    try {
+                      return isSameDay(parseISO(ev.date), day)
+                    } catch {
+                      return false
+                    }
+                  })
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`rounded-2xl p-3 bg-[#03151B] border min-h-[220px] flex flex-col justify-between ${
+                        isToday ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' : 'border-teal-950'
+                      }`}
+                    >
+                      <div className="border-b border-teal-950 pb-2 mb-2 text-center">
+                        <p className="text-[10px] font-bold uppercase text-teal-300">
+                          {format(day, 'EEE', { locale: ptBR })}
+                        </p>
+                        <p
+                          className={`text-lg font-black mt-0.5 ${
+                            isToday ? 'text-[#D4AF37]' : 'text-white'
+                          }`}
+                        >
+                          {format(day, 'dd/MM')}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2 flex-1 overflow-y-auto max-h-[300px]">
+                        {dayEvents.length > 0 ? (
+                          dayEvents.map((ev) => {
+                            const isOfficial = ev.origin === 'meeting'
+                            return (
+                              <div
+                                key={ev.id}
+                                onClick={() => setSelectedCalendarEvent(ev)}
+                                className={`p-2.5 rounded-xl text-xs cursor-pointer border transition-all hover:scale-105 ${
+                                  isOfficial
+                                    ? 'bg-[#06242E] text-white border-[#D4AF37]/50 shadow-md'
+                                    : 'bg-teal-950 text-teal-100 border-teal-700/60'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1 mb-1">
+                                  <Badge
+                                    className={`text-[8px] uppercase font-extrabold ${
+                                      isOfficial
+                                        ? 'bg-[#D4AF37] text-slate-950'
+                                        : 'bg-teal-800 text-white'
+                                    }`}
+                                  >
+                                    {isOfficial ? 'Club' : 'Membro'}
+                                  </Badge>
+                                  <span className="text-[10px] text-[#F5D77F] font-bold">
+                                    {formatTimeString(ev.date)}
+                                  </span>
+                                </div>
+                                <h4 className="font-bold text-xs text-white line-clamp-2 leading-tight">
+                                  {ev.title}
                                 </h4>
-                                {item.description && (
-                                  <p className="text-[11px] text-slate-500 truncate">
-                                    {item.description}
+                                {ev.location && (
+                                  <p className="text-[10px] text-teal-300/80 truncate mt-1 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3 text-[#D4AF37]" />
+                                    {ev.location}
                                   </p>
                                 )}
                               </div>
-                            </div>
-
-                            {item.url && (
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-shrink-0"
-                              >
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-xs font-semibold border-slate-300 hover:bg-[#D4AF37] hover:text-slate-950"
-                                >
-                                  <Download className="w-3.5 h-3.5 mr-1" /> Baixar PDF
-                                </Button>
-                              </a>
-                            )}
+                            )
+                          })
+                        ) : (
+                          <div className="text-center py-6 text-slate-600 text-[11px]">
+                            Sem eventos
                           </div>
-                        ))}
+                        )}
                       </div>
-                    ) : (
-                      <div className="py-12 text-center text-slate-400 space-y-2">
-                        <FileText className="w-10 h-10 mx-auto text-slate-300" />
-                        <p className="text-xs">Nenhum documento ou apresentação anexada.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          ) : (
-            <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-bold text-slate-700">Nenhum encontro selecionado</h3>
-              <p className="text-xs text-slate-400">
-                Selecione um encontro na lista ao lado para ver fotos e vídeos.
-              </p>
+          )}
+
+          {/* =========================================================================
+              MODO 3: VISÃO DE DIA (Day Agenda)
+             ========================================================================= */}
+          {calendarViewMode === 'dia' && (
+            <div className="bg-[#06242E] border border-teal-950 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-teal-950 pb-4">
+                <div>
+                  <span className="text-xs uppercase font-bold text-[#D4AF37] tracking-wider">
+                    Agenda do Dia Selecionado
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-black text-white">
+                    {format(currentCalendarDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  </h3>
+                </div>
+              </div>
+
+              {(() => {
+                const dayEvents = filteredCalendarEvents.filter((ev) => {
+                  try {
+                    return isSameDay(parseISO(ev.date), currentCalendarDate)
+                  } catch {
+                    return false
+                  }
+                })
+
+                if (dayEvents.length === 0) {
+                  return (
+                    <div className="p-12 text-center bg-[#03151B] rounded-2xl border border-teal-950 space-y-3">
+                      <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto" />
+                      <h4 className="font-bold text-white text-base">
+                        Nenhum evento agendado para esta data
+                      </h4>
+                      <p className="text-xs text-slate-400 max-w-md mx-auto">
+                        Nenhum encontro do Business Club ou divulgação de membros coincide com os
+                        filtros aplicados.
+                      </p>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {dayEvents.map((ev) => {
+                      const isOfficial = ev.origin === 'meeting'
+                      return (
+                        <div
+                          key={ev.id}
+                          onClick={() => setSelectedCalendarEvent(ev)}
+                          className={`p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.01] flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                            isOfficial
+                              ? 'bg-[#03151B] text-white border-[#D4AF37]/50 shadow-xl'
+                              : 'bg-teal-950/70 text-teal-100 border-teal-700/60'
+                          }`}
+                        >
+                          <div className="space-y-2 min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge
+                                className={`text-[10px] font-black uppercase tracking-wider ${
+                                  isOfficial
+                                    ? 'bg-[#D4AF37] text-slate-950'
+                                    : 'bg-teal-700 text-white'
+                                }`}
+                              >
+                                {isOfficial ? 'Business Club Oficial' : 'Divulgação de Membro'}
+                              </Badge>
+
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] uppercase font-bold text-teal-200 border-teal-700"
+                              >
+                                {ev.format}
+                              </Badge>
+
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] uppercase font-bold ${
+                                  ev.pricing === 'pago'
+                                    ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                                    : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                                }`}
+                              >
+                                {ev.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                              </Badge>
+
+                              <span className="text-xs text-teal-300 font-bold">
+                                {formatTimeString(ev.date)}
+                                {ev.endDate ? ` até ${formatTimeString(ev.endDate)}` : ''}
+                              </span>
+                            </div>
+
+                            <h4 className="font-extrabold text-base md:text-lg text-white">
+                              {ev.title}
+                            </h4>
+
+                            {ev.subtitle && (
+                              <p className="text-xs text-[#F5D77F] font-semibold">{ev.subtitle}</p>
+                            )}
+
+                            {ev.location && (
+                              <p className="text-xs text-teal-200/80 flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                                {ev.location}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs">
+                              Ver Detalhes &rarr;
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Preview Modal for Photos/Videos */}
-      {previewItem && (
-        <Dialog open={!!previewItem} onOpenChange={(open) => !open && setPreviewItem(null)}>
-          <DialogContent className="max-w-3xl bg-white p-6 rounded-3xl shadow-2xl">
+      {/* =========================================================================
+          MODAIS: PREVIEW DE MÍDIA, DETALHES DE ENCONTRO E DETALHES DO EVENTO CALENDÁRIO
+         ========================================================================= */}
+
+      {/* 1. Modal Preview de Foto / Vídeo / Documento */}
+      {previewMedia && (
+        <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
+          <DialogContent className="max-w-3xl bg-[#06242E] text-white border-teal-950 p-6 shadow-2xl rounded-3xl">
             <DialogHeader>
-              <Badge className="w-fit bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px] mb-1">
-                {previewItem.type}
-              </Badge>
-              <DialogTitle className="text-base font-bold text-slate-900">
-                {previewItem.title}
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
+                  {previewMedia.type}
+                </Badge>
+              </div>
+              <DialogTitle className="text-lg font-bold text-white">
+                {previewMedia.title}
               </DialogTitle>
-              {previewItem.description && (
-                <DialogDescription className="text-xs text-slate-600">
-                  {previewItem.description}
+              {previewMedia.description && (
+                <DialogDescription className="text-xs text-teal-200/80">
+                  {previewMedia.description}
                 </DialogDescription>
               )}
             </DialogHeader>
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[350px]">
-              {previewItem.type === 'photo' && previewItem.url && (
+            <div className="my-4 rounded-2xl overflow-hidden bg-[#03151B] flex items-center justify-center min-h-[300px] border border-teal-950">
+              {previewMedia.type === 'photo' && previewMedia.url && (
                 <img
-                  src={previewItem.url}
-                  alt={previewItem.title}
-                  className="max-h-[500px] w-auto object-contain rounded-lg"
+                  src={previewMedia.url}
+                  alt={previewMedia.title}
+                  className="max-h-[500px] w-auto object-contain"
                 />
               )}
-              {previewItem.type === 'video' && (
+              {previewMedia.type === 'video' && (
                 <div className="p-8 text-center text-white space-y-4">
-                  <Play className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
-                  <p className="text-sm font-semibold">Assistir Gravação na Íntegra</p>
-                  {previewItem.url && (
+                  <Video className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
+                  <p className="text-sm font-semibold">Vídeo / Gravação na Íntegra</p>
+                  <p className="text-xs text-teal-200/70 max-w-md mx-auto">
+                    A reprodução de vídeo em alta definição está pronta para streaming.
+                  </p>
+                  {previewMedia.url && (
                     <a
-                      href={previewItem.url}
+                      href={previewMedia.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-block"
@@ -1011,133 +1887,391 @@ export default function MeetingsAndMaterials() {
                   )}
                 </div>
               )}
+              {previewMedia.type === 'document' && (
+                <div className="p-8 text-center text-white space-y-4">
+                  <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
+                  <p className="text-sm font-semibold">Documento Executivo (PDF / Slides)</p>
+                  {previewMedia.url && (
+                    <a
+                      href={previewMedia.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Documento PDF
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPreviewItem(null)} className="text-xs">
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewMedia(null)}
+                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+              >
                 Fechar
               </Button>
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       )}
 
-      {/* ADMIN: Add / Edit Meeting Modal (15 min interval, start/end dates, event name) */}
+      {/* 2. Modal Detalhes do Encontro */}
+      {detailMeeting && (
+        <Dialog open={!!detailMeeting} onOpenChange={(open) => !open && setDetailMeeting(null)}>
+          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+            <DialogHeader className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
+                  {detailMeeting.type || 'Presencial'}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] font-bold ${
+                    detailMeeting.pricing === 'pago'
+                      ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                      : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                  }`}
+                >
+                  {detailMeeting.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                </Badge>
+                {(() => {
+                  const status = getMeetingStatus(detailMeeting)
+                  const StatusIcon = status.icon
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] font-bold ${status.badgeClass}`}
+                    >
+                      <StatusIcon className="w-3 h-3 mr-1" />
+                      {status.label}
+                    </Badge>
+                  )
+                })()}
+              </div>
+              <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
+                {detailMeeting.title}
+              </DialogTitle>
+              {detailMeeting.event_name && (
+                <p className="text-xs font-bold text-[#F5D77F] flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Série: {detailMeeting.event_name}</span>
+                </p>
+              )}
+            </DialogHeader>
+
+            <div className="space-y-4 my-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data & Horário
+                  </p>
+                  <p className="text-white font-bold">
+                    {formatDateString(detailMeeting.start_date || detailMeeting.date)}
+                  </p>
+                  <p className="text-teal-200">
+                    {formatTimeString(detailMeeting.start_date || detailMeeting.date)}
+                    {detailMeeting.end_date
+                      ? ` até ${formatTimeString(detailMeeting.end_date)}`
+                      : ''}
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[#D4AF37]" /> Localização
+                  </p>
+                  <p className="text-white font-bold">{detailMeeting.location}</p>
+                </div>
+              </div>
+
+              {detailMeeting.speakers && (
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 text-xs space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
+                  </p>
+                  <p className="text-white">{detailMeeting.speakers}</p>
+                </div>
+              )}
+
+              {detailMeeting.description && (
+                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-xs text-teal-100/90 max-h-48 overflow-y-auto leading-relaxed">
+                  <div dangerouslySetInnerHTML={{ __html: detailMeeting.description }} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+              <Button
+                variant="outline"
+                onClick={() => setDetailMeeting(null)}
+                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+              >
+                Fechar
+              </Button>
+              {isAdmin && (
+                <Button
+                  onClick={() => {
+                    const m = detailMeeting
+                    setDetailMeeting(null)
+                    handleOpenEditMeeting(m)
+                  }}
+                  className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs"
+                >
+                  <Edit2 className="w-3.5 h-3.5 mr-1" /> Editar Encontro
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* 3. Modal Detalhes do Evento do Calendário (Unificado) */}
+      {selectedCalendarEvent && (
+        <Dialog
+          open={!!selectedCalendarEvent}
+          onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
+        >
+          <DialogContent className="max-w-2xl bg-[#06242E] text-white border-teal-950 p-6 md:p-8 shadow-2xl rounded-3xl">
+            <DialogHeader className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  className={`uppercase font-black text-[10px] ${
+                    selectedCalendarEvent.origin === 'meeting'
+                      ? 'bg-[#D4AF37] text-slate-950'
+                      : 'bg-teal-700 text-white'
+                  }`}
+                >
+                  {selectedCalendarEvent.origin === 'meeting'
+                    ? 'Edvanced Business Club'
+                    : 'Evento do Membro'}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className="text-[10px] uppercase font-bold text-teal-200 border-teal-700"
+                >
+                  {selectedCalendarEvent.format}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] uppercase font-bold ${
+                    selectedCalendarEvent.pricing === 'pago'
+                      ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                      : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                  }`}
+                >
+                  {selectedCalendarEvent.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                </Badge>
+              </div>
+
+              <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
+                {selectedCalendarEvent.title}
+              </DialogTitle>
+
+              {selectedCalendarEvent.subtitle && (
+                <p className="text-xs font-bold text-[#F5D77F]">{selectedCalendarEvent.subtitle}</p>
+              )}
+            </DialogHeader>
+
+            <div className="space-y-4 my-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4 text-[#D4AF37]" /> Data do Evento
+                  </p>
+                  <p className="text-white font-bold">
+                    {formatDateString(selectedCalendarEvent.date)}
+                  </p>
+                  <p className="text-teal-200">
+                    {formatTimeString(selectedCalendarEvent.date)}
+                    {selectedCalendarEvent.endDate
+                      ? ` às ${formatTimeString(selectedCalendarEvent.endDate)}`
+                      : ''}
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[#D4AF37]" /> Local / Plataforma
+                  </p>
+                  <p className="text-white font-bold">
+                    {selectedCalendarEvent.location || 'Online / A combinar'}
+                  </p>
+                </div>
+              </div>
+
+              {selectedCalendarEvent.speakers && (
+                <div className="p-3.5 bg-[#03151B] rounded-2xl border border-teal-950 space-y-1">
+                  <p className="text-teal-300 font-semibold flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-[#D4AF37]" /> Palestrantes & Convidados
+                  </p>
+                  <p className="text-white">{selectedCalendarEvent.speakers}</p>
+                </div>
+              )}
+
+              {selectedCalendarEvent.description && (
+                <div className="p-4 bg-[#03151B]/60 rounded-2xl border border-teal-950 text-teal-100/90 leading-relaxed whitespace-pre-wrap">
+                  {selectedCalendarEvent.description.startsWith('<') ? (
+                    <div dangerouslySetInnerHTML={{ __html: selectedCalendarEvent.description }} />
+                  ) : (
+                    selectedCalendarEvent.description
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-teal-950">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedCalendarEvent(null)}
+                className="text-xs border-teal-800 text-teal-100 hover:bg-teal-900"
+              >
+                Fechar
+              </Button>
+
+              {selectedCalendarEvent.contactLink && (
+                <a
+                  href={selectedCalendarEvent.contactLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider">
+                    Acessar Link / Inscrição <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                  </Button>
+                </a>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* =========================================================================
+          ADMIN: CRIAR / EDITAR ENCONTRO MODAL
+         ========================================================================= */}
       {showMeetingModal && (
         <Dialog open={showMeetingModal} onOpenChange={setShowMeetingModal}>
-          <DialogContent className="max-w-xl bg-white rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-xl bg-[#06242E] text-white border-teal-950 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-slate-900">
-                {editingMeeting ? 'Editar Encontro' : 'Cadastrar Novo Encontro'}
+              <DialogTitle className="text-lg font-bold text-white">
+                {editingMeeting ? 'Editar Encontro Oficial' : 'Cadastrar Novo Encontro Oficial'}
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                Configure os dados do encontro oficial. O seletor de horários segue passos de 15
-                minutos.
+              <DialogDescription className="text-xs text-teal-200/70">
+                Configure os dados do encontro oficial. Selecione formato e cobrança.
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSaveMeeting} className="space-y-4 pt-2">
+            <form onSubmit={handleSaveMeeting} className="space-y-4 pt-2 text-xs">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Título do Encontro *</Label>
+                <Label className="text-teal-300">Título do Encontro *</Label>
                 <Input
-                  placeholder="Ex: Mastermind de Escala & Governança 2025"
+                  placeholder="Ex: Mastermind de Escala & Governança 2026"
                   value={meetingTitle}
                   onChange={(e) => setMeetingTitle(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">
-                  Nome do Evento / Série (exibido logo abaixo)
+                <Label className="text-teal-300">
+                  Nome do Evento / Série (exibido em destaque)
                 </Label>
                 <Input
-                  placeholder="Ex: Edvanced Executive Immersion 2025"
+                  placeholder="Ex: Edvanced Executive Immersion 2026"
                   value={meetingEventName}
                   onChange={(e) => setMeetingEventName(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                 />
               </div>
 
-              {/* Data Início & Previsão de Fim com step 900 (15 minutos) */}
+              {/* Data Início & Previsão de Fim com step 900 (15 min) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">
-                    Data e Hora de Início * (passo: 15 min)
-                  </Label>
+                  <Label className="text-teal-300">Data e Hora de Início * (passo: 15 min)</Label>
                   <Input
                     type="datetime-local"
                     step={900}
                     value={meetingStartDate}
                     onChange={(e) => setMeetingStartDate(e.target.value)}
-                    className="text-xs"
+                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                     required
                   />
-                  <p className="text-[10px] text-slate-400">
-                    Intervalos de 15 min (ex: 14:00, 14:15, 14:30)
-                  </p>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Previsão de Fim (passo: 15 min)</Label>
+                  <Label className="text-teal-300">Previsão de Fim (passo: 15 min)</Label>
                   <Input
                     type="datetime-local"
                     step={900}
                     value={meetingEndDate}
                     onChange={(e) => setMeetingEndDate(e.target.value)}
-                    className="text-xs"
+                    className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   />
-                  <p className="text-[10px] text-slate-400">
-                    Opcional — define o período "Em andamento"
-                  </p>
                 </div>
               </div>
 
+              {/* Formato & Cobrança */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Formato do Encontro</Label>
-                  <Select value={meetingType} onValueChange={(v: any) => setMeetingType(v)}>
-                    <SelectTrigger className="text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="presencial">Presencial</SelectItem>
-                      <SelectItem value="online">Online VIP</SelectItem>
-                      <SelectItem value="hibrido">Híbrido</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-teal-300">Formato do Encontro *</Label>
+                  <select
+                    value={meetingType}
+                    onChange={(e) => setMeetingType(e.target.value as any)}
+                    className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                  >
+                    <option value="presencial">Presencial</option>
+                    <option value="online">Online VIP</option>
+                    <option value="hibrido">Híbrido</option>
+                  </select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Local / Transmissão *</Label>
-                  <Input
-                    placeholder="Ex: Hotel Fasano Jardins - SP"
-                    value={meetingLocation}
-                    onChange={(e) => setMeetingLocation(e.target.value)}
-                    className="text-xs"
-                    required
-                  />
+                  <Label className="text-teal-300">Cobrança / Acesso *</Label>
+                  <select
+                    value={meetingPricing}
+                    onChange={(e) => setMeetingPricing(e.target.value as any)}
+                    className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                  >
+                    <option value="gratuito">Gratuito (Incluso na Membresia)</option>
+                    <option value="pago">Pago (Inscrição Extra)</option>
+                  </select>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Palestrantes / Convidados Especiais</Label>
+                <Label className="text-teal-300">Local / Plataforma de Transmissão *</Label>
                 <Input
-                  placeholder="Ex: Ediane Dal Bosco, Dr. Fernando Cintra"
-                  value={meetingSpeakers}
-                  onChange={(e) => setMeetingSpeakers(e.target.value)}
-                  className="text-xs"
+                  placeholder="Ex: Palácio Tangará - SP ou Zoom VIP"
+                  value={meetingLocation}
+                  onChange={(e) => setMeetingLocation(e.target.value)}
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                  required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Pauta / Descrição</Label>
+                <Label className="text-teal-300">Palestrantes / Convidados Especiais</Label>
+                <Input
+                  placeholder="Ex: Ediane Dal Bosco, Dr. Fernando Cintra"
+                  value={meetingSpeakers}
+                  onChange={(e) => setMeetingSpeakers(e.target.value)}
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-teal-300">Pauta / Descrição</Label>
                 <Textarea
                   placeholder="Detalhes, cronograma ou tópicos discutidos..."
                   value={meetingDesc}
                   onChange={(e) => setMeetingDesc(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   rows={3}
                 />
               </div>
@@ -1147,14 +2281,14 @@ export default function MeetingsAndMaterials() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowMeetingModal(false)}
-                  className="text-xs"
+                  className="text-xs border-teal-900 text-teal-200"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#06242E] hover:bg-[#0A3340] text-white font-bold text-xs"
+                  className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs"
                 >
                   {isSubmitting
                     ? 'Salvando...'
@@ -1168,63 +2302,81 @@ export default function MeetingsAndMaterials() {
         </Dialog>
       )}
 
-      {/* ADMIN: Add Material Modal */}
+      {/* =========================================================================
+          ADMIN: ADICIONAR MATERIAL MODAL
+         ========================================================================= */}
       {showAddMaterialModal && (
         <Dialog open={showAddMaterialModal} onOpenChange={setShowAddMaterialModal}>
-          <DialogContent className="max-w-lg bg-white rounded-3xl p-6 shadow-2xl">
+          <DialogContent className="max-w-lg bg-[#06242E] text-white border-teal-950 rounded-3xl p-6 shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-slate-900">
-                Adicionar Material ao Encontro
+              <DialogTitle className="text-lg font-bold text-white">
+                Adicionar Material ao Acervo
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                Encontro: <span className="font-bold text-slate-800">{selectedMeeting?.title}</span>
+              <DialogDescription className="text-xs text-teal-200/70">
+                Selecione a qual encontro vincular e o tipo de mídia (Foto, Vídeo ou Documento).
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleAddMaterial} className="space-y-4 pt-2">
+            <form onSubmit={handleAddMaterial} className="space-y-4 pt-2 text-xs">
               <div className="space-y-1">
-                <Label className="text-xs">Título do Arquivo / Foto *</Label>
+                <Label className="text-teal-300">Encontro Relacionado *</Label>
+                <select
+                  value={newMatMeetingId || selectedMeeting?.id || ''}
+                  onChange={(e) => setNewMatMeetingId(e.target.value)}
+                  className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                  required
+                >
+                  <option value="">Selecione um encontro...</option>
+                  {meetings.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-teal-300">Título do Arquivo / Álbum *</Label>
                 <Input
                   placeholder="Ex: Galeria de Fotos em Alta - Welcome Dinner"
                   value={newMatTitle}
                   onChange={(e) => setNewMatTitle(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Tipo de Mídia *</Label>
-                <Select value={newMatType} onValueChange={(v: any) => setNewMatType(v)}>
-                  <SelectTrigger className="text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="photo">Foto / Galeria</SelectItem>
-                    <SelectItem value="video">Vídeo / Gravação</SelectItem>
-                    <SelectItem value="document">Documento / PDF</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-teal-300">Tipo de Categoria *</Label>
+                <select
+                  value={newMatType}
+                  onChange={(e) => setNewMatType(e.target.value as any)}
+                  className="w-full h-9 px-3 rounded-xl bg-[#03151B] border border-teal-900 text-white text-xs"
+                >
+                  <option value="photo">Foto (Galeria de Imagens)</option>
+                  <option value="video">Vídeo (Streaming / Gravação)</option>
+                  <option value="document">Documento (PDF / Slides)</option>
+                </select>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">URL / Link Direto *</Label>
+                <Label className="text-teal-300">URL / Link Direto *</Label>
                 <Input
-                  placeholder="https://img.usecurling.com/... ou link do vídeo/pdf"
+                  placeholder="https://img.usecurling.com/... ou link de vídeo/pdf"
                   value={newMatUrl}
                   onChange={(e) => setNewMatUrl(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Descrição / Notas</Label>
+                <Label className="text-teal-300">Descrição / Notas</Label>
                 <Textarea
-                  placeholder="Informações adicionais para os membros..."
+                  placeholder="Informações adicionais para os associados..."
                   value={newMatDesc}
                   onChange={(e) => setNewMatDesc(e.target.value)}
-                  className="text-xs"
+                  className="text-xs bg-[#03151B] border-teal-900 text-white rounded-xl"
                   rows={2}
                 />
               </div>
@@ -1234,14 +2386,14 @@ export default function MeetingsAndMaterials() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddMaterialModal(false)}
-                  className="text-xs"
+                  className="text-xs border-teal-900 text-teal-200"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#D4AF37] hover:bg-[#B89324] text-slate-950 font-bold text-xs"
+                  className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs"
                 >
                   {isSubmitting ? 'Salvando...' : 'Adicionar ao Acervo'}
                 </Button>
