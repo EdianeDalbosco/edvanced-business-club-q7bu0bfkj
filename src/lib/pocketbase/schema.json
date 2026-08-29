@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T22:55:12.482Z",
+  "generatedAt": "2026-08-29T00:01:14.995Z",
   "collections": [
     {
       "name": "users",
@@ -431,6 +431,90 @@
       "indexes": [
         "CREATE INDEX idx_edvanced_cast_published ON edvanced_cast (published_at DESC)",
         "CREATE INDEX idx_edvanced_cast_created ON edvanced_cast (created DESC)"
+      ]
+    },
+    {
+      "name": "testimonials",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "author_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "author_role",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "company",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "avatar",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "rating",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "featured",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_testimonials_order ON testimonials (featured, `order`, created DESC)"
       ]
     }
   ]

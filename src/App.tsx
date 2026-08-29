@@ -16,6 +16,7 @@ import NewDisclosure from '@/pages/NewDisclosure'
 import Members from '@/pages/Members'
 import AdminApprovalQueue from '@/pages/AdminApprovalQueue'
 import AdminNewMember from '@/pages/AdminNewMember'
+import AdminTestimonials from '@/pages/AdminTestimonials'
 import Profile from '@/pages/Profile'
 import PublicPortal from '@/pages/PublicPortal'
 import NotFound from '@/pages/NotFound'
@@ -120,6 +121,16 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminNewMember />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Testimonials (Protected + Admin Only) */}
+            <Route
+              path="/admin/depoimentos"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminTestimonials />
                 </ProtectedRoute>
               }
             />

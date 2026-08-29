@@ -1,5 +1,5 @@
 import pb from '@/lib/pocketbase/client'
-import type { Meeting, Material, Disclosure, User, EdvancedCastEpisode } from '@/types'
+import type { Meeting, Material, Disclosure, User, EdvancedCastEpisode, Testimonial } from '@/types'
 
 // Helper to get file URL
 export function getFileUrl(collectionIdOrName: string, recordId: string, filename: string): string {
@@ -229,4 +229,32 @@ export async function updateEdvancedCastEpisode(
 
 export async function deleteEdvancedCastEpisode(id: string): Promise<boolean> {
   return pb.collection('edvanced_cast').delete(id)
+}
+
+// TESTIMONIALS (DEPOIMENTOS DE MEMBROS)
+export async function getTestimonials(): Promise<Testimonial[]> {
+  return pb.collection('testimonials').getFullList<Testimonial>({
+    sort: '-featured,order,-created',
+  })
+}
+
+export async function getTestimonialById(id: string): Promise<Testimonial> {
+  return pb.collection('testimonials').getOne<Testimonial>(id)
+}
+
+export async function createTestimonial(
+  data: Partial<Testimonial> | FormData,
+): Promise<Testimonial> {
+  return pb.collection('testimonials').create<Testimonial>(data)
+}
+
+export async function updateTestimonial(
+  id: string,
+  data: Partial<Testimonial> | FormData,
+): Promise<Testimonial> {
+  return pb.collection('testimonials').update<Testimonial>(id, data)
+}
+
+export async function deleteTestimonial(id: string): Promise<boolean> {
+  return pb.collection('testimonials').delete(id)
 }

@@ -142,6 +142,11 @@ export default function Layout() {
       path: '/admin/membros/novo',
       icon: UserCheck,
     },
+    {
+      label: 'Depoimentos de Membros',
+      path: '/admin/depoimentos',
+      icon: Sparkles,
+    },
   ]
 
   const getInitials = (name?: string) => {
@@ -581,6 +586,9 @@ export default function Layout() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/membros/novo')}>
                         <UserCheck className="w-4 h-4 mr-2 text-[#D4AF37]" /> Cadastrar Novo Membro
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/depoimentos')}>
+                        <Sparkles className="w-4 h-4 mr-2 text-[#D4AF37]" /> Gerenciar Depoimentos
                       </DropdownMenuItem>
                     </>
                   )}

@@ -73,3 +73,15 @@ export interface Disclosure extends RecordModel {
     member?: User
   }
 }
+
+export interface Testimonial extends RecordModel {
+  author_name: string
+  author_role?: string
+  company?: string
+  content: string
+  avatar?: string
+  avatar_url?: string
+  rating?: number
+  order?: number
+  featured?: boolean
+}
