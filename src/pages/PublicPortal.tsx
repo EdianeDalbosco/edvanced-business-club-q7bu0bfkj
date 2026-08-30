@@ -2074,7 +2074,9 @@ export default function PublicPortal() {
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-white text-[11px]">Sede Executiva</p>
+                  <p className="font-bold text-white text-[11px]">
+                    Centro de Transformação Edvanced
+                  </p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
                     Rua Dep. Roberto Cruz, 246&nbsp;<div>Bairro Alvorada</div>
                   </p>
