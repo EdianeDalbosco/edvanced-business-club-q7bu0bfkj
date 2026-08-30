@@ -2030,7 +2030,7 @@ export default function PublicPortal() {
                   <MessageCircle className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-white block text-[11px]">WhatsApp Concierge</span>
+                  <span className="font-bold text-white block text-[11px]">WhatsApp Edvanced</span>
                   <span className="text-[11px] text-emerald-300">+55 (11) 99999-9999</span>
                 </div>
               </a>
