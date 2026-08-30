@@ -708,29 +708,31 @@ export default function PublicPortal() {
       {/* =========================================================================
           2. INSTITUTIONAL HERO SECTION (Elegante, Iluminado & Fundo Claro)
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#0A1A33] via-[#0D2142] to-[#0A1A33] text-white py-14 sm:py-18 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-md">
-        {/* Soft Gold & Navy Background Lights */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#FFFFFF] via-[#F8FAFC] to-[#EFF6FF] text-[#0A1A33] py-14 sm:py-18 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-xs">
+        {/* Soft Gold & Ambient Background Lights */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#D4AF37]/10 rounded-full blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.05]" />
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-20 w-[400px] h-[300px] bg-sky-200/30 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -left-20 w-[400px] h-[300px] bg-amber-100/40 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.07]" />
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center space-y-5">
           {/* Top pill badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020]/80 border border-[#D4AF37]/50 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-lg shadow-black/20 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#D4AF37]/50 text-[#8C6D07] text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#D4AF37]/10 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
             <span>Ecossistema de Alta Governança & Negócios</span>
           </div>
 
           {/* Main Hero Headline */}
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0A1A33] tracking-tight leading-[1.15]">
               Edvanced Business Club &{' '}
-              <span className="bg-gradient-to-r from-[#FFF0B8] via-[#F5D77F] to-[#D4AF37] bg-clip-text text-transparent drop-shadow-sm">
+              <span className="bg-gradient-to-r from-[#B89324] via-[#D4AF37] to-[#8C6D07] bg-clip-text text-transparent drop-shadow-xs">
                 EdvancedCast
               </span>
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-slate-200/90 max-w-3xl mx-auto leading-relaxed font-normal">
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed font-medium">
               Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do podcast com
               grandes líderes de mercado e consulte a galeria e acervo do Club.
             </p>
@@ -738,43 +740,43 @@ export default function PublicPortal() {
 
           {/* Value props badges / pillars */}
           <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            <div className="p-3 rounded-2xl bg-[#061020]/60 border border-[#D4AF37]/20 backdrop-blur-sm text-left flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
-                <Crown className="w-4 h-4 text-[#F5D77F]" />
+            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Crown className="w-4 h-4 text-[#8C6D07]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-white">Alta Governança</p>
-                <p className="text-[10px] text-slate-300">Padrão institucional</p>
+                <p className="text-[11px] font-extrabold text-[#0A1A33]">Alta Governança</p>
+                <p className="text-[10px] text-slate-500 font-medium">Padrão institucional</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#061020]/60 border border-[#D4AF37]/20 backdrop-blur-sm text-left flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-4 h-4 text-[#F5D77F]" />
+            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <TrendingUp className="w-4 h-4 text-[#8C6D07]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-white">Geração de Valor</p>
-                <p className="text-[10px] text-slate-300">Negócios & M&A</p>
+                <p className="text-[11px] font-extrabold text-[#0A1A33]">Geração de Valor</p>
+                <p className="text-[10px] text-slate-500 font-medium">Negócios & M&A</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#061020]/60 border border-[#D4AF37]/20 backdrop-blur-sm text-left flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-4 h-4 text-[#F5D77F]" />
+            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Building2 className="w-4 h-4 text-[#8C6D07]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-white">Grandes Líderes</p>
-                <p className="text-[10px] text-slate-300">C-Level & Founders</p>
+                <p className="text-[11px] font-extrabold text-[#0A1A33]">Grandes Líderes</p>
+                <p className="text-[10px] text-slate-500 font-medium">C-Level & Founders</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#061020]/60 border border-[#D4AF37]/20 backdrop-blur-sm text-left flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
-                <Globe2 className="w-4 h-4 text-[#F5D77F]" />
+            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Globe2 className="w-4 h-4 text-[#8C6D07]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-white">Eventos Oficiais</p>
-                <p className="text-[10px] text-slate-300">Presencial & Online</p>
+                <p className="text-[11px] font-extrabold text-[#0A1A33]">Eventos Oficiais</p>
+                <p className="text-[10px] text-slate-500 font-medium">Presencial & Online</p>
               </div>
             </div>
           </div>
@@ -785,8 +787,8 @@ export default function PublicPortal() {
               onClick={() => setTab('eventos')}
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'eventos'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/30 scale-105'
-                  : 'bg-[#061020]/70 hover:bg-[#061020] text-slate-200 border border-white/10'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
@@ -796,8 +798,8 @@ export default function PublicPortal() {
               onClick={() => setTab('podcast')}
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'podcast'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/30 scale-105'
-                  : 'bg-[#061020]/70 hover:bg-[#061020] text-slate-200 border border-white/10'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
               }`}
             >
               <Tv className="w-4 h-4" />
@@ -807,8 +809,8 @@ export default function PublicPortal() {
               onClick={() => setTab('materiais')}
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'materiais'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-xl shadow-[#D4AF37]/30 scale-105'
-                  : 'bg-[#061020]/70 hover:bg-[#061020] text-slate-200 border border-white/10'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
               }`}
             >
               <FolderOpen className="w-4 h-4" />
