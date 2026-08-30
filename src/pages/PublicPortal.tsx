@@ -1986,7 +1986,7 @@ export default function PublicPortal() {
                   className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
                 >
                   <Mic className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>EdvancedCast (Videocast Oficial)</span>
+                  <span>EdvancedCast (Podcast Oficial)</span>
                 </button>
               </li>
               <li>
