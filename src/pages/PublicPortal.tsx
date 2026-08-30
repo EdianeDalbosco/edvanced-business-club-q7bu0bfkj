@@ -2092,7 +2092,7 @@ export default function PublicPortal() {
             &copy; {new Date().getFullYear()} Edvanced Business Club. Todos os direitos reservados.
           </div>
           <div className="flex items-center gap-3 text-[11px]">
-            <span className="text-slate-400">Alta Governança Corporativa</span>
+            <span className="text-slate-400">Onde os Resultados Acontecem</span>
             <span>&bull;</span>
             <span className="text-[#F5D77F] font-semibold">Ecossistema Exclusivo de Negócios</span>
           </div>
