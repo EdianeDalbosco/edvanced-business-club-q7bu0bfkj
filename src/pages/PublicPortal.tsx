@@ -2084,8 +2084,6 @@ export default function PublicPortal() {
                 </div>
               </div>
             </div>
-
-            <p className="text-slate-400 text-[11px] leading-relaxed">Cuiabá - MT, Brasil</p>
           </div>
         </div>
 
