@@ -2075,7 +2075,7 @@ export default function PublicPortal() {
                 <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-white text-[11px]">
-                    Centro de Transformação Edvanced
+                    CCentro de Transformação Edvanced
                   </p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
                     Rua Dep. Roberto Cruz, 246&nbsp;<div>Bairro Alvorada</div>
@@ -2085,10 +2085,7 @@ export default function PublicPortal() {
               </div>
             </div>
 
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              Interessado em candidatar-se ao quadro de membros ou propor uma pauta no EdvancedCast?
-              Entre em contato direto com a Diretoria de Relações Institucionais.
-            </p>
+            <p className="text-slate-400 text-[11px] leading-relaxed">Cuiabá - MT, Brasil</p>
           </div>
         </div>
 
