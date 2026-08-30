@@ -2031,7 +2031,7 @@ export default function PublicPortal() {
                 </div>
                 <div>
                   <span className="font-bold text-white block text-[11px]">WhatsApp Edvanced</span>
-                  <span className="text-[11px] text-emerald-300">+55 (11) 99999-9999</span>
+                  <span className="text-[11px] text-emerald-300">+55 (65) 98100-3969</span>
                 </div>
               </a>
 
