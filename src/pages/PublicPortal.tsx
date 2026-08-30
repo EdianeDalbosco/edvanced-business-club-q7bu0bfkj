@@ -731,9 +731,8 @@ export default function PublicPortal() {
               </span>
             </h1>
             <p className="text-sm sm:text-base md:text-lg text-slate-200/90 max-w-3xl mx-auto leading-relaxed font-normal">
-              Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do videocast
-              com grandes líderes de mercado e consulte a galeria e acervo do Club com alta
-              legibilidade e transparência.
+              Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do podcast com
+              grandes líderes de mercado e consulte a galeria e acervo do Club.
             </p>
           </div>
 
