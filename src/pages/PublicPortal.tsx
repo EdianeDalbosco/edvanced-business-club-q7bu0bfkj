@@ -2076,7 +2076,7 @@ export default function PublicPortal() {
                 <div>
                   <p className="font-bold text-white text-[11px]">Sede Executiva</p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Av. Brigadeiro Faria Lima, 3477 — Itaim Bibi
+                    Rua Dep. Roberto Cruz, 246&nbsp;<div>Bairro Alvorada</div>
                   </p>
                   <p className="text-slate-400 text-[10px]">São Paulo - SP, Brasil</p>
                 </div>
