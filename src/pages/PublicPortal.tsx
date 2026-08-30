@@ -2080,7 +2080,7 @@ export default function PublicPortal() {
                   <p className="text-slate-300 text-[11px] leading-relaxed">
                     Rua Dep. Roberto Cruz, 246&nbsp;<div>Bairro Alvorada</div>
                   </p>
-                  <p className="text-slate-400 text-[10px]">São Paulo - SP, Brasil</p>
+                  <p className="text-slate-400 text-[10px]">Cuiabá - MT, Brasil</p>
                 </div>
               </div>
             </div>
