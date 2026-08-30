@@ -2046,7 +2046,7 @@ export default function PublicPortal() {
                 </div>
                 <div>
                   <span className="font-bold text-white block text-[11px]">Instagram Oficial</span>
-                  <span className="text-[11px] text-pink-300">@edvancedbusinessclub</span>
+                  <span className="text-[11px] text-pink-300">@edvanced_</span>
                 </div>
               </a>
 
