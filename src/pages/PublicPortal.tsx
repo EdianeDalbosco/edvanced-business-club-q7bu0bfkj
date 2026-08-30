@@ -706,33 +706,33 @@ export default function PublicPortal() {
       </header>
 
       {/* =========================================================================
-          2. INSTITUTIONAL HERO SECTION (Elegante, Iluminado & Fundo Claro)
+          2. INSTITUTIONAL HERO SECTION (Dark Navy + Pure Gold Glow)
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#FFFFFF] via-[#F8FAFC] to-[#EFF6FF] text-[#0A1A33] py-14 sm:py-18 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-xs">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#040B17] text-white py-14 sm:py-18 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-2xl">
         {/* Soft Gold & Ambient Background Lights */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -right-20 w-[400px] h-[300px] bg-sky-200/30 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -left-20 w-[400px] h-[300px] bg-amber-100/40 rounded-full blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.07]" />
+          <div className="absolute top-1/2 -right-20 w-[400px] h-[300px] bg-[#0055B8]/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -left-20 w-[400px] h-[300px] bg-[#997300]/15 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:28px_28px] opacity-10" />
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center space-y-5">
           {/* Top pill badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#D4AF37]/50 text-[#8C6D07] text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#D4AF37]/10 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020]/80 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#D4AF37]/10 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
             <span>Ecossistema de Alta Governança & Negócios</span>
           </div>
 
           {/* Main Hero Headline */}
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0A1A33] tracking-tight leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.15]">
               Edvanced Business Club &{' '}
-              <span className="bg-gradient-to-r from-[#B89324] via-[#D4AF37] to-[#8C6D07] bg-clip-text text-transparent drop-shadow-xs">
+              <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
                 EdvancedCast
               </span>
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed font-medium">
+            <p className="text-sm sm:text-base md:text-lg text-slate-200/90 max-w-3xl mx-auto leading-relaxed font-normal">
               Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do podcast com
               grandes líderes de mercado e consulte a galeria e acervo do Club.
             </p>
@@ -740,43 +740,43 @@ export default function PublicPortal() {
 
           {/* Value props badges / pillars */}
           <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Crown className="w-4 h-4 text-[#8C6D07]" />
+            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Crown className="w-4 h-4 text-[#F5D77F]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-[#0A1A33]">Alta Governança</p>
-                <p className="text-[10px] text-slate-500 font-medium">Padrão institucional</p>
+                <p className="text-[11px] font-extrabold text-white">Alta Governança</p>
+                <p className="text-[10px] text-slate-300 font-medium">Padrão institucional</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <TrendingUp className="w-4 h-4 text-[#8C6D07]" />
+            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <TrendingUp className="w-4 h-4 text-[#F5D77F]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-[#0A1A33]">Geração de Valor</p>
-                <p className="text-[10px] text-slate-500 font-medium">Negócios & M&A</p>
+                <p className="text-[11px] font-extrabold text-white">Geração de Valor</p>
+                <p className="text-[10px] text-slate-300 font-medium">Negócios & M&A</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Building2 className="w-4 h-4 text-[#8C6D07]" />
+            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Building2 className="w-4 h-4 text-[#F5D77F]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-[#0A1A33]">Grandes Líderes</p>
-                <p className="text-[10px] text-slate-500 font-medium">C-Level & Founders</p>
+                <p className="text-[11px] font-extrabold text-white">Grandes Líderes</p>
+                <p className="text-[10px] text-slate-300 font-medium">C-Level & Founders</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white/80 border border-[#D4AF37]/30 shadow-xs backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Globe2 className="w-4 h-4 text-[#8C6D07]" />
+            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Globe2 className="w-4 h-4 text-[#F5D77F]" />
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-[#0A1A33]">Eventos Oficiais</p>
-                <p className="text-[10px] text-slate-500 font-medium">Presencial & Online</p>
+                <p className="text-[11px] font-extrabold text-white">Eventos Oficiais</p>
+                <p className="text-[10px] text-slate-300 font-medium">Presencial & Online</p>
               </div>
             </div>
           </div>
@@ -788,7 +788,7 @@ export default function PublicPortal() {
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'eventos'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
+                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
@@ -799,7 +799,7 @@ export default function PublicPortal() {
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'podcast'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
+                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
               }`}
             >
               <Tv className="w-4 h-4" />
@@ -810,7 +810,7 @@ export default function PublicPortal() {
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'materiais'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-white hover:bg-slate-50 text-[#0A1A33] border border-slate-200/90 hover:border-[#D4AF37]/50 shadow-xs'
+                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
               }`}
             >
               <FolderOpen className="w-4 h-4" />
