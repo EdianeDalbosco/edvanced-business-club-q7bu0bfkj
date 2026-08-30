@@ -2068,7 +2068,7 @@ export default function PublicPortal() {
           {/* Col 4: Sede & Admissão */}
           <div className="space-y-3 text-xs">
             <p className="font-extrabold text-[#F5D77F] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" /> Sede & Admissão
+              <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" /> Sede
             </p>
             <div className="p-3.5 rounded-2xl bg-[#061020] border border-slate-800 space-y-2">
               <div className="flex items-start gap-2">
