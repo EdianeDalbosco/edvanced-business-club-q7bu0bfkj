@@ -23,8 +23,7 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as any)?.from?.pathname || '/'
-
+  const from = (location.state as any)?.from?.pathname || '/dashboard'
   const [isLoading, setIsLoading] = useState(false)
 
   // Login form state

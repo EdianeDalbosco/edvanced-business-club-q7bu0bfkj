@@ -344,7 +344,7 @@ export default function PublicPortal() {
 
   const getEpisodeShareUrl = (ep: EdvancedCastEpisode) => {
     const origin = window.location.origin
-    return `${origin}/publico?aba=podcast&episodio=${ep.id}`
+    return `${origin}/?aba=podcast&episodio=${ep.id}`
   }
 
   const handleCopyEpisodeLink = (e: React.MouseEvent, ep: EdvancedCastEpisode) => {
@@ -649,7 +649,7 @@ export default function PublicPortal() {
       <header className="relative z-40 sticky top-0 bg-[#061020] border-b border-[#D4AF37]/30 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-22 flex items-center justify-between gap-4">
           {/* Brand Logo */}
-          <Link to="/publico" className="flex items-center gap-3.5 group">
+          <Link to="/" className="flex items-center gap-3.5 group">
             <div className="relative">
               <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#997300] p-[1.5px] shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center transition-all duration-300 group-hover:shadow-[#D4AF37]/40 group-hover:scale-105">
                 <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
@@ -736,7 +736,7 @@ export default function PublicPortal() {
           {/* Right Action: Login / Member Area button */}
           <div className="flex items-center gap-3">
             {user ? (
-              <Link to="/">
+              <Link to="/dashboard">
                 <Button className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/20 hover:shadow-[#D4AF37]/40 flex items-center gap-2 transition-all">
                   <ShieldCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">Área de Membros VIP</span>

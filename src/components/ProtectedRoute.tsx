@@ -54,7 +54,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
         <p className="text-sm text-slate-500 max-w-md mb-6">
           Esta área é reservada para a administração e líderes do Edvanced Business Club.
         </p>
-        <Navigate to="/" replace />
+        <Navigate to="/dashboard" replace />
       </div>
     )
   }
