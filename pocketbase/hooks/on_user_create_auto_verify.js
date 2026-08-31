@@ -1,13 +1,17 @@
-onRecordCreateRequest((e) => {
-  // If the user being created has no verified value or if an admin creates them,
-  // ensure the new record is marked as verified so they can log in directly.
+onRecordAfterCreateSuccess((e) => {
   try {
-    if (e.record) {
-      e.record.setVerified(true)
+    const record = e.record
+    if (!record) return
+
+    // Se o usuário criado ainda não estiver marcado como verificado, atualiza diretamente
+    if (!record.verified()) {
+      $app
+        .db()
+        .newQuery('UPDATE users SET verified = 1 WHERE id = {:id}')
+        .bind({ id: record.id })
+        .execute()
     }
   } catch (err) {
-    console.warn('Could not auto-verify record in onRecordCreateRequest:', err)
+    console.warn('Erro ao auto-verificar usuário após criação em onRecordAfterCreateSuccess:', err)
   }
-
-  e.next()
 }, 'users')
