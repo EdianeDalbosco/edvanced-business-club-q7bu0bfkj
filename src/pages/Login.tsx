@@ -23,7 +23,7 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as any)?.from?.pathname || '/dashboard'
+  const from = (location.state as any)?.from?.pathname || '/'
   const [isLoading, setIsLoading] = useState(false)
 
   // Login form state
@@ -140,14 +140,13 @@ export default function Login() {
                 Quer ver a agenda de eventos abertos e assistir aos episódios do EdvancedCast?
               </p>
               <Link
-                to="/"
+                to="/publico"
                 className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-xs"
               >
-                <span>Acessar Página Inicial Pública</span>
+                <span>Acessar Página Pública</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
             </div>
-
             {/* Notice about exclusive membership admission */}
             <div className="mt-5 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-start gap-2.5 text-xs text-amber-900">
               <Info className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
