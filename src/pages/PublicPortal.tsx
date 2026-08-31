@@ -761,50 +761,75 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('sobre')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'sobre'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
+                : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
             }`}
           >
-            <Crown className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Sobre o Business Club</span>
+            <Crown
+              className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'sobre' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
+            />
+            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+              Sobre o Business Club
+            </span>
           </button>
+
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'eventos'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
+                : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
             }`}
           >
-            <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Eventos do Club</span>
+            <CalendarIcon
+              className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'eventos' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
+            />
+            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+              Eventos do Club
+            </span>
           </button>
+
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'podcast'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
+                : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
             }`}
           >
-            <Mic className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">EdvancedCast</span>
+            <div className="relative">
+              <Mic
+                className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'podcast' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
+              />
+              <span className="absolute -top-0.5 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              </span>
+            </div>
+            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+              EdvancedCast
+            </span>
           </button>
+
           <button
             type="button"
             onClick={() => setTab('materiais')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'materiais'
-                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
+                : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
             }`}
           >
-            <FolderOpen className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Galeria</span>
+            <FolderOpen
+              className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'materiais' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
+            />
+            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+              Galeria
+            </span>
           </button>
         </div>
       </header>
