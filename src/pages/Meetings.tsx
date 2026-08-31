@@ -2552,7 +2552,7 @@ export default function MeetingsAndMaterials() {
                     onChange={(e) => setMeetingPricing(e.target.value as any)}
                     className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                   >
-                    <option value="gratuito">Gratuito (Incluso na Membresia)</option>
+                    <option value="gratuito">Exclusivo para Membros</option>
                     <option value="pago">Pago (Inscrição Extra)</option>
                   </select>
                 </div>
