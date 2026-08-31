@@ -486,7 +486,15 @@ export default function PublicPortal() {
 
       if (!matchesSearch) return false
 
-      if (materialTypeFilter !== 'todos' && mat.type !== materialTypeFilter) return false
+      if (materialTypeFilter !== 'todos') {
+        const kind = detectMaterialKind({
+          file: mat.file,
+          url: mat.url,
+          title: mat.title,
+          type: mat.type,
+        })
+        if (kind.category !== materialTypeFilter) return false
+      }
 
       if (materialMeetingFilter !== 'todos') {
         const matMeetId = mat.meeting || (mat as any).meeting_id
@@ -2764,11 +2772,15 @@ export default function PublicPortal() {
                           </div>
                         )}
 
-                        {/* Excel Spreadsheet Viewer / Generic document */}
+                        {/* Excel Spreadsheet Viewer / PowerPoint / Word / Generic document */}
                         {!isVideo && !isPhoto && !isPdf && (
                           <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4 w-full">
                             {isExcel ? (
                               <FileSpreadsheet className="w-14 h-14 text-emerald-400 mx-auto opacity-90" />
+                            ) : kind.subtype === 'powerpoint' ? (
+                              <FileText className="w-14 h-14 text-amber-400 mx-auto opacity-90" />
+                            ) : kind.subtype === 'word' ? (
+                              <FileText className="w-14 h-14 text-sky-400 mx-auto opacity-90" />
                             ) : (
                               <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
                             )}
@@ -2778,27 +2790,36 @@ export default function PublicPortal() {
                               </h5>
                               <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
                                 {previewMediaModal.description ||
-                                  'Arquivo executivo disponibilizado para consulta e download.'}
+                                  (isExcel
+                                    ? 'Planilha eletrônica executiva disponível para consulta e download.'
+                                    : kind.subtype === 'powerpoint'
+                                      ? 'Apresentação em slides executiva disponível para download.'
+                                      : kind.subtype === 'word'
+                                        ? 'Documento Word executivo disponível para download.'
+                                        : 'Arquivo executivo disponibilizado para consulta e download.')}
                               </p>
                             </div>
-                            {previewMediaModal.file && (
+                            {fileUrl && (
                               <a
-                                href={getFileUrl(
-                                  'materials',
-                                  previewMediaModal.id,
-                                  previewMediaModal.file,
-                                )}
+                                href={fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                download
+                                download={previewMediaModal.file || previewMediaModal.title}
                                 className={`inline-flex items-center justify-center font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors ${
                                   isExcel
                                     ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                                    : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
+                                    : kind.subtype === 'powerpoint'
+                                      ? 'bg-amber-500 hover:bg-amber-600 text-slate-950'
+                                      : kind.subtype === 'word'
+                                        ? 'bg-sky-600 hover:bg-sky-700 text-white'
+                                        : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
                                 }`}
                               >
                                 Baixar Arquivo (
-                                {previewMediaModal.file.split('.').pop()?.toUpperCase()})
+                                {previewMediaModal.file
+                                  ? previewMediaModal.file.split('.').pop()?.toUpperCase()
+                                  : kind.label}
+                                )
                               </a>
                             )}
                           </div>

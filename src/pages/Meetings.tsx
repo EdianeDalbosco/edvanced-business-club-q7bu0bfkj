@@ -420,11 +420,17 @@ export default function MeetingsAndMaterials() {
     () =>
       materials.filter((m) => {
         if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'video') return false
         return (
-          m.type === 'video' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
         )
       }),
     [materials, acervoSearch, selectedMeeting],
@@ -432,13 +438,20 @@ export default function MeetingsAndMaterials() {
 
   const allVideoMaterials = useMemo(
     () =>
-      materials.filter(
-        (m) =>
-          m.type === 'video' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
-      ),
+      materials.filter((m) => {
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'video') return false
+        return (
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
+        )
+      }),
     [materials, acervoSearch],
   )
 
@@ -1321,11 +1334,14 @@ export default function MeetingsAndMaterials() {
                           ? getFileUrl('materials', item.id, item.file)
                           : item.url
                         const kind = detectMaterialKind({
-                          name: item.file || item.url || item.title,
+                          file: item.file,
+                          url: item.url,
+                          title: item.title,
+                          type: item.type,
                         })
                         return (
                           <>
-                            {fileUrl && (kind.subtype === 'photo' || item.type === 'photo') ? (
+                            {fileUrl && kind.subtype === 'photo' ? (
                               <img
                                 src={fileUrl}
                                 alt={item.title}
@@ -1340,7 +1356,7 @@ export default function MeetingsAndMaterials() {
 
                             <div className="absolute top-2.5 left-2.5">
                               <Badge className="text-[9px] uppercase font-bold tracking-wider bg-[#D4AF37] text-slate-950">
-                                {kind.label || 'Foto'}
+                                {kind.label}
                               </Badge>
                             </div>
 
@@ -1505,10 +1521,16 @@ export default function MeetingsAndMaterials() {
                     className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
                   >
                     {(() => {
-                      const kind = detectMaterialKind({ name: item.file || item.url || item.title })
+                      const kind = detectMaterialKind({
+                        file: item.file,
+                        url: item.url,
+                        title: item.title,
+                        type: item.type,
+                      })
                       const isExcel = kind.subtype === 'excel'
                       const isPowerPoint = kind.subtype === 'powerpoint'
                       const isWord = kind.subtype === 'word'
+                      const isPdf = kind.subtype === 'pdf'
 
                       return (
                         <>
@@ -1521,7 +1543,7 @@ export default function MeetingsAndMaterials() {
                                     ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
                                     : isWord
                                       ? 'bg-sky-500/20 border border-sky-400/40 text-sky-300'
-                                      : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                                      : 'bg-blue-500/20 border border-blue-400/40 text-[#F5D77F]'
                               }`}
                             >
                               {isExcel ? (
@@ -1537,23 +1559,32 @@ export default function MeetingsAndMaterials() {
                                   ? 'Apresentação em Slides'
                                   : isWord
                                     ? 'Documento Word'
-                                    : 'Documento Executivo (PDF)'}
+                                    : isPdf
+                                      ? 'Documento PDF (Leitor)'
+                                      : 'Documento Executivo'}
                             </span>
 
                             <div className="absolute top-2.5 left-2.5">
                               <Badge
-                                className={`text-[9px] uppercase font-bold tracking-wider text-white ${
+                                className={`text-[9px] uppercase font-bold tracking-wider ${
                                   isExcel
-                                    ? 'bg-emerald-600'
+                                    ? 'bg-emerald-600 text-white'
                                     : isPowerPoint
-                                      ? 'bg-amber-600'
+                                      ? 'bg-amber-600 text-slate-950'
                                       : isWord
-                                        ? 'bg-sky-600'
-                                        : 'bg-blue-600'
+                                        ? 'bg-sky-600 text-white'
+                                        : isPdf
+                                          ? 'bg-blue-600 text-white'
+                                          : 'bg-blue-600 text-white'
                                 }`}
                               >
                                 {kind.label}
                               </Badge>
+                            </div>
+
+                            <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                              <Eye className="w-3 h-3 text-[#D4AF37]" />
+                              <span>{isPdf ? 'Ler Todas as Páginas' : 'Visualizar'}</span>
                             </div>
                           </div>
 
@@ -1575,10 +1606,12 @@ export default function MeetingsAndMaterials() {
                                   ? 'Acervo Planilha'
                                   : isPowerPoint
                                     ? 'Acervo Slides'
-                                    : 'Acervo Documento'}
+                                    : isPdf
+                                      ? 'Acervo PDF'
+                                      : 'Acervo Documento'}
                               </span>
                               <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                                Visualizar / Baixar &rarr;
+                                {isPdf ? 'Ler PDF &rarr;' : 'Visualizar / Baixar &rarr;'}
                               </span>
                             </div>
                           </div>
@@ -2518,13 +2551,10 @@ export default function MeetingsAndMaterials() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                     {currentMeetingMaterials.map((mat) => {
                       const kind = detectMaterialKind({
-                        name: mat.file || mat.url || mat.title,
-                        type:
-                          mat.type === 'video'
-                            ? 'video/'
-                            : mat.type === 'photo'
-                              ? 'image/'
-                              : undefined,
+                        file: mat.file,
+                        url: mat.url,
+                        title: mat.title,
+                        type: mat.type,
                       })
 
                       return (
@@ -2534,9 +2564,9 @@ export default function MeetingsAndMaterials() {
                           className="p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            {kind.subtype === 'photo' || mat.type === 'photo' ? (
+                            {kind.subtype === 'photo' ? (
                               <ImageIcon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
-                            ) : kind.subtype === 'video' || mat.type === 'video' ? (
+                            ) : kind.subtype === 'video' ? (
                               <Video className="w-4 h-4 text-rose-400 flex-shrink-0" />
                             ) : kind.subtype === 'excel' ? (
                               <FileSpreadsheet className="w-4 h-4 text-emerald-400 flex-shrink-0" />
