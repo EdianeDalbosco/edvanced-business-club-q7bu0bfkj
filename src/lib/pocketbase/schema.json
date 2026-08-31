@@ -29,29 +29,21 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "role",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "admin",
-            "member"
-          ]
+          "selectValues": ["admin", "member"]
         },
         {
           "name": "company",
@@ -82,10 +74,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "active",
-            "suspended"
-          ]
+          "selectValues": ["active", "suspended"]
         }
       ],
       "indexes": [
@@ -127,11 +116,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "presencial",
-            "online",
-            "hibrido"
-          ]
+          "selectValues": ["presencial", "online", "hibrido"]
         },
         {
           "name": "speakers",
@@ -156,19 +141,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "event_name",
@@ -193,10 +173,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "gratuito",
-            "pago"
-          ]
+          "selectValues": ["gratuito", "pago"]
         },
         {
           "name": "registration_url",
@@ -205,9 +182,7 @@
           "system": false
         }
       ],
-      "indexes": [
-        "CREATE INDEX idx_meetings_date ON meetings (date DESC)"
-      ]
+      "indexes": ["CREATE INDEX idx_meetings_date ON meetings (date DESC)"]
     },
     {
       "name": "materials",
@@ -231,11 +206,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "photo",
-            "video",
-            "document"
-          ]
+          "selectValues": ["photo", "video", "document"]
         },
         {
           "name": "file",
@@ -267,19 +238,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -321,11 +287,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": [
-            "pending",
-            "approved",
-            "rejected"
-          ]
+          "selectValues": ["pending", "approved", "rejected"]
         },
         {
           "name": "member",
@@ -363,40 +325,28 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "format",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "presencial",
-            "online",
-            "hibrido"
-          ]
+          "selectValues": ["presencial", "online", "hibrido"]
         },
         {
           "name": "pricing",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "gratuito",
-            "pago"
-          ]
+          "selectValues": ["gratuito", "pago"]
         }
       ],
       "indexes": [
@@ -468,19 +418,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -558,19 +503,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [

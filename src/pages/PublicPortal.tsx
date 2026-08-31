@@ -234,6 +234,16 @@ export default function PublicPortal() {
   const formatDateString = (dateStr?: string) => {
     if (!dateStr) return ''
     try {
+      // Extrair prefixo de data YYYY-MM-DD suportando separadores 'T' ou espaço
+      const datePart = dateStr.split(/[T ]/)[0]
+      const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      if (match) {
+        const year = parseInt(match[1], 10)
+        const month = parseInt(match[2], 10)
+        const day = parseInt(match[3], 10)
+        const d = new Date(year, month - 1, day, 12, 0, 0)
+        return format(d, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+      }
       const d = new Date(dateStr)
       return format(d, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
     } catch {
@@ -471,7 +481,7 @@ export default function PublicPortal() {
     setCastCoverPreview(ep.cover_image ? getFileUrl('edvanced_cast', ep.id, ep.cover_image) : '')
     setCastDuration(ep.duration || '')
     setCastEpNumber(ep.episode_number ?? '')
-    setCastPublishedAt(ep.published_at ? ep.published_at.split('T')[0] : '')
+    setCastPublishedAt(ep.published_at ? ep.published_at.substring(0, 10) : '')
     setShowPodcastModal(true)
   }
 
@@ -508,7 +518,10 @@ export default function PublicPortal() {
           formData.append('episode_number', String(castEpNumber))
         }
         if (castPublishedAt) {
-          formData.append('published_at', new Date(castPublishedAt).toISOString())
+          formData.append(
+            'published_at',
+            new Date(`${castPublishedAt}T12:00:00.000Z`).toISOString(),
+          )
         }
         formData.append('cover_image', castCoverFile)
 
@@ -527,7 +540,9 @@ export default function PublicPortal() {
           thumbnail_url: castThumbnailUrl.trim() || undefined,
           duration: castDuration.trim() || undefined,
           episode_number: typeof castEpNumber === 'number' ? castEpNumber : undefined,
-          published_at: castPublishedAt ? new Date(castPublishedAt).toISOString() : undefined,
+          published_at: castPublishedAt
+            ? new Date(`${castPublishedAt}T12:00:00.000Z`).toISOString()
+            : undefined,
         }
 
         if (editingEpisode) {
