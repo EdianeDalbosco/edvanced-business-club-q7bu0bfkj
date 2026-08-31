@@ -46,7 +46,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import heroEdianeBg from '../assets/hero-ediane-sala-business.jpeg'
+import heroEdianeBg from '../assets/business-club-1-977b6.jpg'
 import salaReuniaoImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-1-2d279.jpeg'
 import salaCompartilhadaImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-c0958.jpeg'
 import {
