@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { createMemberByAdmin } from '@/services/api'
+import { formatPhone, normalizePhone } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -64,7 +65,7 @@ export default function AdminNewMember() {
         password,
         role,
         company: company.trim(),
-        phone: phone.trim(),
+        phone: normalizePhone(phone),
         instagram: instagram.trim(),
         bio: bio.trim(),
       })
@@ -231,10 +232,11 @@ export default function AdminNewMember() {
                   <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="member-phone"
-                    type="text"
-                    placeholder="+55 (11) 98888-7777"
+                    type="tel"
+                    placeholder="(65) 98100-3969"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                    maxLength={15}
                     className="pl-9 text-xs rounded-xl"
                   />
                 </div>
