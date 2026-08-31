@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateProfile, getFileUrl } from '@/services/api'
+import { formatPhone, normalizePhone } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,7 +49,7 @@ export default function Profile() {
       setName(user.name || '')
       setEmail(user.email || '')
       setCompany(user.company || '')
-      setPhone(user.phone || '')
+      setPhone(formatPhone(user.phone || ''))
       setInstagram(user.instagram || '')
       setBio(user.bio || '')
       if (user.avatar) {
@@ -83,6 +84,11 @@ export default function Profile() {
     }
   }
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    setPhone(formatted)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -94,10 +100,11 @@ export default function Profile() {
 
     setIsLoading(true)
     try {
+      const rawPhone = normalizePhone(phone)
       const formData = new FormData()
       formData.append('name', name.trim())
       formData.append('company', company.trim())
-      formData.append('phone', phone.trim())
+      formData.append('phone', rawPhone)
       formData.append('instagram', instagram.trim())
       formData.append('bio', bio.trim())
 
@@ -325,10 +332,11 @@ export default function Profile() {
                   <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="profile-phone"
-                    type="text"
-                    placeholder="+55 (11) 99999-8888"
+                    type="tel"
+                    placeholder="(65) 98100-3969"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={handlePhoneChange}
+                    maxLength={15}
                     className="pl-9 text-xs rounded-xl"
                   />
                 </div>
