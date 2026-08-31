@@ -353,14 +353,13 @@ export default function PublicPortal() {
     }
   }
 
-  const handleShareWhatsApp = (e: React.MouseEvent, ep: EdvancedCastEpisode) => {
-    e.stopPropagation()
+  const getEpisodeWhatsAppShareUrl = (ep: EdvancedCastEpisode) => {
     const url = getEpisodeShareUrl(ep)
     const epNumberStr = ep.episode_number ? ` #${ep.episode_number}` : ''
     const text = encodeURIComponent(
       `🎙️ Assista ao EdvancedCast${epNumberStr}: "${ep.title}" no Edvanced Business Club!\n\nConfira o episódio completo:\n${url}`,
     )
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
+    return `https://wa.me/?text=${text}`
   }
 
   const getMeetingStatus = (meeting: Meeting) => {
@@ -1742,15 +1741,22 @@ export default function PublicPortal() {
                               Copiar Link
                             </Button>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => handleShareWhatsApp(e, featuredEp)}
-                              className="border-emerald-700 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
+                            <a
+                              href={getEpisodeWhatsAppShareUrl(featuredEp)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                              WhatsApp
-                            </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                className="border-emerald-700 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                                WhatsApp
+                              </Button>
+                            </a>
                           </div>
 
                           {isAdmin && (
@@ -1851,13 +1857,16 @@ export default function PublicPortal() {
                               >
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
-                              <button
+                              <a
                                 title="Compartilhar no WhatsApp"
-                                onClick={(e) => handleShareWhatsApp(e, ep)}
+                                href={getEpisodeWhatsAppShareUrl(ep)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
                                 className="w-7 h-7 rounded-full bg-black/70 hover:bg-emerald-600 text-white border border-white/20 flex items-center justify-center transition-all"
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
-                              </button>
+                              </a>
                             </div>
 
                             {/* Play overlay */}
@@ -1905,15 +1914,17 @@ export default function PublicPortal() {
 
                             <span className="text-slate-300">&bull;</span>
 
-                            <button
-                              type="button"
-                              onClick={(e) => handleShareWhatsApp(e, ep)}
+                            <a
+                              href={getEpisodeWhatsAppShareUrl(ep)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
                               className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
                               title="Compartilhar no WhatsApp"
                             >
                               <MessageCircle className="w-3 h-3" />
                               WhatsApp
-                            </button>
+                            </a>
                           </div>
 
                           {isAdmin && (
