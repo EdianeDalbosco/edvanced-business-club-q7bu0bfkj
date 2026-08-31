@@ -61,6 +61,7 @@ import {
   createEdvancedCastEpisode,
   updateEdvancedCastEpisode,
   deleteEdvancedCastEpisode,
+  deleteMaterial,
 } from '@/services/api'
 import type {
   Meeting,
@@ -74,6 +75,7 @@ import { AVAILABLE_ICONS } from '@/pages/AdminClubSelection'
 import { useAuth } from '@/contexts/AuthContext'
 import { detectMaterialKind } from '@/lib/utils'
 import PdfDocumentViewer from '@/components/PdfDocumentViewer'
+import PdfThumbnail from '@/components/PdfThumbnail'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -2149,7 +2151,14 @@ export default function PublicPortal() {
                       <div>
                         {/* Media Thumbnail Container */}
                         <div className="relative aspect-[16/10] w-full bg-slate-100 overflow-hidden">
-                          {displayThumb ? (
+                          {isPdf && fileUrl ? (
+                            <PdfThumbnail
+                              url={fileUrl}
+                              title={mat.title}
+                              showBadge={false}
+                              className="w-full h-full"
+                            />
+                          ) : displayThumb ? (
                             <img
                               src={displayThumb}
                               alt={mat.title}
@@ -2172,10 +2181,10 @@ export default function PublicPortal() {
                             </div>
                           )}
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
 
                           {/* Top Type Badge */}
-                          <div className="absolute top-3 left-3">
+                          <div className="absolute top-3 left-3 z-10 pointer-events-none">
                             <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
                               {isPhoto && <ImageIcon className="w-3 h-3" />}
                               {isVideo && <Video className="w-3 h-3" />}
@@ -2184,6 +2193,38 @@ export default function PublicPortal() {
                               <span>{kind.label}</span>
                             </Badge>
                           </div>
+
+                          {/* Botão de Excluir exclusivo do Administrador */}
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              title="Excluir Material (Administrador)"
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                e.preventDefault()
+                                if (
+                                  !window.confirm(
+                                    `Tem certeza que deseja excluir o material "${mat.title}" permanentemente do acervo?`,
+                                  )
+                                ) {
+                                  return
+                                }
+                                try {
+                                  await deleteMaterial(mat.id)
+                                  toast.success('Material excluído com sucesso!')
+                                  const updated = await getAllMaterials()
+                                  setMaterials(updated)
+                                } catch (err: any) {
+                                  toast.error(
+                                    'Erro ao excluir material: ' + (err?.message || 'Falha'),
+                                  )
+                                }
+                              }}
+                              className="absolute top-3 right-3 z-20 w-7 h-7 rounded-lg bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center justify-center transition-colors shadow-md"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
                           {/* Center Play or Zoom Icon on Hover */}
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2834,14 +2875,44 @@ export default function PublicPortal() {
                     </div>
                   )}
 
-                  <DialogFooter className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
-                    <Button
-                      variant="outline"
-                      onClick={() => setPreviewMediaModal(null)}
-                      className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
-                    >
-                      Fechar
-                    </Button>
+                  <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setPreviewMediaModal(null)}
+                        className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
+                      >
+                        Fechar
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            if (
+                              !window.confirm(
+                                `Tem certeza que deseja excluir o material "${previewMediaModal.title}" permanentemente do acervo?`,
+                              )
+                            ) {
+                              return
+                            }
+                            try {
+                              await deleteMaterial(previewMediaModal.id)
+                              toast.success('Material excluído com sucesso!')
+                              setPreviewMediaModal(null)
+                              const updated = await getAllMaterials()
+                              setMaterials(updated)
+                            } catch (err: any) {
+                              toast.error('Erro ao excluir material: ' + (err?.message || 'Falha'))
+                            }
+                          }}
+                          className="bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Excluir Material</span>
+                        </Button>
+                      )}
+                    </div>
 
                     {previewMediaModal.file && (
                       <a

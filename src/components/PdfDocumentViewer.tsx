@@ -12,52 +12,17 @@ import {
   AlertCircle,
   Maximize2,
   Minimize2,
+  Layers,
+  FileCode,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-declare global {
-  interface Window {
-    pdfjsLib?: any
-  }
-}
+import { loadPdfJsLibrary } from '@/components/PdfThumbnail'
 
 interface PdfDocumentViewerProps {
   url: string
   title?: string
   fileName?: string
   className?: string
-}
-
-let pdfjsLoadingPromise: Promise<any> | null = null
-
-function loadPdfJs(): Promise<any> {
-  if (typeof window === 'undefined') return Promise.reject(new Error('Window undefined'))
-  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib)
-  if (pdfjsLoadingPromise) return pdfjsLoadingPromise
-
-  pdfjsLoadingPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    // Use stable PDF.js build from Cloudflare CDN
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
-    script.async = true
-    script.onload = () => {
-      try {
-        if (window.pdfjsLib) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
-          resolve(window.pdfjsLib)
-        } else {
-          reject(new Error('PDF.js failed to initialize'))
-        }
-      } catch (err) {
-        reject(err)
-      }
-    }
-    script.onerror = () => reject(new Error('Failed to load PDF.js script'))
-    document.head.appendChild(script)
-  })
-
-  return pdfjsLoadingPromise
 }
 
 export default function PdfDocumentViewer({
@@ -68,12 +33,13 @@ export default function PdfDocumentViewer({
 }: PdfDocumentViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const [scale, setScale] = useState<number>(1.1)
+  const [scale, setScale] = useState<number>(1.15)
   const [rotation, setRotation] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'single' | 'all'>('single')
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+  const [useIframeFallback, setUseIframeFallback] = useState<boolean>(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -81,17 +47,24 @@ export default function PdfDocumentViewer({
   const pdfDocRef = useRef<any>(null)
   const renderTaskRef = useRef<any>(null)
 
-  // 1. Load the PDF document
+  // 1. Load the PDF document via PDF.js with graceful fallback
   useEffect(() => {
     let isCancelled = false
     setLoading(true)
     setError(null)
     setNumPages(0)
     setCurrentPage(1)
+    setUseIframeFallback(false)
 
-    loadPdfJs()
+    if (!url) {
+      setLoading(false)
+      setError('URL do documento não fornecida.')
+      return
+    }
+
+    loadPdfJsLibrary()
       .then((pdfjs) => {
-        if (isCancelled) return
+        if (isCancelled) return null
         const loadingTask = pdfjs.getDocument({
           url,
           withCredentials: false,
@@ -108,10 +81,8 @@ export default function PdfDocumentViewer({
       })
       .catch((err) => {
         if (isCancelled) return
-        console.error('Error loading PDF via PDF.js:', err)
-        setError(
-          'Não foi possível renderizar o PDF diretamente no leitor interativo. Você pode abri-lo pelo navegador ou baixá-lo.',
-        )
+        console.warn('PDF.js inline rendering failed, falling back to embedded viewer:', err)
+        setUseIframeFallback(true)
         setLoading(false)
       })
 
@@ -129,7 +100,13 @@ export default function PdfDocumentViewer({
 
   // 2. Render Single Page Mode
   useEffect(() => {
-    if (viewMode !== 'single' || !pdfDocRef.current || !canvasRef.current || numPages === 0) {
+    if (
+      useIframeFallback ||
+      viewMode !== 'single' ||
+      !pdfDocRef.current ||
+      !canvasRef.current ||
+      numPages === 0
+    ) {
       return
     }
 
@@ -155,7 +132,7 @@ export default function PdfDocumentViewer({
 
         // Compute viewport with scale and rotation
         const viewport = page.getViewport({ scale, rotation })
-        const pixelRatio = window.devicePixelRatio || 1
+        const pixelRatio = window.devicePixelRatio || 1.5
 
         canvas.width = Math.floor(viewport.width * pixelRatio)
         canvas.height = Math.floor(viewport.height * pixelRatio)
@@ -178,7 +155,7 @@ export default function PdfDocumentViewer({
       })
       .catch((err: any) => {
         if (err?.name === 'RenderingCancelledException') return
-        console.error('Error rendering page:', err)
+        console.error('Error rendering single page:', err)
       })
 
     return () => {
@@ -191,11 +168,12 @@ export default function PdfDocumentViewer({
         }
       }
     }
-  }, [viewMode, currentPage, scale, rotation, numPages])
+  }, [useIframeFallback, viewMode, currentPage, scale, rotation, numPages])
 
   // 3. Render All Pages Mode (continuous scroll)
   useEffect(() => {
     if (
+      useIframeFallback ||
       viewMode !== 'all' ||
       !pdfDocRef.current ||
       !allPagesContainerRef.current ||
@@ -218,11 +196,11 @@ export default function PdfDocumentViewer({
 
           const pageWrapper = document.createElement('div')
           pageWrapper.className =
-            'relative bg-white rounded-xl shadow-xl overflow-hidden border border-slate-700/60 transition-all mb-4'
+            'relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700/60 transition-all mb-6 max-w-full'
 
           const pageBadge = document.createElement('div')
           pageBadge.className =
-            'absolute top-2 left-2 z-10 bg-slate-950/80 text-[#F5D77F] text-[10px] font-black px-2 py-0.5 rounded-md border border-[#D4AF37]/40 shadow-sm backdrop-blur-sm'
+            'absolute top-3 left-3 z-10 bg-slate-950/85 text-[#F5D77F] text-[11px] font-black px-2.5 py-1 rounded-lg border border-[#D4AF37]/50 shadow-md backdrop-blur-md'
           pageBadge.textContent = `Página ${i} de ${numPages}`
           pageWrapper.appendChild(pageBadge)
 
@@ -231,7 +209,7 @@ export default function PdfDocumentViewer({
           if (!ctx) continue
 
           const viewport = page.getViewport({ scale: scale * 0.95, rotation })
-          const pixelRatio = window.devicePixelRatio || 1
+          const pixelRatio = window.devicePixelRatio || 1.5
 
           canvas.width = Math.floor(viewport.width * pixelRatio)
           canvas.height = Math.floor(viewport.height * pixelRatio)
@@ -263,7 +241,7 @@ export default function PdfDocumentViewer({
     return () => {
       isCancelled = true
     }
-  }, [viewMode, scale, rotation, numPages])
+  }, [useIframeFallback, viewMode, scale, rotation, numPages])
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1))
@@ -312,55 +290,56 @@ export default function PdfDocumentViewer({
     <div
       ref={containerRef}
       className={`flex flex-col bg-[#050D1A] rounded-2xl border border-slate-800 text-white overflow-hidden shadow-2xl ${
-        isFullscreen ? 'p-4 h-screen w-screen' : className
+        isFullscreen ? 'p-4 h-screen w-screen z-50 fixed inset-0' : className
       }`}
     >
       {/* Top Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 sm:p-3 bg-[#0A1A33] border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 sm:p-3.5 bg-[#0A1A33] border-b border-slate-800">
         {/* Left: View Mode Toggle & Page navigation (single mode) */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {numPages > 0 && (
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {!useIframeFallback && numPages > 0 && (
             <div className="flex items-center bg-[#061020] rounded-xl p-0.5 border border-slate-800">
               <button
                 type="button"
                 onClick={() => setViewMode('single')}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'single'
                     ? 'bg-[#D4AF37] text-slate-950 shadow-sm'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="Página por página com navegação"
+                title="Página por página com navegação interativa"
               >
-                Página
+                Página {currentPage}/{numPages}
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('all')}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                   viewMode === 'all'
                     ? 'bg-[#D4AF37] text-slate-950 shadow-sm'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="Visualizar todas as páginas em rolagem vertical contínua"
+                title="Visualizar todas as páginas em rolagem contínua"
               >
-                Todas ({numPages})
+                <Layers className="w-3.5 h-3.5" />
+                <span>Todas ({numPages})</span>
               </button>
             </div>
           )}
 
-          {viewMode === 'single' && numPages > 0 && (
+          {!useIframeFallback && viewMode === 'single' && numPages > 0 && (
             <div className="flex items-center gap-1 bg-[#061020] px-2 py-1 rounded-xl border border-slate-800 text-xs">
               <button
                 type="button"
                 onClick={handlePrevPage}
                 disabled={currentPage <= 1}
                 aria-label="Página anterior"
-                className="w-6 h-6 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-200"
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <span className="font-bold text-[11px] text-[#F5D77F] min-w-[55px] text-center">
+              <span className="font-bold text-xs text-[#F5D77F] min-w-[60px] text-center">
                 {currentPage} / {numPages}
               </span>
 
@@ -369,7 +348,7 @@ export default function PdfDocumentViewer({
                 onClick={handleNextPage}
                 disabled={currentPage >= numPages}
                 aria-label="Próxima página"
-                className="w-6 h-6 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-200"
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -379,41 +358,45 @@ export default function PdfDocumentViewer({
 
         {/* Right: Zoom, Rotate, Fullscreen & External actions */}
         <div className="flex items-center gap-1 sm:gap-1.5 ml-auto">
-          <div className="flex items-center bg-[#061020] rounded-xl p-0.5 border border-slate-800">
-            <button
-              type="button"
-              onClick={handleZoomOut}
-              disabled={scale <= 0.6}
-              title="Diminuir Zoom"
-              aria-label="Diminuir Zoom"
-              className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 text-slate-200"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-[10px] font-bold text-slate-300 px-1.5 min-w-[38px] text-center">
-              {Math.round(scale * 100)}%
-            </span>
-            <button
-              type="button"
-              onClick={handleZoomIn}
-              disabled={scale >= 2.5}
-              title="Aumentar Zoom"
-              aria-label="Aumentar Zoom"
-              className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 text-slate-200"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {!useIframeFallback && (
+            <>
+              <div className="flex items-center bg-[#061020] rounded-xl p-0.5 border border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  disabled={scale <= 0.6}
+                  title="Diminuir Zoom"
+                  aria-label="Diminuir Zoom"
+                  className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 text-slate-200"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[10px] font-bold text-slate-300 px-1.5 min-w-[38px] text-center">
+                  {Math.round(scale * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  disabled={scale >= 2.5}
+                  title="Aumentar Zoom"
+                  aria-label="Aumentar Zoom"
+                  className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 disabled:opacity-30 text-slate-200"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-          <button
-            type="button"
-            onClick={handleRotate}
-            title="Girar 90°"
-            aria-label="Girar página"
-            className="w-7 h-7 bg-[#061020] border border-slate-800 rounded-xl flex items-center justify-center hover:bg-white/10 text-slate-200"
-          >
-            <RotateCw className="w-3.5 h-3.5" />
-          </button>
+              <button
+                type="button"
+                onClick={handleRotate}
+                title="Girar 90°"
+                aria-label="Girar página"
+                className="w-7 h-7 bg-[#061020] border border-slate-800 rounded-xl flex items-center justify-center hover:bg-white/10 text-slate-200"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
 
           <button
             type="button"
@@ -433,8 +416,8 @@ export default function PdfDocumentViewer({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            title="Abrir em nova aba"
-            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-white/5 hover:bg-white/10 border border-slate-700 rounded-xl text-slate-200 transition-colors"
+            title="Abrir em nova aba do navegador"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-white/5 hover:bg-white/10 border border-slate-700 rounded-xl text-slate-200 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             <span>Navegador</span>
@@ -443,27 +426,36 @@ export default function PdfDocumentViewer({
           <a
             href={url}
             download={fileName || title || 'documento.pdf'}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 rounded-xl shadow transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 rounded-xl shadow transition-colors"
           >
             <Download className="w-3 h-3" />
-            <span className="hidden sm:inline">Baixar</span>
+            <span className="hidden sm:inline">Baixar PDF</span>
           </a>
         </div>
       </div>
 
       {/* Main Canvas Viewer / Document Container */}
-      <div className="relative flex-1 min-h-[380px] max-h-[72vh] overflow-auto bg-[#040A14] flex items-center justify-center p-3 sm:p-6 custom-scrollbar">
+      <div className="relative flex-1 min-h-[420px] max-h-[75vh] overflow-auto bg-[#040A14] flex items-center justify-center p-3 sm:p-6 custom-scrollbar">
         {loading && (
           <div className="flex flex-col items-center justify-center p-8 text-center space-y-3">
-            <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
-            <p className="text-xs font-bold text-slate-200">
-              Carregando todas as páginas do PDF...
-            </p>
-            <p className="text-[11px] text-slate-400">Preparando renderização em alta resolução</p>
+            <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin" />
+            <p className="text-sm font-bold text-slate-200">Carregando apresentação em PDF...</p>
+            <p className="text-xs text-slate-400">Renderizando páginas com alta nitidez</p>
           </div>
         )}
 
-        {error && !loading && (
+        {/* Fallback to Native Embed Iframe if PDF.js fails */}
+        {!loading && useIframeFallback && (
+          <div className="w-full h-[65vh] rounded-xl overflow-hidden border border-slate-800 bg-white">
+            <iframe
+              src={`${url}#toolbar=1&navpanes=1&scrollbar=1`}
+              title={title || 'Visualizador PDF'}
+              className="w-full h-full border-0"
+            />
+          </div>
+        )}
+
+        {error && !loading && !useIframeFallback && (
           <div className="flex flex-col items-center justify-center p-8 text-center max-w-md space-y-3 bg-[#0A1A33] rounded-2xl border border-slate-800">
             <AlertCircle className="w-10 h-10 text-amber-400" />
             <h4 className="font-bold text-sm text-white">Visualização Direta Indisponível</h4>
@@ -490,26 +482,26 @@ export default function PdfDocumentViewer({
         )}
 
         {/* Mode: Single Page */}
-        {!loading && !error && viewMode === 'single' && (
+        {!loading && !error && !useIframeFallback && viewMode === 'single' && (
           <div className="relative inline-block max-w-full my-auto transition-all">
-            <div className="rounded-xl overflow-hidden shadow-2xl border border-slate-700/60 bg-white">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-white">
               <canvas ref={canvasRef} className="block mx-auto max-w-full h-auto" />
             </div>
 
             {/* Floating bottom pagination controller */}
             {numPages > 1 && (
-              <div className="sticky bottom-3 mt-4 flex items-center justify-center gap-2">
-                <div className="bg-[#0A1A33]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#D4AF37]/40 shadow-xl flex items-center gap-2 text-xs">
+              <div className="sticky bottom-3 mt-4 flex items-center justify-center gap-2 z-20">
+                <div className="bg-[#0A1A33]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#D4AF37]/40 shadow-2xl flex items-center gap-2 text-xs">
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handlePrevPage}
                     disabled={currentPage <= 1}
-                    className="h-7 px-2 text-slate-200 hover:text-white hover:bg-white/10 disabled:opacity-30"
+                    className="h-7 px-2.5 text-slate-200 hover:text-white hover:bg-white/10 disabled:opacity-30"
                   >
                     <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
                   </Button>
-                  <span className="font-black text-[#F5D77F] text-xs px-2">
+                  <span className="font-black text-[#F5D77F] text-xs px-2 min-w-[75px] text-center">
                     {currentPage} de {numPages}
                   </span>
                   <Button
@@ -517,7 +509,7 @@ export default function PdfDocumentViewer({
                     variant="ghost"
                     onClick={handleNextPage}
                     disabled={currentPage >= numPages}
-                    className="h-7 px-2 text-slate-200 hover:text-white hover:bg-white/10 disabled:opacity-30"
+                    className="h-7 px-2.5 text-slate-200 hover:text-white hover:bg-white/10 disabled:opacity-30"
                   >
                     Próxima <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -528,23 +520,23 @@ export default function PdfDocumentViewer({
         )}
 
         {/* Mode: All Pages Continuous Scroll */}
-        {!loading && !error && viewMode === 'all' && (
+        {!loading && !error && !useIframeFallback && viewMode === 'all' && (
           <div ref={allPagesContainerRef} className="w-full flex flex-col items-center py-2" />
         )}
       </div>
 
       {/* Footer info bar */}
-      <div className="px-4 py-2 bg-[#061020] border-t border-slate-800 flex flex-wrap items-center justify-between text-[11px] text-slate-400">
+      <div className="px-4 py-2.5 bg-[#061020] border-t border-slate-800 flex flex-wrap items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-2 truncate max-w-md">
-          <FileText className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
-          <span className="font-medium text-slate-200 truncate">
+          <FileText className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+          <span className="font-semibold text-slate-200 truncate">
             {title || fileName || 'Documento PDF'}
           </span>
         </div>
-        {numPages > 0 && (
-          <div className="text-[10px] text-slate-400 font-medium">
+        {!useIframeFallback && numPages > 0 && (
+          <div className="text-[11px] text-slate-300 font-medium">
             Total de <span className="text-[#F5D77F] font-bold">{numPages} página(s)</span>{' '}
-            carregadas inline
+            renderizadas inline
           </div>
         )}
       </div>

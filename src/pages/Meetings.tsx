@@ -41,11 +41,13 @@ import {
   getAllMaterials,
   getApprovedDisclosures,
   createMaterial,
+  deleteMaterial,
   createMeeting,
   updateMeeting,
   deleteMeeting,
   getFileUrl,
 } from '@/services/api'
+import PdfThumbnail from '@/components/PdfThumbnail'
 import type { Meeting, Material, Disclosure } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -810,6 +812,30 @@ export default function MeetingsAndMaterials() {
     }
   }
 
+  const handleDeleteMaterial = async (material: Material, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    if (
+      !window.confirm(
+        `Tem certeza que deseja excluir o material "${material.title}" permanentemente do acervo?`,
+      )
+    ) {
+      return
+    }
+    try {
+      await deleteMaterial(material.id)
+      toast.success('Material excluído com sucesso do acervo!')
+      if (previewMedia?.id === material.id) {
+        setPreviewMedia(null)
+      }
+      await loadAllData()
+    } catch (err: any) {
+      toast.error('Erro ao excluir material: ' + (err?.message || 'Falha na requisição'))
+    }
+  }
+
   const handleAddMaterial = async (e: React.FormEvent) => {
     e.preventDefault()
     const targetMeetingId = newMatMeetingId || selectedMeeting?.id
@@ -1360,6 +1386,18 @@ export default function MeetingsAndMaterials() {
                               </Badge>
                             </div>
 
+                            {/* Botão de Excluir exclusivo do Administrador */}
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                title="Excluir Material (Administrador)"
+                                onClick={(e) => handleDeleteMaterial(item, e)}
+                                className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-lg bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center justify-center transition-colors shadow-md"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
                               <Eye className="w-3 h-3 text-[#D4AF37]" />
                               <span>Ver álbum</span>
@@ -1383,9 +1421,20 @@ export default function MeetingsAndMaterials() {
 
                       <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                         <span className="font-medium">Galeria Edvanced</span>
-                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                          Abrir Foto &rarr;
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteMaterial(item, e)}
+                              className="text-rose-400 hover:text-rose-300 font-semibold hover:underline"
+                            >
+                              Excluir
+                            </button>
+                          )}
+                          <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                            Abrir Foto &rarr;
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1446,6 +1495,18 @@ export default function MeetingsAndMaterials() {
                         </Badge>
                       </div>
 
+                      {/* Botão de Excluir exclusivo do Administrador */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          title="Excluir Material (Administrador)"
+                          onClick={(e) => handleDeleteMaterial(item, e)}
+                          className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-lg bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center justify-center transition-colors shadow-md"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
                           <Play className="w-5 h-5 fill-current ml-0.5" />
@@ -1471,9 +1532,20 @@ export default function MeetingsAndMaterials() {
 
                       <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                         <span className="font-medium">Edvanced Player</span>
-                        <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                          Reproduzir &rarr;
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteMaterial(item, e)}
+                              className="text-rose-400 hover:text-rose-300 font-semibold hover:underline"
+                            >
+                              Excluir
+                            </button>
+                          )}
+                          <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                            Reproduzir &rarr;
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1521,6 +1593,9 @@ export default function MeetingsAndMaterials() {
                     className="group relative flex-shrink-0 w-64 sm:w-72 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
                   >
                     {(() => {
+                      const fileUrl = item.file
+                        ? getFileUrl('materials', item.id, item.file)
+                        : item.url
                       const kind = detectMaterialKind({
                         file: item.file,
                         url: item.url,
@@ -1534,37 +1609,51 @@ export default function MeetingsAndMaterials() {
 
                       return (
                         <>
-                          <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
-                            <div
-                              className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${
-                                isExcel
-                                  ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                                  : isPowerPoint
-                                    ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
-                                    : isWord
-                                      ? 'bg-sky-500/20 border border-sky-400/40 text-sky-300'
-                                      : 'bg-blue-500/20 border border-blue-400/40 text-[#F5D77F]'
-                              }`}
-                            >
-                              {isExcel ? (
-                                <FileSpreadsheet className="w-6 h-6" />
-                              ) : (
-                                <FileText className="w-6 h-6" />
-                              )}
-                            </div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5D77F]">
-                              {isExcel
-                                ? 'Planilha Eletrônica'
-                                : isPowerPoint
-                                  ? 'Apresentação em Slides'
-                                  : isWord
-                                    ? 'Documento Word'
-                                    : isPdf
-                                      ? 'Documento PDF (Leitor)'
-                                      : 'Documento Executivo'}
-                            </span>
+                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#061020]">
+                            {/* Renderizar prévia da 1ª página do PDF se for PDF */}
+                            {isPdf && fileUrl ? (
+                              <PdfThumbnail
+                                url={fileUrl}
+                                title={item.title}
+                                showBadge={false}
+                                className="w-full h-full"
+                              />
+                            ) : (
+                              <div className="relative w-full h-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
+                                <div
+                                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${
+                                    isExcel
+                                      ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
+                                      : isPowerPoint
+                                        ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
+                                        : isWord
+                                          ? 'bg-sky-500/20 border border-sky-400/40 text-sky-300'
+                                          : 'bg-blue-500/20 border border-blue-400/40 text-[#F5D77F]'
+                                  }`}
+                                >
+                                  {isExcel ? (
+                                    <FileSpreadsheet className="w-6 h-6" />
+                                  ) : (
+                                    <FileText className="w-6 h-6" />
+                                  )}
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5D77F]">
+                                  {isExcel
+                                    ? 'Planilha Eletrônica'
+                                    : isPowerPoint
+                                      ? 'Apresentação em Slides'
+                                      : isWord
+                                        ? 'Documento Word'
+                                        : isPdf
+                                          ? 'Documento PDF (Leitor)'
+                                          : 'Documento Executivo'}
+                                </span>
+                              </div>
+                            )}
 
-                            <div className="absolute top-2.5 left-2.5">
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+
+                            <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
                               <Badge
                                 className={`text-[9px] uppercase font-bold tracking-wider ${
                                   isExcel
@@ -1574,7 +1663,7 @@ export default function MeetingsAndMaterials() {
                                       : isWord
                                         ? 'bg-sky-600 text-white'
                                         : isPdf
-                                          ? 'bg-blue-600 text-white'
+                                          ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black'
                                           : 'bg-blue-600 text-white'
                                 }`}
                               >
@@ -1582,7 +1671,19 @@ export default function MeetingsAndMaterials() {
                               </Badge>
                             </div>
 
-                            <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                            {/* Botão de Excluir exclusivo do Administrador */}
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                title="Excluir Material (Administrador)"
+                                onClick={(e) => handleDeleteMaterial(item, e)}
+                                className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-lg bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center justify-center transition-colors shadow-md"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            <div className="absolute bottom-2 right-2 z-10 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/80 px-2 py-0.5 rounded-md backdrop-blur-sm pointer-events-none">
                               <Eye className="w-3 h-3 text-[#D4AF37]" />
                               <span>{isPdf ? 'Ler Todas as Páginas' : 'Visualizar'}</span>
                             </div>
@@ -1610,9 +1711,20 @@ export default function MeetingsAndMaterials() {
                                       ? 'Acervo PDF'
                                       : 'Acervo Documento'}
                               </span>
-                              <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                                {isPdf ? 'Ler PDF &rarr;' : 'Visualizar / Baixar &rarr;'}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {isAdmin && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleDeleteMaterial(item, e)}
+                                    className="text-rose-400 hover:text-rose-300 font-semibold hover:underline"
+                                  >
+                                    Excluir
+                                  </button>
+                                )}
+                                <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                                  {isPdf ? 'Ler PDF &rarr;' : 'Visualizar &rarr;'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </>
@@ -2414,14 +2526,27 @@ export default function MeetingsAndMaterials() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                    <Button
-                      variant="outline"
-                      onClick={() => setPreviewMedia(null)}
-                      className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
-                    >
-                      Fechar
-                    </Button>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setPreviewMedia(null)}
+                        className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
+                      >
+                        Fechar
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteMaterial(previewMedia)}
+                          className="bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Excluir Material</span>
+                        </Button>
+                      )}
+                    </div>
 
                     {fileUrl && (
                       <a
@@ -2561,9 +2686,9 @@ export default function MeetingsAndMaterials() {
                         <div
                           key={mat.id}
                           onClick={() => setPreviewMedia(mat)}
-                          className="p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group"
+                          className="p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37] cursor-pointer flex items-center justify-between gap-2 transition-all group relative"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             {kind.subtype === 'photo' ? (
                               <ImageIcon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
                             ) : kind.subtype === 'video' ? (
@@ -2571,18 +2696,31 @@ export default function MeetingsAndMaterials() {
                             ) : kind.subtype === 'excel' ? (
                               <FileSpreadsheet className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                             ) : (
-                              <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                              <FileText className="w-4 h-4 text-[#F5D77F] flex-shrink-0" />
                             )}
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className="font-bold text-xs text-white truncate group-hover:text-[#F5D77F]">
                                 {mat.title}
                               </p>
-                              <span className="text-[10px] text-blue-300/70 font-semibold">
+                              <span className="text-[10px] text-slate-400 font-semibold">
                                 {kind.label}
                               </span>
                             </div>
                           </div>
-                          <Eye className="w-3.5 h-3.5 text-[#D4AF37] opacity-60 group-hover:opacity-100 flex-shrink-0" />
+
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                title="Excluir Material"
+                                onClick={(e) => handleDeleteMaterial(mat, e)}
+                                className="w-6 h-6 rounded-md bg-rose-950/60 hover:bg-rose-600 text-rose-300 hover:text-white flex items-center justify-center transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                            <Eye className="w-3.5 h-3.5 text-[#D4AF37] opacity-60 group-hover:opacity-100" />
+                          </div>
                         </div>
                       )
                     })}

@@ -42,10 +42,13 @@ import {
   getPendingDisclosures,
   getMemberDisclosures,
   getMembers,
+  deleteMaterial,
   getFileUrl,
 } from '@/services/api'
+import { toast } from 'sonner'
 import { detectMaterialKind } from '@/lib/utils'
 import PdfDocumentViewer from '@/components/PdfDocumentViewer'
+import PdfThumbnail from '@/components/PdfThumbnail'
 import type { Meeting, Material, Disclosure, User } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -223,6 +226,32 @@ export default function Index() {
       .slice(0, 2)
       .join('')
       .toUpperCase()
+  }
+
+  const handleDeleteMaterial = async (material: Material, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    if (
+      !window.confirm(
+        `Tem certeza que deseja excluir o material "${material.title}" permanentemente do acervo?`,
+      )
+    ) {
+      return
+    }
+    try {
+      await deleteMaterial(material.id)
+      toast.success('Material excluído com sucesso do acervo!')
+      if (selectedMedia?.id === material.id) {
+        setSelectedMedia(null)
+      }
+      // Refresh list
+      const mats = await getAllMaterials()
+      setMaterials(mats)
+    } catch (err: any) {
+      toast.error('Erro ao excluir material: ' + (err?.message || 'Falha na requisição'))
+    }
   }
 
   // Hero background image based on meeting type or curated premium photos
@@ -678,6 +707,13 @@ export default function Index() {
                         </div>
                       </div>
                     </>
+                  ) : isPdf && fileUrl ? (
+                    <PdfThumbnail
+                      url={fileUrl}
+                      title={item.title}
+                      showBadge={false}
+                      className="w-full h-full"
+                    />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
                       <div
@@ -686,9 +722,7 @@ export default function Index() {
                             ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
                             : isPpt
                               ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
-                              : isPdf
-                                ? 'bg-blue-500/20 border border-blue-400/40 text-[#F5D77F]'
-                                : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                              : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
                         }`}
                       >
                         {isExcel ? (
@@ -702,17 +736,15 @@ export default function Index() {
                           ? 'Planilha Eletrônica'
                           : isPpt
                             ? 'Apresentação em Slides'
-                            : isPdf
-                              ? 'Documento PDF (Leitor)'
-                              : 'Documento Executivo'}
+                            : 'Documento Executivo'}
                       </span>
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
 
                   {/* Badge de tipo */}
-                  <div className="absolute top-2.5 left-2.5">
+                  <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
                     <Badge
                       className={`text-[9px] uppercase font-bold tracking-wider ${
                         isVideo
@@ -723,19 +755,33 @@ export default function Index() {
                               ? 'bg-amber-600 text-slate-950'
                               : isPhoto
                                 ? 'bg-[#D4AF37] text-slate-950'
-                                : 'bg-blue-600 text-white'
+                                : isPdf
+                                  ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black'
+                                  : 'bg-blue-600 text-white'
                       }`}
                     >
                       {kind.label}
                     </Badge>
                   </div>
 
-                  <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                  {/* Botão de Excluir exclusivo do Administrador */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      title="Excluir Material (Administrador)"
+                      onClick={(e) => handleDeleteMaterial(item, e)}
+                      className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-lg bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center justify-center transition-colors shadow-md"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 hidden" />
+                      <span className="text-[11px] font-bold">&times;</span>
+                    </button>
+                  )}
+
+                  <div className="absolute bottom-2 right-2 z-10 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/80 px-2 py-0.5 rounded-md backdrop-blur-sm pointer-events-none">
                     <Eye className="w-3 h-3 text-[#D4AF37]" />
                     <span>{isPdf ? 'Ler Todas as Páginas' : 'Ver'}</span>
                   </div>
                 </div>
-
                 {/* Body */}
                 <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
                   <div>
@@ -751,9 +797,20 @@ export default function Index() {
 
                   <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                     <span className="font-medium">Edvanced Media</span>
-                    <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                      {isPdf ? 'Ler PDF &rarr;' : 'Abrir &rarr;'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteMaterial(item, e)}
+                          className="text-rose-400 hover:text-rose-300 font-semibold hover:underline"
+                        >
+                          Excluir
+                        </button>
+                      )}
+                      <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
+                        {isPdf ? 'Ler PDF &rarr;' : 'Abrir &rarr;'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1113,14 +1170,26 @@ export default function Index() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedMedia(null)}
-                      className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
-                    >
-                      Fechar
-                    </Button>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedMedia(null)}
+                        className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
+                      >
+                        Fechar
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteMaterial(selectedMedia)}
+                          className="bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <span>Excluir Material</span>
+                        </Button>
+                      )}
+                    </div>
 
                     {fileUrl && (
                       <a
