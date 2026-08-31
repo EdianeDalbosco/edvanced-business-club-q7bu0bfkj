@@ -72,6 +72,8 @@ import type {
 } from '@/types'
 import { AVAILABLE_ICONS } from '@/pages/AdminClubSelection'
 import { useAuth } from '@/contexts/AuthContext'
+import { detectMaterialKind } from '@/lib/utils'
+import PdfDocumentViewer from '@/components/PdfDocumentViewer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -2108,15 +2110,23 @@ export default function PublicPortal() {
             {filteredMaterials.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMaterials.map((mat) => {
-                  const isPhoto = mat.type === 'photo'
-                  const isVideo = mat.type === 'video'
-                  const isDoc = mat.type === 'document'
+                  const kind = detectMaterialKind({
+                    file: mat.file,
+                    url: mat.url,
+                    title: mat.title,
+                    type: mat.type,
+                  })
+                  const isPhoto = kind.subtype === 'photo'
+                  const isVideo = kind.subtype === 'video'
+                  const isExcel = kind.subtype === 'excel'
+                  const isPdf = kind.subtype === 'pdf'
+                  const isDoc = kind.category === 'document'
 
                   const fileUrl = mat.file ? getFileUrl('materials', mat.id, mat.file) : ''
                   const externalUrl = mat.url || ''
                   const ytId = isVideo ? getYouTubeId(externalUrl) : null
                   const ytThumb = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : ''
-                  const displayThumb = isPhoto ? fileUrl : ytThumb || fileUrl
+                  const displayThumb = isPhoto ? fileUrl : ytThumb || ''
 
                   const relatedMeeting =
                     mat.expand?.meeting ||
@@ -2143,11 +2153,13 @@ export default function PublicPortal() {
                                 <ImageIcon className="w-10 h-10 text-[#F5D77F] mb-2" />
                               ) : isVideo ? (
                                 <Video className="w-10 h-10 text-[#F5D77F] mb-2" />
+                              ) : isExcel ? (
+                                <FileSpreadsheet className="w-10 h-10 text-emerald-400 mb-2" />
                               ) : (
                                 <FileText className="w-10 h-10 text-[#F5D77F] mb-2" />
                               )}
                               <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F]">
-                                {mat.type.toUpperCase()}
+                                {kind.label.toUpperCase()}
                               </span>
                             </div>
                           )}
@@ -2159,14 +2171,9 @@ export default function PublicPortal() {
                             <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
                               {isPhoto && <ImageIcon className="w-3 h-3" />}
                               {isVideo && <Video className="w-3 h-3" />}
-                              {isDoc && <FileText className="w-3 h-3" />}
-                              <span>
-                                {isPhoto
-                                  ? 'Foto Oficial'
-                                  : isVideo
-                                    ? 'Vídeo / Gravação'
-                                    : 'Documento'}
-                              </span>
+                              {isExcel && <FileSpreadsheet className="w-3 h-3" />}
+                              {!isPhoto && !isVideo && !isExcel && <FileText className="w-3 h-3" />}
+                              <span>{kind.label}</span>
                             </Badge>
                           </div>
 
@@ -2617,156 +2624,219 @@ export default function PublicPortal() {
           open={!!previewMediaModal}
           onOpenChange={(open) => !open && setPreviewMediaModal(null)}
         >
-          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
-                  {previewMediaModal.type === 'photo'
-                    ? 'Foto do Encontro'
-                    : previewMediaModal.type === 'video'
-                      ? 'Vídeo Oficial'
-                      : 'Documento'}
-                </Badge>
-                {previewMediaModal.created && (
-                  <span className="text-[11px] text-slate-300 font-semibold">
-                    {formatDateString(previewMediaModal.created)}
-                  </span>
-                )}
-              </div>
+          <DialogContent
+            className={`bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[92vh] overflow-y-auto transition-all ${(() => {
+              const k = detectMaterialKind({
+                file: previewMediaModal.file,
+                url: previewMediaModal.url,
+                title: previewMediaModal.title,
+                type: previewMediaModal.type,
+              })
+              return k.subtype === 'pdf' ? 'max-w-5xl' : 'max-w-3xl'
+            })()}`}
+          >
+            {(() => {
+              const fileUrl = previewMediaModal.file
+                ? getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)
+                : previewMediaModal.url
+              const kind = detectMaterialKind({
+                file: previewMediaModal.file,
+                url: previewMediaModal.url,
+                title: previewMediaModal.title,
+                type: previewMediaModal.type,
+              })
+              const isPdf = kind.subtype === 'pdf'
+              const isExcel = kind.subtype === 'excel'
+              const isVideo = kind.subtype === 'video'
+              const isPhoto = kind.subtype === 'photo'
 
-              <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
-                {previewMediaModal.title}
-              </DialogTitle>
-
-              {previewMediaModal.expand?.meeting && (
-                <p className="text-xs font-bold text-[#F5D77F] flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5" />
-                  <span>Encontro: {previewMediaModal.expand.meeting.title}</span>
-                </p>
-              )}
-            </DialogHeader>
-
-            {/* Media Player or Large Image */}
-            <div className="my-4">
-              {previewMediaModal.type === 'video' && (
-                <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-inner">
-                  {getVideoEmbedUrl(previewMediaModal.url) ? (
-                    <iframe
-                      src={getVideoEmbedUrl(previewMediaModal.url)!}
-                      title={previewMediaModal.title}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  ) : previewMediaModal.file ? (
-                    <video
-                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
-                      controls
-                      autoPlay
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                      <Video className="w-10 h-10 mb-2 text-[#D4AF37]" />
-                      <p className="text-xs">Vídeo não disponível para reprodução direta.</p>
-                      {previewMediaModal.url && (
-                        <a
-                          href={previewMediaModal.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 text-xs text-[#F5D77F] underline font-bold flex items-center gap-1"
-                        >
-                          Abrir link externo <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
+              return (
+                <>
+                  <DialogHeader className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
+                        {kind.label}
+                      </Badge>
+                      {isPdf && (
+                        <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-full">
+                          Visualização Completa de Todas as Páginas
+                        </span>
+                      )}
+                      {previewMediaModal.created && (
+                        <span className="text-[11px] text-slate-300 font-semibold">
+                          {formatDateString(previewMediaModal.created)}
+                        </span>
                       )}
                     </div>
-                  )}
-                </div>
-              )}
 
-              {previewMediaModal.type === 'photo' && (
-                <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
-                  {previewMediaModal.file ? (
-                    <img
-                      src={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
-                      alt={previewMediaModal.title}
-                      className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
-                    />
-                  ) : previewMediaModal.url ? (
-                    <img
-                      src={previewMediaModal.url}
-                      alt={previewMediaModal.title}
-                      className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
-                    />
-                  ) : (
-                    <div className="p-12 text-center text-slate-400">
-                      <ImageIcon className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
-                      <p className="text-xs">Imagem não encontrada.</p>
+                    <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
+                      {previewMediaModal.title}
+                    </DialogTitle>
+
+                    {previewMediaModal.expand?.meeting && (
+                      <p className="text-xs font-bold text-[#F5D77F] flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5" />
+                        <span>Encontro: {previewMediaModal.expand.meeting.title}</span>
+                      </p>
+                    )}
+                  </DialogHeader>
+
+                  {/* Media Player or Large Image or PDF Viewer */}
+                  <div className="my-4">
+                    {/* Visualizador de PDF Completo Inline */}
+                    {isPdf && fileUrl ? (
+                      <PdfDocumentViewer
+                        url={fileUrl}
+                        title={previewMediaModal.title}
+                        fileName={previewMediaModal.file}
+                        className="w-full"
+                      />
+                    ) : (
+                      <div className="rounded-2xl overflow-hidden bg-[#061020] border border-slate-800 flex items-center justify-center p-4">
+                        {/* Video Player */}
+                        {isVideo && (
+                          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-inner">
+                            {getVideoEmbedUrl(previewMediaModal.url) ? (
+                              <iframe
+                                src={getVideoEmbedUrl(previewMediaModal.url)!}
+                                title={previewMediaModal.title}
+                                className="w-full h-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              />
+                            ) : previewMediaModal.file ? (
+                              <video
+                                src={getFileUrl(
+                                  'materials',
+                                  previewMediaModal.id,
+                                  previewMediaModal.file,
+                                )}
+                                controls
+                                autoPlay
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
+                                <Video className="w-10 h-10 mb-2 text-[#D4AF37]" />
+                                <p className="text-xs">
+                                  Vídeo não disponível para reprodução direta.
+                                </p>
+                                {previewMediaModal.url && (
+                                  <a
+                                    href={previewMediaModal.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-3 text-xs text-[#F5D77F] underline font-bold flex items-center gap-1"
+                                  >
+                                    Abrir link externo <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Photo Viewer */}
+                        {isPhoto && (
+                          <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                            {previewMediaModal.file ? (
+                              <img
+                                src={getFileUrl(
+                                  'materials',
+                                  previewMediaModal.id,
+                                  previewMediaModal.file,
+                                )}
+                                alt={previewMediaModal.title}
+                                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+                              />
+                            ) : previewMediaModal.url ? (
+                              <img
+                                src={previewMediaModal.url}
+                                alt={previewMediaModal.title}
+                                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+                              />
+                            ) : (
+                              <div className="p-12 text-center text-slate-400">
+                                <ImageIcon className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
+                                <p className="text-xs">Imagem não encontrada.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Excel Spreadsheet Viewer / Generic document */}
+                        {!isVideo && !isPhoto && !isPdf && (
+                          <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4 w-full">
+                            {isExcel ? (
+                              <FileSpreadsheet className="w-14 h-14 text-emerald-400 mx-auto opacity-90" />
+                            ) : (
+                              <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
+                            )}
+                            <div>
+                              <h5 className="text-base font-bold text-white">
+                                {previewMediaModal.title}
+                              </h5>
+                              <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
+                                {previewMediaModal.description ||
+                                  'Arquivo executivo disponibilizado para consulta e download.'}
+                              </p>
+                            </div>
+                            {previewMediaModal.file && (
+                              <a
+                                href={getFileUrl(
+                                  'materials',
+                                  previewMediaModal.id,
+                                  previewMediaModal.file,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className={`inline-flex items-center justify-center font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors ${
+                                  isExcel
+                                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                                    : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
+                                }`}
+                              >
+                                Baixar Arquivo (
+                                {previewMediaModal.file.split('.').pop()?.toUpperCase()})
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {previewMediaModal.description && !isPdf && (
+                    <div className="p-4 bg-[#061020] rounded-2xl border border-slate-800 text-xs text-slate-200 leading-relaxed">
+                      <p className="whitespace-pre-wrap">{previewMediaModal.description}</p>
                     </div>
                   )}
-                </div>
-              )}
 
-              {previewMediaModal.type === 'document' && (
-                <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4">
-                  {/\.(xlsx?|csv)$/i.test(previewMediaModal.file || previewMediaModal.url || '') ? (
-                    <FileSpreadsheet className="w-14 h-14 text-emerald-400 mx-auto opacity-90" />
-                  ) : (
-                    <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
-                  )}
-                  <div>
-                    <h5 className="text-base font-bold text-white">{previewMediaModal.title}</h5>
-                    <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
-                      {previewMediaModal.description ||
-                        'Arquivo executivo disponibilizado para consulta e download.'}
-                    </p>
-                  </div>
-                  {previewMediaModal.file && (
-                    <a
-                      href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                      className={`inline-flex items-center justify-center font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors ${
-                        /\.(xlsx?|csv)$/i.test(previewMediaModal.file)
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                          : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
-                      }`}
+                  <DialogFooter className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPreviewMediaModal(null)}
+                      className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
                     >
-                      Baixar Arquivo ({previewMediaModal.file.split('.').pop()?.toUpperCase()})
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
+                      Fechar
+                    </Button>
 
-            {previewMediaModal.description && previewMediaModal.type !== 'document' && (
-              <div className="p-4 bg-[#061020] rounded-2xl border border-slate-800 text-xs text-slate-200 leading-relaxed">
-                <p className="whitespace-pre-wrap">{previewMediaModal.description}</p>
-              </div>
-            )}
-
-            <DialogFooter className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
-              <Button
-                variant="outline"
-                onClick={() => setPreviewMediaModal(null)}
-                className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                Fechar
-              </Button>
-
-              {previewMediaModal.file && (
-                <a
-                  href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
-                >
-                  Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                </a>
-              )}
-            </DialogFooter>
+                    {previewMediaModal.file && (
+                      <a
+                        href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
+                      >
+                        Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                      </a>
+                    )}
+                  </DialogFooter>
+                </>
+              )
+            })()}
           </DialogContent>
         </Dialog>
       )}

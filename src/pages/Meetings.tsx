@@ -35,6 +35,7 @@ import {
 import { downloadICSFile } from '@/lib/ics'
 import { useAuth } from '@/contexts/AuthContext'
 import { detectMaterialKind, type DetailedMaterialSubtype } from '@/lib/utils'
+import PdfDocumentViewer from '@/components/PdfDocumentViewer'
 import {
   getMeetings,
   getAllMaterials,
@@ -380,11 +381,17 @@ export default function MeetingsAndMaterials() {
     () =>
       materials.filter((m) => {
         if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'photo') return false
         return (
-          m.type === 'photo' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
         )
       }),
     [materials, acervoSearch, selectedMeeting],
@@ -392,13 +399,20 @@ export default function MeetingsAndMaterials() {
 
   const allPhotoMaterials = useMemo(
     () =>
-      materials.filter(
-        (m) =>
-          m.type === 'photo' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
-      ),
+      materials.filter((m) => {
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'photo') return false
+        return (
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
+        )
+      }),
     [materials, acervoSearch],
   )
 
@@ -432,11 +446,17 @@ export default function MeetingsAndMaterials() {
     () =>
       materials.filter((m) => {
         if (selectedMeeting && m.meeting !== selectedMeeting.id) return false
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'document') return false
         return (
-          m.type === 'document' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase())))
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
         )
       }),
     [materials, acervoSearch, selectedMeeting],
@@ -444,13 +464,20 @@ export default function MeetingsAndMaterials() {
 
   const allDocMaterials = useMemo(
     () =>
-      materials.filter(
-        (m) =>
-          m.type === 'document' &&
-          (acervoSearch === '' ||
-            m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
-            (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))),
-      ),
+      materials.filter((m) => {
+        const kind = detectMaterialKind({
+          file: m.file,
+          url: m.url,
+          title: m.title,
+          type: m.type,
+        })
+        if (kind.category !== 'document') return false
+        return (
+          acervoSearch === '' ||
+          m.title.toLowerCase().includes(acervoSearch.toLowerCase()) ||
+          (m.description && m.description.toLowerCase().includes(acervoSearch.toLowerCase()))
+        )
+      }),
     [materials, acervoSearch],
   )
 
@@ -2181,46 +2208,58 @@ export default function MeetingsAndMaterials() {
       {/* 1. Modal Preview de Foto / Vídeo / Documento / Planilha */}
       {previewMedia && (
         <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent
+            className={`bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[92vh] overflow-y-auto transition-all ${(() => {
+              const k = detectMaterialKind({
+                file: previewMedia.file,
+                url: previewMedia.url,
+                title: previewMedia.title,
+                type: previewMedia.type,
+              })
+              return k.subtype === 'pdf' ? 'max-w-5xl' : 'max-w-3xl'
+            })()}`}
+          >
             {(() => {
               const fileUrl = previewMedia.file
                 ? getFileUrl('materials', previewMedia.id, previewMedia.file)
                 : previewMedia.url
               const kind = detectMaterialKind({
-                name: previewMedia.file || previewMedia.url || previewMedia.title,
-                type:
-                  previewMedia.type === 'video'
-                    ? 'video/'
-                    : previewMedia.type === 'photo'
-                      ? 'image/'
-                      : undefined,
+                file: previewMedia.file,
+                url: previewMedia.url,
+                title: previewMedia.title,
+                type: previewMedia.type,
               })
               const isExcel = kind.subtype === 'excel'
               const isPdf = kind.subtype === 'pdf'
               const isPpt = kind.subtype === 'powerpoint'
               const isWord = kind.subtype === 'word'
-              const isVideo = kind.subtype === 'video' || previewMedia.type === 'video'
-              const isPhoto = kind.subtype === 'photo' || previewMedia.type === 'photo'
+              const isVideo = kind.subtype === 'video'
+              const isPhoto = kind.subtype === 'photo'
 
               return (
                 <>
                   <DialogHeader>
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
-                        {isExcel
-                          ? 'Planilha'
-                          : isPdf
-                            ? 'PDF/Documento'
-                            : isPpt
-                              ? 'Apresentação'
-                              : isWord
-                                ? 'Documento'
+                      <Badge
+                        className={`text-slate-950 uppercase font-black text-[10px] ${
+                          isPdf
+                            ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37]'
+                            : isExcel
+                              ? 'bg-emerald-500 text-white'
+                              : isPpt
+                                ? 'bg-amber-500 text-slate-950'
                                 : isVideo
-                                  ? 'Vídeo'
-                                  : isPhoto
-                                    ? 'Foto'
-                                    : 'Documento'}
+                                  ? 'bg-rose-600 text-white'
+                                  : 'bg-[#D4AF37] text-slate-950'
+                        }`}
+                      >
+                        {kind.label}
                       </Badge>
+                      {isPdf && (
+                        <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-full">
+                          Visualização Completa de Todas as Páginas
+                        </span>
+                      )}
                     </div>
                     <DialogTitle className="text-lg font-bold text-white">
                       {previewMedia.title}
@@ -2232,133 +2271,112 @@ export default function MeetingsAndMaterials() {
                     )}
                   </DialogHeader>
 
-                  <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
-                    {/* Visualizador de Foto */}
-                    {isPhoto && fileUrl && (
-                      <img
-                        src={fileUrl}
-                        alt={previewMedia.title}
-                        className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                  <div className="my-4">
+                    {/* Visualizador Completo de PDF com navegação de páginas */}
+                    {isPdf && fileUrl ? (
+                      <PdfDocumentViewer
+                        url={fileUrl}
+                        title={previewMedia.title}
+                        fileName={previewMedia.file}
+                        className="w-full"
                       />
-                    )}
+                    ) : (
+                      <div className="rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
+                        {/* Visualizador de Foto */}
+                        {isPhoto && fileUrl && (
+                          <img
+                            src={fileUrl}
+                            alt={previewMedia.title}
+                            className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                          />
+                        )}
 
-                    {/* Visualizador de Vídeo */}
-                    {isVideo && fileUrl && (
-                      <div className="w-full flex flex-col items-center justify-center">
-                        <video
-                          src={fileUrl}
-                          controls
-                          className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
-                        />
-                      </div>
-                    )}
+                        {/* Visualizador de Vídeo */}
+                        {isVideo && fileUrl && (
+                          <div className="w-full flex flex-col items-center justify-center">
+                            <video
+                              src={fileUrl}
+                              controls
+                              className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
+                            />
+                          </div>
+                        )}
 
-                    {/* Visualizador de PDF */}
-                    {isPdf && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">Documento Executivo (PDF)</p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Você pode visualizar este documento no navegador ou baixá-lo no seu
-                            computador.
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block"
-                          >
-                            <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20">
-                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Abrir no Navegador
-                            </Button>
-                          </a>
-                          <a
-                            href={fileUrl}
-                            download={previewMedia.file || previewMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar PDF
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
+                        {/* Visualizador de Excel */}
+                        {isExcel && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                Planilha Eletrônica Excel (.xlsx / .xls / .csv)
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Arquivo de planilha executiva disponível para download.
+                              </p>
+                            </div>
+                            <div className="pt-2">
+                              <a
+                                href={fileUrl}
+                                download={previewMedia.file || previewMedia.title}
+                                className="inline-block"
+                              >
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
+                                  <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Visualizador de Excel */}
-                    {isExcel && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">
-                            Planilha Eletrônica Excel (.xlsx / .xls / .csv)
-                          </p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Arquivo de planilha executiva disponível para download.
-                          </p>
-                        </div>
-                        <div className="pt-2">
-                          <a
-                            href={fileUrl}
-                            download={previewMedia.file || previewMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
+                        {/* Visualizador de PowerPoint / Apresentação */}
+                        {isPpt && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileText className="w-16 h-16 text-amber-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                Apresentação em Slides (.pptx / .ppt)
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Arquivo de apresentação executiva disponível para download.
+                              </p>
+                            </div>
+                            <div className="pt-2">
+                              <a
+                                href={fileUrl}
+                                download={previewMedia.file || previewMedia.title}
+                                className="inline-block"
+                              >
+                                <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
+                                  <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Apresentação
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Visualizador de PowerPoint / Apresentação */}
-                    {isPpt && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-amber-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">Apresentação em Slides (.pptx / .ppt)</p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Arquivo de apresentação executiva disponível para download.
-                          </p>
-                        </div>
-                        <div className="pt-2">
-                          <a
-                            href={fileUrl}
-                            download={previewMedia.file || previewMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Apresentação
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Outros tipos genéricos de documento / Word */}
-                    {!isPhoto && !isVideo && !isPdf && !isExcel && !isPpt && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-blue-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">
-                            {isWord ? 'Documento Word (.docx / .doc)' : 'Arquivo do Acervo'}
-                          </p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Clique abaixo para acessar ou transferir o arquivo.
-                          </p>
-                        </div>
-                        <a
-                          href={fileUrl}
-                          download={previewMedia.file || previewMedia.title}
-                          className="inline-block pt-2"
-                        >
-                          <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                            <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
-                          </Button>
-                        </a>
+                        {/* Outros tipos genéricos de documento / Word */}
+                        {!isPhoto && !isVideo && !isPdf && !isExcel && !isPpt && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileText className="w-16 h-16 text-blue-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                {isWord ? 'Documento Word (.docx / .doc)' : 'Arquivo do Acervo'}
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Clique abaixo para acessar ou transferir o arquivo.
+                              </p>
+                            </div>
+                            <a
+                              href={fileUrl}
+                              download={previewMedia.file || previewMedia.title}
+                              className="inline-block pt-2"
+                            >
+                              <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                                <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
+                              </Button>
+                            </a>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

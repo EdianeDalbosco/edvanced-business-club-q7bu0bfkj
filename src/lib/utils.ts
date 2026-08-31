@@ -78,9 +78,21 @@ export type DetailedMaterialSubtype =
 
 /**
  * Detects the category ('photo' | 'video' | 'document') and subtype of a file or URL
- * by evaluating both MIME type and file extension (name/url fallback).
+ * by evaluating MIME type, file extension and semantic title clues.
+ * Documents (PDF, Excel, Word, PowerPoint, Slides, etc.) are never classified as "photo".
  */
-export function detectMaterialKind(fileOrName?: { name?: string; type?: string } | string | null): {
+export function detectMaterialKind(
+  fileOrName?:
+    | {
+        name?: string
+        file?: string
+        url?: string
+        title?: string
+        type?: string
+      }
+    | string
+    | null,
+): {
   category: DetectedMaterialCategory
   subtype: DetailedMaterialSubtype
   label: string
@@ -95,63 +107,26 @@ export function detectMaterialKind(fileOrName?: { name?: string; type?: string }
     }
   }
 
-  const name = typeof fileOrName === 'string' ? fileOrName : fileOrName.name || ''
-  const mime = (
-    typeof fileOrName === 'object' && fileOrName !== null ? fileOrName.type || '' : ''
-  ).toLowerCase()
-  const lowerName = name.toLowerCase()
+  let rawName = ''
+  let mime = ''
+  let rawType = ''
 
-  // 1. Images
-  const imageExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|avif|ico|tiff?|heic|heif)$/i
-  const isImageMime = mime.startsWith('image/')
-  const isImageExt = imageExtensions.test(lowerName)
-
-  if (isImageMime || isImageExt) {
-    return {
-      category: 'photo',
-      subtype: 'photo',
-      label: 'Foto',
-      shortLabel: 'Foto',
-    }
+  if (typeof fileOrName === 'string') {
+    rawName = fileOrName
+  } else if (typeof fileOrName === 'object' && fileOrName !== null) {
+    // Collect all hints in order of specificity
+    rawName = [fileOrName.file, fileOrName.url, fileOrName.name, fileOrName.title]
+      .filter(Boolean)
+      .join(' ')
+    mime = (fileOrName.type && fileOrName.type.includes('/') ? fileOrName.type : '').toLowerCase()
+    rawType = (fileOrName.type || '').toLowerCase()
   }
 
-  // 2. Videos
-  const videoExtensions = /\.(mp4|webm|mov|avi|mpeg|mpg|mkv|m4v|3gp|wmv|flv|ogv)$/i
-  const isVideoMime = mime.startsWith('video/')
-  const isVideoExt = videoExtensions.test(lowerName)
+  const lowerName = rawName.toLowerCase()
 
-  if (isVideoMime || isVideoExt) {
-    return {
-      category: 'video',
-      subtype: 'video',
-      label: 'Vídeo',
-      shortLabel: 'Vídeo',
-    }
-  }
-
-  // 3. Excel / Spreadsheets
-  const excelExtensions = /\.(xlsx|xls|csv|ods)$/i
-  const isExcelMime =
-    mime === 'application/vnd.ms-excel' ||
-    mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-    mime === 'text/csv' ||
-    mime === 'application/csv' ||
-    mime.includes('spreadsheet')
-  const isExcelExt = excelExtensions.test(lowerName)
-
-  if (isExcelMime || isExcelExt) {
-    return {
-      category: 'document',
-      subtype: 'excel',
-      label: 'Planilha',
-      shortLabel: 'Planilha',
-    }
-  }
-
-  // 4. PDF
+  // 1. PDF detection (highest priority for documents)
   const isPdfMime = mime === 'application/pdf'
-  const isPdfExt = /\.pdf$/i.test(lowerName)
-
+  const isPdfExt = /\.pdf(\?|$)/i.test(lowerName)
   if (isPdfMime || isPdfExt) {
     return {
       category: 'document',
@@ -161,39 +136,99 @@ export function detectMaterialKind(fileOrName?: { name?: string; type?: string }
     }
   }
 
-  // 5. PowerPoint / Presentations
-  const pptExtensions = /\.(pptx|ppt|pps|ppsx|odp)$/i
+  // 2. Excel / Spreadsheets
+  const excelExtensions = /\.(xlsx|xls|csv|ods)(\?|$)/i
+  const isExcelMime =
+    mime === 'application/vnd.ms-excel' ||
+    mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mime === 'text/csv' ||
+    mime === 'application/csv' ||
+    mime.includes('spreadsheet')
+  const isExcelExt = excelExtensions.test(lowerName)
+  if (isExcelMime || isExcelExt) {
+    return {
+      category: 'document',
+      subtype: 'excel',
+      label: 'Planilha',
+      shortLabel: 'Planilha',
+    }
+  }
+
+  // 3. PowerPoint / Presentations / Slides
+  const pptExtensions = /\.(pptx|ppt|pps|ppsx|odp|key)(\?|$)/i
   const isPptMime =
     mime === 'application/vnd.ms-powerpoint' ||
     mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
     mime === 'application/vnd.openxmlformats-officedocument.presentationml.slideshow' ||
     mime.includes('presentation')
   const isPptExt = pptExtensions.test(lowerName)
+  // Semantic keyword check for slides/presentation
+  const isSlideTitle =
+    /\b(slide|slides|apresentação|apresentacao|presentation|pitch deck|deck)\b/i.test(lowerName)
 
-  if (isPptMime || isPptExt) {
+  if (isPptMime || isPptExt || isSlideTitle) {
     return {
       category: 'document',
       subtype: 'powerpoint',
-      label: 'Apresentação',
+      label: 'Apresentação (Slides)',
       shortLabel: 'Slides',
     }
   }
 
-  // 6. Word / Text Docs
-  const wordExtensions = /\.(docx|doc|rtf|odt|txt)$/i
+  // 4. Word / Rich Text / Documents
+  const wordExtensions = /\.(docx|doc|rtf|odt|txt|pages)(\?|$)/i
   const isWordMime =
     mime === 'application/msword' ||
     mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     mime.includes('wordprocessingml') ||
     mime.includes('msword')
   const isWordExt = wordExtensions.test(lowerName)
-
   if (isWordMime || isWordExt) {
     return {
       category: 'document',
       subtype: 'word',
-      label: 'Documento',
+      label: 'Documento Word',
       shortLabel: 'Doc',
+    }
+  }
+
+  // 5. Explicit document hints (if raw type or words say document)
+  const isDocumentWord =
+    /\b(documento|relat[óo]rio|ata|apostila|manual|guia|contrato|ebook|e-book)\b/i.test(lowerName)
+  if (rawType === 'document' || isDocumentWord) {
+    return {
+      category: 'document',
+      subtype: 'document',
+      label: 'Documento Executivo',
+      shortLabel: 'Doc',
+    }
+  }
+
+  // 6. Videos
+  const videoExtensions = /\.(mp4|webm|mov|avi|mpeg|mpg|mkv|m4v|3gp|wmv|flv|ogv)(\?|$)/i
+  const isVideoMime = mime.startsWith('video/')
+  const isVideoExt = videoExtensions.test(lowerName)
+  const isVideoHost = /(youtube\.com|youtu\.be|vimeo\.com)/i.test(lowerName)
+  if (isVideoMime || isVideoExt || isVideoHost || rawType === 'video') {
+    return {
+      category: 'video',
+      subtype: 'video',
+      label: 'Vídeo',
+      shortLabel: 'Vídeo',
+    }
+  }
+
+  // 7. Images / Photos (only if actually an image extension or image MIME)
+  const imageExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|avif|ico|tiff?|heic|heif)(\?|$)/i
+  const isImageMime = mime.startsWith('image/')
+  const isImageExt = imageExtensions.test(lowerName)
+
+  if (isImageMime || isImageExt || rawType === 'photo') {
+    return {
+      category: 'photo',
+      subtype: 'photo',
+      label: 'Foto',
+      shortLabel: 'Foto',
     }
   }
 

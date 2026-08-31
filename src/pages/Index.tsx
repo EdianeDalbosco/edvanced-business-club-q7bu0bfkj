@@ -45,6 +45,7 @@ import {
   getFileUrl,
 } from '@/services/api'
 import { detectMaterialKind } from '@/lib/utils'
+import PdfDocumentViewer from '@/components/PdfDocumentViewer'
 import type { Meeting, Material, Disclosure, User } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -638,12 +639,16 @@ export default function Index() {
         {materials.length > 0 ? (
           materials.map((item) => {
             const kind = detectMaterialKind({
-              name: item.file || item.url || item.title,
-              type: item.type === 'video' ? 'video/' : item.type === 'photo' ? 'image/' : undefined,
+              file: item.file,
+              url: item.url,
+              title: item.title,
+              type: item.type,
             })
-            const isVideo = kind.subtype === 'video' || item.type === 'video'
-            const isPhoto = kind.subtype === 'photo' || item.type === 'photo'
+            const isVideo = kind.subtype === 'video'
+            const isPhoto = kind.subtype === 'photo'
             const isExcel = kind.subtype === 'excel'
+            const isPdf = kind.subtype === 'pdf'
+            const isPpt = kind.subtype === 'powerpoint'
             const fileUrl = item.file ? getFileUrl('materials', item.id, item.file) : item.url
 
             return (
@@ -679,7 +684,11 @@ export default function Index() {
                         className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${
                           isExcel
                             ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                            : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                            : isPpt
+                              ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
+                              : isPdf
+                                ? 'bg-blue-500/20 border border-blue-400/40 text-[#F5D77F]'
+                                : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
                         }`}
                       >
                         {isExcel ? (
@@ -689,7 +698,13 @@ export default function Index() {
                         )}
                       </div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5D77F]">
-                        {isExcel ? 'Planilha Eletrônica' : 'Documento Executivo'}
+                        {isExcel
+                          ? 'Planilha Eletrônica'
+                          : isPpt
+                            ? 'Apresentação em Slides'
+                            : isPdf
+                              ? 'Documento PDF (Leitor)'
+                              : 'Documento Executivo'}
                       </span>
                     </div>
                   )}
@@ -704,9 +719,11 @@ export default function Index() {
                           ? 'bg-rose-600 text-white'
                           : isExcel
                             ? 'bg-emerald-600 text-white'
-                            : isPhoto
-                              ? 'bg-[#D4AF37] text-slate-950'
-                              : 'bg-blue-600 text-white'
+                            : isPpt
+                              ? 'bg-amber-600 text-slate-950'
+                              : isPhoto
+                                ? 'bg-[#D4AF37] text-slate-950'
+                                : 'bg-blue-600 text-white'
                       }`}
                     >
                       {kind.label}
@@ -715,7 +732,7 @@ export default function Index() {
 
                   <div className="absolute bottom-2 right-2 text-[10px] text-slate-300 flex items-center gap-1 bg-[#061020]/70 px-2 py-0.5 rounded-md backdrop-blur-sm">
                     <Eye className="w-3 h-3 text-[#D4AF37]" />
-                    <span>Ver</span>
+                    <span>{isPdf ? 'Ler Todas as Páginas' : 'Ver'}</span>
                   </div>
                 </div>
 
@@ -735,7 +752,7 @@ export default function Index() {
                   <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-300">
                     <span className="font-medium">Edvanced Media</span>
                     <span className="text-[#D4AF37] font-semibold group-hover:translate-x-0.5 transition-transform">
-                      Abrir &rarr;
+                      {isPdf ? 'Ler PDF &rarr;' : 'Abrir &rarr;'}
                     </span>
                   </div>
                 </div>
@@ -922,46 +939,58 @@ export default function Index() {
       {/* Media Viewer Modal */}
       {selectedMedia && (
         <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent
+            className={`bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[92vh] overflow-y-auto transition-all ${(() => {
+              const k = detectMaterialKind({
+                file: selectedMedia.file,
+                url: selectedMedia.url,
+                title: selectedMedia.title,
+                type: selectedMedia.type,
+              })
+              return k.subtype === 'pdf' ? 'max-w-5xl' : 'max-w-3xl'
+            })()}`}
+          >
             {(() => {
               const fileUrl = selectedMedia.file
                 ? getFileUrl('materials', selectedMedia.id, selectedMedia.file)
                 : selectedMedia.url
               const kind = detectMaterialKind({
-                name: selectedMedia.file || selectedMedia.url || selectedMedia.title,
-                type:
-                  selectedMedia.type === 'video'
-                    ? 'video/'
-                    : selectedMedia.type === 'photo'
-                      ? 'image/'
-                      : undefined,
+                file: selectedMedia.file,
+                url: selectedMedia.url,
+                title: selectedMedia.title,
+                type: selectedMedia.type,
               })
               const isExcel = kind.subtype === 'excel'
               const isPdf = kind.subtype === 'pdf'
               const isPpt = kind.subtype === 'powerpoint'
               const isWord = kind.subtype === 'word'
-              const isVideo = kind.subtype === 'video' || selectedMedia.type === 'video'
-              const isPhoto = kind.subtype === 'photo' || selectedMedia.type === 'photo'
+              const isVideo = kind.subtype === 'video'
+              const isPhoto = kind.subtype === 'photo'
 
               return (
                 <>
                   <DialogHeader>
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
-                        {isExcel
-                          ? 'Planilha'
-                          : isPdf
-                            ? 'PDF/Documento'
-                            : isPpt
-                              ? 'Apresentação'
-                              : isWord
-                                ? 'Documento'
+                      <Badge
+                        className={`text-slate-950 uppercase font-black text-[10px] ${
+                          isPdf
+                            ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37]'
+                            : isExcel
+                              ? 'bg-emerald-500 text-white'
+                              : isPpt
+                                ? 'bg-amber-500 text-slate-950'
                                 : isVideo
-                                  ? 'Vídeo'
-                                  : isPhoto
-                                    ? 'Foto'
-                                    : 'Documento'}
+                                  ? 'bg-rose-600 text-white'
+                                  : 'bg-[#D4AF37] text-slate-950'
+                        }`}
+                      >
+                        {kind.label}
                       </Badge>
+                      {isPdf && (
+                        <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-full">
+                          Visualização Completa de Todas as Páginas
+                        </span>
+                      )}
                     </div>
                     <DialogTitle className="text-lg font-bold text-white">
                       {selectedMedia.title}
@@ -973,133 +1002,114 @@ export default function Index() {
                     )}
                   </DialogHeader>
 
-                  <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
-                    {/* Visualizador de Foto */}
-                    {isPhoto && fileUrl && (
-                      <img
-                        src={fileUrl}
-                        alt={selectedMedia.title}
-                        className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                  <div className="my-4">
+                    {/* Visualizador Completo de PDF com navegação inline */}
+                    {isPdf && fileUrl ? (
+                      <PdfDocumentViewer
+                        url={fileUrl}
+                        title={selectedMedia.title}
+                        fileName={selectedMedia.file}
+                        className="w-full"
                       />
-                    )}
+                    ) : (
+                      <div className="rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
+                        {/* Visualizador de Foto */}
+                        {isPhoto && fileUrl && (
+                          <img
+                            src={fileUrl}
+                            alt={selectedMedia.title}
+                            className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                          />
+                        )}
 
-                    {/* Visualizador de Vídeo */}
-                    {isVideo && fileUrl && (
-                      <div className="w-full flex flex-col items-center justify-center">
-                        <video
-                          src={fileUrl}
-                          controls
-                          className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
-                        />
-                      </div>
-                    )}
+                        {/* Visualizador de Vídeo */}
+                        {isVideo && fileUrl && (
+                          <div className="w-full flex flex-col items-center justify-center">
+                            <video
+                              src={fileUrl}
+                              controls
+                              className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
+                            />
+                          </div>
+                        )}
 
-                    {/* Visualizador de PDF */}
-                    {isPdf && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">Documento Executivo (PDF)</p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Você pode abrir este documento no navegador ou baixá-lo no seu
-                            dispositivo.
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block"
-                          >
-                            <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20">
-                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Abrir no Navegador
-                            </Button>
-                          </a>
-                          <a
-                            href={fileUrl}
-                            download={selectedMedia.file || selectedMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar PDF
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
+                        {/* Visualizador de Excel */}
+                        {isExcel && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                Planilha Eletrônica Excel (.xlsx / .xls / .csv)
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Arquivo de planilha executiva disponível para download e
+                                visualização no seu editor de planilhas.
+                              </p>
+                            </div>
+                            <div className="pt-2">
+                              <a
+                                href={fileUrl}
+                                download={selectedMedia.file || selectedMedia.title}
+                                className="inline-block"
+                              >
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
+                                  <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Visualizador de Excel */}
-                    {isExcel && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">
-                            Planilha Eletrônica Excel (.xlsx / .xls / .csv)
-                          </p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Arquivo de planilha executiva disponível para download.
-                          </p>
-                        </div>
-                        <div className="pt-2">
-                          <a
-                            href={fileUrl}
-                            download={selectedMedia.file || selectedMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
+                        {/* Visualizador de PowerPoint */}
+                        {isPpt && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileText className="w-16 h-16 text-amber-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                Apresentação em Slides (.pptx / .ppt)
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Arquivo de apresentação executiva disponível para download e uso em
+                                reuniões.
+                              </p>
+                            </div>
+                            <div className="pt-2">
+                              <a
+                                href={fileUrl}
+                                download={selectedMedia.file || selectedMedia.title}
+                                className="inline-block"
+                              >
+                                <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
+                                  <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Apresentação
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Visualizador de PowerPoint */}
-                    {isPpt && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-amber-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">Apresentação em Slides (.pptx / .ppt)</p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Arquivo de apresentação executiva disponível para download.
-                          </p>
-                        </div>
-                        <div className="pt-2">
-                          <a
-                            href={fileUrl}
-                            download={selectedMedia.file || selectedMedia.title}
-                            className="inline-block"
-                          >
-                            <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
-                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Apresentação
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Outros tipos genéricos de documento / Word */}
-                    {!isPhoto && !isVideo && !isPdf && !isExcel && !isPpt && fileUrl && (
-                      <div className="p-8 text-center text-white space-y-4">
-                        <FileText className="w-16 h-16 text-blue-400 mx-auto" />
-                        <div>
-                          <p className="text-sm font-bold">
-                            {isWord ? 'Documento Word (.docx / .doc)' : 'Arquivo do Acervo'}
-                          </p>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Clique abaixo para acessar ou baixar o arquivo.
-                          </p>
-                        </div>
-                        <a
-                          href={fileUrl}
-                          download={selectedMedia.file || selectedMedia.title}
-                          className="inline-block pt-2"
-                        >
-                          <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                            <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
-                          </Button>
-                        </a>
+                        {/* Outros tipos genéricos de documento / Word */}
+                        {!isPhoto && !isVideo && !isPdf && !isExcel && !isPpt && fileUrl && (
+                          <div className="p-8 text-center text-white space-y-4">
+                            <FileText className="w-16 h-16 text-blue-400 mx-auto" />
+                            <div>
+                              <p className="text-sm font-bold">
+                                {isWord ? 'Documento Word (.docx / .doc)' : 'Arquivo do Acervo'}
+                              </p>
+                              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                                Clique abaixo para acessar ou baixar o arquivo.
+                              </p>
+                            </div>
+                            <a
+                              href={fileUrl}
+                              download={selectedMedia.file || selectedMedia.title}
+                              className="inline-block pt-2"
+                            >
+                              <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                                <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
+                              </Button>
+                            </a>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
