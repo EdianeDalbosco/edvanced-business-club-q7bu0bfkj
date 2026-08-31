@@ -20,6 +20,7 @@ import AdminTestimonials from '@/pages/AdminTestimonials'
 import AdminClubSelection from '@/pages/AdminClubSelection'
 import Profile from '@/pages/Profile'
 import PublicPortal from '@/pages/PublicPortal'
+import Welcome from '@/pages/Welcome'
 import NotFound from '@/pages/NotFound'
 
 const App = () => (
@@ -30,6 +31,15 @@ const App = () => (
         <Sonner position="top-right" />
         <Routes>
           <Route path="/login" element={<Login />} />
+          {/* Welcome Screen for Member's First Access */}
+          <Route
+            path="/boas-vindas"
+            element={
+              <ProtectedRoute allowUnonboarded>
+                <Welcome />
+              </ProtectedRoute>
+            }
+          />
           {/* Public Routes without Authentication */}
           <Route path="/publico" element={<PublicPortal />} />
           <Route path="/eventos-publicos" element={<PublicPortal />} />

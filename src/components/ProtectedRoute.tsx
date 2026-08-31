@@ -6,9 +6,14 @@ import { Crown } from 'lucide-react'
 interface ProtectedRouteProps {
   children: React.ReactNode
   requireAdmin?: boolean
+  allowUnonboarded?: boolean
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  requireAdmin = false,
+  allowUnonboarded = false,
+}: ProtectedRouteProps) {
   const { user, isAdmin, isLoading } = useAuth()
   const location = useLocation()
 
@@ -57,6 +62,22 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
         <Navigate to="/" replace />
       </div>
     )
+  }
+
+  // If member has not completed onboarding and is accessing regular protected routes, redirect to welcome
+  // Admin is not blocked if onboarded is false, but regular members must go to welcome
+  if (
+    !allowUnonboarded &&
+    !isAdmin &&
+    user.onboarded === false &&
+    location.pathname !== '/boas-vindas'
+  ) {
+    return <Navigate to="/boas-vindas" replace />
+  }
+
+  // If member is already onboarded and tries to access /boas-vindas directly, send to dashboard
+  if (allowUnonboarded && location.pathname === '/boas-vindas' && user.onboarded === true) {
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>

@@ -179,6 +179,7 @@ export async function createMemberByAdmin(data: {
   bio?: string
   instagram?: string
   emailVisibility?: boolean
+  onboarded?: boolean
 }): Promise<User> {
   const defaultPassword = data.password?.trim() || 'Skip@Pass'
   const payload: Record<string, any> = {
@@ -193,9 +194,16 @@ export async function createMemberByAdmin(data: {
     bio: data.bio?.trim() || '',
     instagram: data.instagram?.trim() || '',
     emailVisibility: data.emailVisibility ?? true,
+    onboarded: data.onboarded ?? false,
   }
 
   return await pb.collection('users').create<User>(payload)
+}
+
+export async function completeUserOnboarding(userId: string): Promise<User> {
+  return pb.collection('users').update<User>(userId, {
+    onboarded: true,
+  })
 }
 
 export async function updateUserByAdmin(

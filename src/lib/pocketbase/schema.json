@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T15:37:21.792Z",
+  "generatedAt": "2026-08-31T21:34:46.548Z",
   "collections": [
     {
       "name": "users",
@@ -75,6 +75,12 @@
           "required": false,
           "system": false,
           "selectValues": ["active", "suspended"]
+        },
+        {
+          "name": "onboarded",
+          "type": "bool",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

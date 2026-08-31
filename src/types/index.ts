@@ -13,6 +13,7 @@ export interface User extends RecordModel {
   bio?: string
   avatar?: string
   instagram?: string
+  onboarded?: boolean
 }
 
 export interface Meeting extends RecordModel {

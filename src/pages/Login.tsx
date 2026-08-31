@@ -38,9 +38,18 @@ export default function Login() {
     }
     setIsLoading(true)
     try {
-      await login(loginEmail, loginPassword)
+      const loggedUser = await login(loginEmail, loginPassword)
       toast.success('Bem-vindo(a) ao Edvanced Business Club!')
-      navigate(from, { replace: true })
+
+      const isMemberAdmin =
+        loggedUser.role === 'admin' || loggedUser.email === 'edianedalbosco@gmail.com'
+
+      // If member hasn't onboarded yet, send to welcome page on first login
+      if (!isMemberAdmin && loggedUser.onboarded === false) {
+        navigate('/boas-vindas', { replace: true })
+      } else {
+        navigate(from, { replace: true })
+      }
     } catch (err: any) {
       const msg = err?.message || 'Credenciais inválidas. Verifique seu e-mail e senha.'
       toast.error(msg)

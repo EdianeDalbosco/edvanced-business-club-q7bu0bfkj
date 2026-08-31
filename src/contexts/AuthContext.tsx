@@ -7,7 +7,8 @@ interface AuthContextType {
   token: string | null
   isLoading: boolean
   isAdmin: boolean
-  login: (email: string, pass: string) => Promise<void>
+  login: (email: string, pass: string) => Promise<User>
+  completeOnboarding: () => Promise<void>
   registerMemberAsAdmin: (data: {
     email: string
     password?: string
@@ -70,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = async (email: string, pass: string) => {
+  const login = async (email: string, pass: string): Promise<User> => {
     const authData = await pb.collection('users').authWithPassword<User>(email, pass)
     if (authData.record.status === 'suspended') {
       pb.authStore.clear()
@@ -80,6 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUser(authData.record)
     setToken(authData.token)
+    return authData.record
+  }
+
+  const completeOnboarding = async () => {
+    if (!user) return
+    const updated = await pb.collection('users').update<User>(user.id, {
+      onboarded: true,
+    })
+    setUser(updated)
   }
 
   const registerMemberAsAdmin = async (data: {
@@ -93,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bio?: string
     instagram?: string
     emailVisibility?: boolean
+    onboarded?: boolean
   }): Promise<User> => {
     const password = data.password?.trim() || 'Skip@Pass'
     const newRecord = await pb.collection('users').create<User>({
@@ -107,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.role || 'member',
       status: data.status || 'active',
       emailVisibility: data.emailVisibility ?? true,
+      onboarded: data.onboarded ?? false,
     })
 
     if (!newRecord.verified) {
@@ -138,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAdmin,
         login,
+        completeOnboarding,
         registerMemberAsAdmin,
         logout,
         refreshUser,

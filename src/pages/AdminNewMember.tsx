@@ -76,6 +76,25 @@ export default function AdminNewMember() {
     } catch (err: any) {
       console.error('Erro ao cadastrar membro:', err)
       const fieldErrors = extractFieldErrors(err)
+
+      // Check specifically if email field has error or is duplicate
+      const emailError = fieldErrors?.email || ''
+      const isDuplicateEmail =
+        emailError.toLowerCase().includes('unique') ||
+        emailError.toLowerCase().includes('already in use') ||
+        emailError.toLowerCase().includes('exist') ||
+        (typeof err?.response?.data?.email?.code === 'string' &&
+          err.response.data.email.code.toLowerCase().includes('unique')) ||
+        (typeof err?.message === 'string' &&
+          (err.message.toLowerCase().includes('unique') ||
+            (err.message.toLowerCase().includes('email') &&
+              err.message.toLowerCase().includes('already'))))
+
+      if (isDuplicateEmail) {
+        toast.error('este e-mail já está cadastrado')
+        return
+      }
+
       if (fieldErrors && Object.keys(fieldErrors).length > 0) {
         const details = Object.entries(fieldErrors)
           .map(([f, msg]) => {
@@ -89,16 +108,22 @@ export default function AdminNewMember() {
               verified: 'Verificação',
             }
             let cleanMsg = msg
-            if (
-              msg.toLowerCase().includes("values don't match") ||
-              msg.toLowerCase().includes('match')
-            ) {
-              cleanMsg = 'Os dados informados não coincidem ou não são válidos'
+            const lowerMsg = msg.toLowerCase()
+            if (lowerMsg.includes("values don't match") || lowerMsg.includes('match')) {
+              cleanMsg = 'os dados informados não coincidem ou não são válidos'
             } else if (
-              msg.toLowerCase().includes('unique') ||
-              msg.toLowerCase().includes('already in use')
+              lowerMsg.includes('unique') ||
+              lowerMsg.includes('already in use') ||
+              lowerMsg.includes('exist')
             ) {
-              cleanMsg = 'Já cadastrado no sistema'
+              cleanMsg =
+                f === 'email' ? 'este e-mail já está cadastrado' : 'já cadastrado no sistema'
+            } else if (lowerMsg.includes('cannot be blank') || lowerMsg.includes('required')) {
+              cleanMsg = 'campo obrigatório'
+            } else if (lowerMsg.includes('must be at least') || lowerMsg.includes('min')) {
+              cleanMsg = 'tamanho mínimo não atingido'
+            } else if (lowerMsg.includes('invalid') || lowerMsg.includes('valid email')) {
+              cleanMsg = 'formato inválido'
             }
             return `${fieldNameMap[f] || f}: ${cleanMsg}`
           })
@@ -106,14 +131,19 @@ export default function AdminNewMember() {
         toast.error(`Erro ao cadastrar membro: ${details}`)
       } else {
         const errorMsg = getErrorMessage(err)
+        const lowerError = errorMsg.toLowerCase()
         if (
-          errorMsg.toLowerCase().includes('unique') ||
-          errorMsg.toLowerCase().includes('already in use') ||
-          errorMsg.toLowerCase().includes('exist')
+          lowerError.includes('unique') ||
+          lowerError.includes('already in use') ||
+          (lowerError.includes('email') && lowerError.includes('exist'))
         ) {
-          toast.error('Este e-mail já está cadastrado no sistema. Use outro endereço.')
-        } else if (errorMsg.toLowerCase().includes("values don't match")) {
+          toast.error('este e-mail já está cadastrado')
+        } else if (lowerError.includes("values don't match")) {
           toast.error('Erro na validação dos campos. Verifique as credenciais e tente novamente.')
+        } else if (lowerError.includes('failed to create record')) {
+          toast.error(
+            'Erro ao cadastrar membro: verifique se os dados estão preenchidos corretamente.',
+          )
         } else {
           toast.error(`Erro ao cadastrar membro: ${errorMsg || 'Verifique os dados informados.'}`)
         }
