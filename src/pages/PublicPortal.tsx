@@ -51,12 +51,22 @@ import {
   getEdvancedCastEpisodes,
   getAllMaterials,
   getTestimonials,
+  getClubBenefits,
+  getClubSpacesPhotos,
   getFileUrl,
   createEdvancedCastEpisode,
   updateEdvancedCastEpisode,
   deleteEdvancedCastEpisode,
 } from '@/services/api'
-import type { Meeting, EdvancedCastEpisode, Material, Testimonial } from '@/types'
+import type {
+  Meeting,
+  EdvancedCastEpisode,
+  Material,
+  Testimonial,
+  ClubBenefit,
+  ClubSpacePhoto,
+} from '@/types'
+import { AVAILABLE_ICONS } from '@/pages/AdminClubSelection'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -137,6 +147,9 @@ export default function PublicPortal() {
   const [episodes, setEpisodes] = useState<EdvancedCastEpisode[]>([])
   const [materials, setMaterials] = useState<Material[]>([])
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [benefits, setBenefits] = useState<ClubBenefit[]>([])
+  const [spacesPhotos, setSpacesPhotos] = useState<ClubSpacePhoto[]>([])
+  const [previewSpacePhoto, setPreviewSpacePhoto] = useState<ClubSpacePhoto | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   // Search and filters for Public Events
@@ -197,16 +210,20 @@ export default function PublicPortal() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const [meets, eps, mats, tests] = await Promise.all([
+      const [meets, eps, mats, tests, bnf, spaces] = await Promise.all([
         getMeetings().catch(() => [] as Meeting[]),
         getEdvancedCastEpisodes().catch(() => [] as EdvancedCastEpisode[]),
         getAllMaterials().catch(() => [] as Material[]),
         getTestimonials().catch(() => [] as Testimonial[]),
+        getClubBenefits().catch(() => [] as ClubBenefit[]),
+        getClubSpacesPhotos().catch(() => [] as ClubSpacePhoto[]),
       ])
       setMeetings(meets)
       setEpisodes(eps)
       setMaterials(mats)
       setTestimonials(tests)
+      setBenefits(bnf)
+      setSpacesPhotos(spaces)
     } catch (err) {
       console.error('Erro ao carregar dados da página pública:', err)
     } finally {
@@ -297,6 +314,21 @@ export default function PublicPortal() {
     }
     return ''
   }
+
+  const getSpacePhotoSrc = (sp: ClubSpacePhoto) => {
+    if (sp.photo) {
+      return getFileUrl('club_spaces_photos', sp.id, sp.photo)
+    }
+    if (sp.photo_url) {
+      return sp.photo_url
+    }
+    return ''
+  }
+
+  const WHATSAPP_NUMBER = '5565981003969'
+  const WHATSAPP_SELECTION_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    'Olá! Gostaria de mais informações sobre o processo de Seleção de Membros e benefícios do Edvanced Business Club.',
+  )}`
 
   const getEpisodeShareUrl = (ep: EdvancedCastEpisode) => {
     const origin = window.location.origin
@@ -838,7 +870,380 @@ export default function PublicPortal() {
       {/* =========================================================================
           3. MAIN CONTENT (SEÇÕES COM FUNDO CLARO, CARDS BRANCOS E ALTO CONTRASTE)
          ========================================================================= */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-12 animate-fade-in">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-16 animate-fade-in">
+        {/* =====================================================================
+            SEÇÃO DE DESTAQUE: SELEÇÃO DE MEMBROS (PROPOSTA EXCLUSIVA)
+            (Posicionada logo após o Hero Institucional e antes da seção de Eventos)
+           ===================================================================== */}
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#061020] border border-[#D4AF37]/40 shadow-2xl p-6 sm:p-10 md:p-12 text-white">
+          {/* Ambient Glows */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -top-24 right-1/4 w-[500px] h-[300px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 -left-20 w-[400px] h-[300px] bg-[#0055B8]/20 rounded-full blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:32px_32px] opacity-10" />
+          </div>
+
+          <div className="relative z-10 space-y-12">
+            {/* Header da Seção de Seleção */}
+            <div className="text-center max-w-3xl mx-auto space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020] border border-[#D4AF37]/50 text-[#F5D77F] text-xs font-black uppercase tracking-widest shadow-lg shadow-[#D4AF37]/15">
+                <Crown className="w-4 h-4 text-[#D4AF37]" />
+                <span>Proposta Exclusiva &bull; Edvanced Business Club</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                Seleção de{' '}
+                <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
+                  Membros
+                </span>
+              </h2>
+
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+                Faça parte de um ambiente de alta performance criado para empresários, líderes e
+                profissionais em constante movimento.
+              </p>
+
+              {isAdmin && (
+                <div className="pt-2">
+                  <Link to="/admin/selecao-membros">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-[#D4AF37]/70 text-[#F5D77F] bg-[#061020]/90 hover:bg-[#0A1A33] text-xs font-bold rounded-xl"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" /> Gerenciar Benefícios &
+                      Fotos (Painel Adm)
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* ================= BLOCO 1: "PARA QUEM É" ================= */}
+            <div className="bg-gradient-to-br from-[#061020]/95 via-[#0A1A33]/90 to-[#061020]/95 rounded-3xl p-6 sm:p-8 md:p-10 border border-[#D4AF37]/35 shadow-xl space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center shadow-md">
+                    <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-[#F5D77F]" />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#D4AF37] block">
+                      Manifesto do Club
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-white">Para Quem É</h3>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-bold">
+                  <span>O lugar certo &bull; As pessoas certas &bull; As oportunidades certas</span>
+                </div>
+              </div>
+
+              {/* Textos exatos extraídos do PDF de divulgação */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-7 space-y-5">
+                  <div className="relative pl-6 border-l-2 border-[#D4AF37] space-y-3">
+                    <p className="text-base sm:text-lg md:text-xl text-slate-100 font-medium leading-relaxed">
+                      &ldquo;Empresários de alta performance não crescem apenas através de
+                      conhecimento. Acontece também pelos ambientes que você frequenta, pelas
+                      pessoas com quem se conecta e pelas decisões que passa a tomar.&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <p className="text-sm sm:text-base text-[#F5D77F] font-bold">
+                      Foi exatamente por isso que nasceu o Edvanced Business Club.
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Um clube empresarial exclusivo criado para empresários, líderes e
+                      profissionais que desejam evoluir continuamente, compartilhar experiências e
+                      gerar oportunidades reais de crescimento.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Pilares do Perfil de Membros */}
+                <div className="lg:col-span-5 space-y-3">
+                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                      <span>Empreendedores & Founders</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                      Que desejam acelerar seu crescimento com estratégia e conexões de alto nível.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                      <span>Empresários & Executivos</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                      Que buscam estruturar, fortalecer governança e expandir seus negócios.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                      <span>Líderes de Mercado</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                      Que buscam desenvolver pessoas, equipes e resultados exponenciais.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ================= BLOCO 2: "BENEFÍCIOS" ================= */}
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    O que você recebe ao ser selecionado
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Benefícios Exclusivos do Club
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                    Uma infraestrutura completa de ambiência, conteúdos estratégicos e conexões de
+                    negócios para impulsionar a sua jornada.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
+                    {benefits.length} Benefício(s) Inclusos
+                  </span>
+                </div>
+              </div>
+
+              {/* Grid de Cards de Benefícios */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {benefits.map((benefit) => {
+                  const IconComp = AVAILABLE_ICONS[benefit.icon_name || 'Sparkles'] || Sparkles
+                  return (
+                    <div
+                      key={benefit.id}
+                      className="group relative rounded-3xl bg-gradient-to-b from-[#0A1A33] to-[#061020] border border-white/10 hover:border-[#D4AF37] p-6 shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/10 transition-all duration-300 flex flex-col justify-between"
+                    >
+                      <div className="space-y-4">
+                        {/* Top Icon + Category */}
+                        <div className="flex items-center justify-between">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#B89324] p-[1.5px] flex items-center justify-center shadow-md">
+                            <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center group-hover:bg-[#0A1A33] transition-colors">
+                              <IconComp className="w-6 h-6 text-[#F5D77F] group-hover:scale-110 transition-transform" />
+                            </div>
+                          </div>
+
+                          {benefit.category && (
+                            <Badge className="bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F5D77F] text-[9px] font-extrabold uppercase tracking-wider">
+                              {benefit.category}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Text */}
+                        <div className="space-y-2">
+                          <h4 className="text-base sm:text-lg font-black text-white group-hover:text-[#F5D77F] transition-colors leading-snug">
+                            {benefit.title}
+                          </h4>
+                          <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {benefit.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-[#F5D77F]">
+                        <span className="font-bold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                          Incluso para Membros
+                        </span>
+                        <Sparkles className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* ================= BLOCO 3: "CONHEÇA O LOCAL E AS SALAS" ================= */}
+            <div className="space-y-6 pt-4 border-t border-white/10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
+                    <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    Infraestrutura Premium
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Conheça o Local e as Salas
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                    Tenha acesso exclusivo a um ambiente empresarial moderno e de alto padrão (Sala
+                    de Reunião e Sala Compartilhada) sem os altos custos fixos de manter uma
+                    estrutura própria.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
+                    {spacesPhotos.length} Foto(s) dos Ambientes
+                  </span>
+                </div>
+              </div>
+
+              {/* Galeria de Fotos Reais */}
+              {spacesPhotos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {spacesPhotos.map((photoItem) => {
+                    const src = getSpacePhotoSrc(photoItem)
+                    return (
+                      <div
+                        key={photoItem.id}
+                        onClick={() => setPreviewSpacePhoto(photoItem)}
+                        className="group relative rounded-3xl overflow-hidden bg-[#061020] border border-white/10 hover:border-[#D4AF37] shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                      >
+                        {/* Imagem */}
+                        <div className="relative aspect-[16/10] w-full bg-[#0A1A33] overflow-hidden">
+                          {src ? (
+                            <img
+                              src={src}
+                              alt={photoItem.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                              <Building2 className="w-10 h-10 text-[#F5D77F] mb-2" />
+                              <span className="text-[11px] font-black uppercase text-[#F5D77F]">
+                                {photoItem.title}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+
+                          {/* Tipo de Espaço */}
+                          <div className="absolute top-3 left-3">
+                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
+                              {photoItem.space_type || 'Espaço Edvanced'}
+                            </Badge>
+                          </div>
+
+                          {/* Hover Zoom Icon */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                              <Eye className="w-5 h-5" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 space-y-1.5">
+                          <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2">
+                            {photoItem.title}
+                          </h4>
+                          {photoItem.caption && (
+                            <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                              {photoItem.caption}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-5 pt-0 flex items-center justify-between text-[11px] text-[#F5D77F] border-t border-white/5 mt-1">
+                          <span className="font-bold flex items-center gap-1">
+                            <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                            Estrutura Oficial
+                          </span>
+                          <span className="text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
+                            Ampliar foto &rarr;
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                /* Fallback informativo se o admin ainda não tiver feito upload das fotos reais */
+                <div className="rounded-3xl bg-[#061020]/90 border border-dashed border-[#D4AF37]/40 p-8 sm:p-12 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-3xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center mx-auto text-[#F5D77F]">
+                    <Building2 className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1 max-w-lg mx-auto">
+                    <h4 className="font-black text-lg text-white">
+                      Estrutura Física do Ecossistema Edvanced
+                    </h4>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Salas de reunião executivas e salas compartilhadas de alto padrão para
+                      potencializar sua produtividade e realizar reuniões estratégicas com seus
+                      parceiros.
+                    </p>
+                  </div>
+                  {isAdmin ? (
+                    <Link to="/admin/selecao-membros">
+                      <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
+                        <Upload className="w-4 h-4 mr-1.5" /> Fazer Upload das Fotos Reais (Painel
+                        Adm)
+                      </Button>
+                    </Link>
+                  ) : (
+                    <a href={WHATSAPP_SELECTION_URL} target="_blank" rel="noopener noreferrer">
+                      <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
+                        <MessageCircle className="w-4 h-4 mr-1.5" /> Solicitar Apresentação do
+                        Espaço
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ================= BOTÃO "MAIS INFORMAÇÕES" EM DESTAQUE ================= */}
+            {/* Sem NENHUM valor/preço/mensalidade exibido, conforme regra obrigatória */}
+            <div className="rounded-3xl bg-gradient-to-r from-[#061020] via-[#0D2142] to-[#061020] border-2 border-[#D4AF37]/60 p-8 sm:p-10 text-center space-y-5 shadow-2xl">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-wider">
+                <Crown className="w-4 h-4 text-[#D4AF37]" />
+                Vagas Limitadas &bull; Processo Seletivo
+              </div>
+
+              <div className="space-y-2 max-w-2xl mx-auto">
+                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                  Pronto para transformar a ambiência e as conexões do seu negócio?
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  Entre em contato com a equipe de curadoria do Edvanced Business Club para
+                  consultar critérios de seleção de membros, disponibilidade de salas e benefícios
+                  exclusivos.
+                </p>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href={WHATSAPP_SELECTION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto"
+                >
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-sm uppercase tracking-wider py-6 px-8 rounded-2xl shadow-xl shadow-[#D4AF37]/30 hover:scale-105 transition-all flex items-center justify-center gap-2.5">
+                    <MessageCircle className="w-5 h-5 text-slate-950 fill-current" />
+                    <span>Mais Informações sobre Seleção de Membros</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </a>
+              </div>
+
+              <p className="text-[11px] text-slate-400">
+                Atendimento direto via WhatsApp com a nossa curadoria executiva.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* =====================================================================
             ABA 1: EVENTOS OFICIAIS DO CLUB COM INSCRIÇÃO EXTERNA
            ===================================================================== */}
@@ -2110,6 +2515,70 @@ export default function PublicPortal() {
           </div>
         </div>
       </footer>
+
+      {/* =========================================================================
+          MODAL PREVIEW DE FOTO DO LOCAL E SALAS (GALERIA)
+         ========================================================================= */}
+      {previewSpacePhoto && (
+        <Dialog
+          open={!!previewSpacePhoto}
+          onOpenChange={(open) => !open && setPreviewSpacePhoto(null)}
+        >
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
+                  {previewSpacePhoto.space_type || 'Espaço Edvanced'}
+                </Badge>
+              </div>
+
+              <DialogTitle className="text-xl md:text-2xl font-black text-white leading-tight">
+                {previewSpacePhoto.title}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="my-4">
+              <div className="relative w-full max-h-[65vh] bg-black/60 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                {getSpacePhotoSrc(previewSpacePhoto) ? (
+                  <img
+                    src={getSpacePhotoSrc(previewSpacePhoto)}
+                    alt={previewSpacePhoto.title}
+                    className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+                  />
+                ) : (
+                  <div className="p-12 text-center text-slate-400">
+                    <Building2 className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
+                    <p className="text-xs">Foto do ambiente.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {previewSpacePhoto.caption && (
+              <div className="p-4 bg-[#061020] rounded-2xl border border-slate-800 text-xs text-slate-200 leading-relaxed">
+                <p className="whitespace-pre-wrap">{previewSpacePhoto.caption}</p>
+              </div>
+            )}
+
+            <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewSpacePhoto(null)}
+                className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                Fechar
+              </Button>
+
+              <a href={WHATSAPP_SELECTION_URL} target="_blank" rel="noopener noreferrer">
+                <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Mais Informações sobre as Salas</span>
+                </Button>
+              </a>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* =========================================================================
           MODAL PREVIEW DE MÍDIA / MATERIAL PÚBLICO (FOTO / VÍDEO / DOCUMENTO)

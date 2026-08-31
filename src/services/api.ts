@@ -1,5 +1,14 @@
 import pb from '@/lib/pocketbase/client'
-import type { Meeting, Material, Disclosure, User, EdvancedCastEpisode, Testimonial } from '@/types'
+import type {
+  Meeting,
+  Material,
+  Disclosure,
+  User,
+  EdvancedCastEpisode,
+  Testimonial,
+  ClubBenefit,
+  ClubSpacePhoto,
+} from '@/types'
 
 // Helper to get file URL
 export function getFileUrl(collectionIdOrName: string, recordId: string, filename: string): string {
@@ -257,4 +266,64 @@ export async function updateTestimonial(
 
 export async function deleteTestimonial(id: string): Promise<boolean> {
   return pb.collection('testimonials').delete(id)
+}
+
+// CLUB BENEFITS (BENEFÍCIOS DO CLUB)
+export async function getClubBenefits(): Promise<ClubBenefit[]> {
+  return pb.collection('club_benefits').getFullList<ClubBenefit>({
+    filter: 'active = true',
+    sort: 'order,created',
+  })
+}
+
+export async function getAllClubBenefitsForAdmin(): Promise<ClubBenefit[]> {
+  return pb.collection('club_benefits').getFullList<ClubBenefit>({
+    sort: 'order,created',
+  })
+}
+
+export async function createClubBenefit(data: Partial<ClubBenefit>): Promise<ClubBenefit> {
+  return pb.collection('club_benefits').create<ClubBenefit>(data)
+}
+
+export async function updateClubBenefit(
+  id: string,
+  data: Partial<ClubBenefit>,
+): Promise<ClubBenefit> {
+  return pb.collection('club_benefits').update<ClubBenefit>(id, data)
+}
+
+export async function deleteClubBenefit(id: string): Promise<boolean> {
+  return pb.collection('club_benefits').delete(id)
+}
+
+// CLUB SPACES PHOTOS (FOTOS DO LOCAL E SALAS)
+export async function getClubSpacesPhotos(): Promise<ClubSpacePhoto[]> {
+  return pb.collection('club_spaces_photos').getFullList<ClubSpacePhoto>({
+    filter: 'active = true',
+    sort: 'order,created',
+  })
+}
+
+export async function getAllClubSpacesPhotosForAdmin(): Promise<ClubSpacePhoto[]> {
+  return pb.collection('club_spaces_photos').getFullList<ClubSpacePhoto>({
+    sort: 'order,created',
+  })
+}
+
+export async function createClubSpacePhoto(
+  data: Partial<ClubSpacePhoto> | FormData,
+): Promise<ClubSpacePhoto> {
+  return pb.collection('club_spaces_photos').create<ClubSpacePhoto>(data)
+}
+
+export async function updateClubSpacePhoto(
+  id: string,
+  data: Partial<ClubSpacePhoto> | FormData,
+): Promise<ClubSpacePhoto> {
+  return pb.collection('club_spaces_photos').update<ClubSpacePhoto>(id, data)
+}
+
+export async function deleteClubSpacePhoto(id: string): Promise<boolean> {
+  return pb.collection('club_spaces_photos').delete(id)
 }

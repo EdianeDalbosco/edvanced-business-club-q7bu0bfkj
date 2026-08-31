@@ -17,6 +17,7 @@ import Members from '@/pages/Members'
 import AdminApprovalQueue from '@/pages/AdminApprovalQueue'
 import AdminNewMember from '@/pages/AdminNewMember'
 import AdminTestimonials from '@/pages/AdminTestimonials'
+import AdminClubSelection from '@/pages/AdminClubSelection'
 import Profile from '@/pages/Profile'
 import PublicPortal from '@/pages/PublicPortal'
 import NotFound from '@/pages/NotFound'
@@ -131,6 +132,16 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminTestimonials />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Club Selection (Benefícios & Fotos dos Espaços) */}
+            <Route
+              path="/admin/selecao-membros"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminClubSelection />
                 </ProtectedRoute>
               }
             />

@@ -143,6 +143,11 @@ export default function Layout() {
       icon: UserCheck,
     },
     {
+      label: 'Benefícios & Fotos Espaços',
+      path: '/admin/selecao-membros',
+      icon: Crown,
+    },
+    {
       label: 'Depoimentos de Membros',
       path: '/admin/depoimentos',
       icon: Sparkles,
@@ -586,6 +591,9 @@ export default function Layout() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/membros/novo')}>
                         <UserCheck className="w-4 h-4 mr-2 text-[#D4AF37]" /> Cadastrar Novo Membro
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/selecao-membros')}>
+                        <Crown className="w-4 h-4 mr-2 text-[#D4AF37]" /> Benefícios & Fotos Salas
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/depoimentos')}>
                         <Sparkles className="w-4 h-4 mr-2 text-[#D4AF37]" /> Gerenciar Depoimentos

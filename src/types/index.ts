@@ -85,3 +85,22 @@ export interface Testimonial extends RecordModel {
   order?: number
   featured?: boolean
 }
+
+export interface ClubBenefit extends RecordModel {
+  title: string
+  description: string
+  icon_name?: string
+  category?: string
+  order?: number
+  active?: boolean
+}
+
+export interface ClubSpacePhoto extends RecordModel {
+  title: string
+  caption?: string
+  photo?: string
+  photo_url?: string
+  space_type?: string
+  order?: number
+  active?: boolean
+}
