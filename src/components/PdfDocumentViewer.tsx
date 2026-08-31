@@ -488,9 +488,9 @@ export default function PdfDocumentViewer({
               <canvas ref={canvasRef} className="block mx-auto max-w-full h-auto" />
             </div>
 
-            {/* Floating bottom pagination controller */}
+            {/* Floating bottom pagination controller with direct Quick Page Selector */}
             {numPages > 1 && (
-              <div className="sticky bottom-3 mt-4 flex items-center justify-center gap-2 z-20">
+              <div className="sticky bottom-3 mt-4 flex flex-wrap items-center justify-center gap-2 z-20">
                 <div className="bg-[#0A1A33]/95 backdrop-blur-md px-4 py-2 rounded-full border border-[#D4AF37]/40 shadow-2xl flex items-center gap-2 text-xs">
                   <Button
                     size="sm"
@@ -502,7 +502,7 @@ export default function PdfDocumentViewer({
                     <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
                   </Button>
                   <span className="font-black text-[#F5D77F] text-xs px-2 min-w-[75px] text-center">
-                    {currentPage} de {numPages}
+                    Página {currentPage} de {numPages}
                   </span>
                   <Button
                     size="sm"
@@ -514,6 +514,15 @@ export default function PdfDocumentViewer({
                     Próxima <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('all')}
+                  className="bg-[#061020]/95 hover:bg-[#D4AF37] hover:text-slate-950 text-slate-200 border border-[#D4AF37]/40 px-3 py-2 rounded-full text-xs font-bold transition-all shadow-lg flex items-center gap-1.5"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Ver todas ({numPages}) em rolagem</span>
+                </button>
               </div>
             )}
           </div>

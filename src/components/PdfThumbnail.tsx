@@ -182,18 +182,18 @@ export default function PdfThumbnail({
             <FileText className="w-6 h-6" />
           </div>
           <span className="text-[11px] font-black uppercase tracking-wider text-[#F5D77F]">
-            Slides / Apresentação
+            Documento PDF
           </span>
           <span className="text-[9px] text-slate-400 mt-0.5">Leitor de PDF Integrado</span>
         </div>
       )}
 
-      {/* Presentation Badge overlay if requested */}
+      {/* PDF Badge overlay if requested */}
       {showBadge && (
         <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
           <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#D4AF37] text-slate-950 shadow-md">
             <Sparkles className="w-2.5 h-2.5 fill-current" />
-            PDF / Slides
+            PDF
           </span>
         </div>
       )}

@@ -1644,9 +1644,7 @@ export default function MeetingsAndMaterials() {
                                       ? 'Apresentação em Slides'
                                       : isWord
                                         ? 'Documento Word'
-                                        : isPdf
-                                          ? 'Documento PDF (Leitor)'
-                                          : 'Documento Executivo'}
+                                        : 'Documento Executivo'}
                                 </span>
                               </div>
                             )}
@@ -1656,14 +1654,14 @@ export default function MeetingsAndMaterials() {
                             <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
                               <Badge
                                 className={`text-[9px] uppercase font-bold tracking-wider ${
-                                  isExcel
-                                    ? 'bg-emerald-600 text-white'
-                                    : isPowerPoint
-                                      ? 'bg-amber-600 text-slate-950'
-                                      : isWord
-                                        ? 'bg-sky-600 text-white'
-                                        : isPdf
-                                          ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black'
+                                  isPdf
+                                    ? 'bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black'
+                                    : isExcel
+                                      ? 'bg-emerald-600 text-white'
+                                      : isPowerPoint
+                                        ? 'bg-amber-600 text-slate-950'
+                                        : isWord
+                                          ? 'bg-sky-600 text-white'
                                           : 'bg-blue-600 text-white'
                                 }`}
                               >
