@@ -33,7 +33,8 @@ export interface Meeting extends RecordModel {
 export interface EdvancedCastEpisode extends RecordModel {
   title: string
   description?: string
-  video_url: string
+  video_url?: string
+  video_file?: string
   thumbnail_url?: string
   cover_image?: string
   episode_number?: number

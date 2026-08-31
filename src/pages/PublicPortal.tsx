@@ -46,6 +46,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import heroEdianeBg from '../assets/hero-ediane-sala-business.jpeg'
 import salaReuniaoImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-1-2d279.jpeg'
 import salaCompartilhadaImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-c0958.jpeg'
 import {
@@ -334,9 +335,7 @@ export default function PublicPortal() {
   }
 
   const WHATSAPP_NUMBER = '5565981003969'
-  const WHATSAPP_SELECTION_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    'Olá! Gostaria de mais informações sobre o processo de Seleção de Membros e benefícios do Edvanced Business Club.',
-  )}`
+  const WHATSAPP_SELECTION_URL = `https://wa.me/${WHATSAPP_NUMBER}`
 
   const getEpisodeShareUrl = (ep: EdvancedCastEpisode) => {
     const origin = window.location.origin
@@ -361,7 +360,7 @@ export default function PublicPortal() {
     const text = encodeURIComponent(
       `🎙️ Assista ao EdvancedCast${epNumberStr}: "${ep.title}" no Edvanced Business Club!\n\nConfira o episódio completo:\n${url}`,
     )
-    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank', 'noopener,noreferrer')
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 
   const getMeetingStatus = (meeting: Meeting) => {
@@ -761,116 +760,129 @@ export default function PublicPortal() {
       </header>
 
       {/* =========================================================================
-          2. INSTITUTIONAL HERO SECTION (Dark Navy + Pure Gold Glow)
+          2. INSTITUTIONAL HERO SECTION (Fundo com Imagem da Ediane e Logo)
+             Textos posicionados à esquerda sobre o fundo escuro, Ediane visível à direita
          ========================================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#040B17] text-white py-14 sm:py-18 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-2xl">
-        {/* Soft Gold & Ambient Background Lights */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -right-20 w-[400px] h-[300px] bg-[#0055B8]/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 -left-20 w-[400px] h-[300px] bg-[#997300]/15 rounded-full blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:28px_28px] opacity-10" />
+      <section className="relative overflow-hidden bg-[#030914] text-white py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-[#D4AF37]/30 shadow-2xl min-h-[560px] flex items-center">
+        {/* Background Hero Image (Logo à esquerda, Ediane e Sala à direita) */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={heroEdianeBg}
+            alt="Edvanced Business Club - Ediane Dal Bosco"
+            className="w-full h-full object-cover object-right sm:object-center filter brightness-90 contrast-105"
+          />
+          {/* Degradê de alto contraste para garantir leitura impecável dos textos à esquerda */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#030914] via-[#030914]/90 sm:via-[#030914]/80 to-transparent w-full md:w-[75%]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#030914] via-transparent to-[#030914]/50" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-5">
-          {/* Top pill badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020]/80 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#D4AF37]/10 backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
-            <span>Ecossistema de Alta Governança & Negócios</span>
-          </div>
+        {/* Soft Ambient Glows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-1">
+          <div className="absolute -top-24 left-10 w-[500px] h-[350px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[250px] bg-[#0055B8]/20 rounded-full blur-3xl" />
+        </div>
 
-          {/* Main Hero Headline */}
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.15]">
-              Edvanced Business Club &{' '}
-              <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
-                EdvancedCast
-              </span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg text-slate-200/90 max-w-3xl mx-auto leading-relaxed font-normal">
-              Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do podcast com
-              grandes líderes de mercado e consulte a galeria e acervo do Club.
-            </p>
-          </div>
+        <div className="relative z-10 max-w-7xl mx-auto w-full">
+          <div className="max-w-2xl lg:max-w-3xl space-y-6 text-left">
+            {/* Top pill badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020]/90 border border-[#D4AF37]/50 text-[#F5D77F] text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#D4AF37]/15 backdrop-blur-md">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
+              <span>Ecossistema de Alta Governança & Negócios</span>
+            </div>
 
-          {/* Value props badges / pillars */}
-          <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Crown className="w-4 h-4 text-[#F5D77F]" />
+            {/* Main Hero Headline */}
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
+                Edvanced Business Club &{' '}
+                <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(212,175,55,0.45)]">
+                  EdvancedCast
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg text-slate-200/95 max-w-xl leading-relaxed font-normal drop-shadow-md">
+                Acompanhe a agenda oficial de eventos, assista aos episódios exclusivos do podcast
+                com grandes líderes de mercado e consulte a galeria e acervo do Club.
+              </p>
+            </div>
+
+            {/* Value props badges / pillars */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-w-2xl pt-1">
+              <div className="p-3 rounded-2xl bg-[#061020]/85 border border-[#D4AF37]/30 backdrop-blur-md text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Crown className="w-4 h-4 text-[#F5D77F]" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-white">Alta Governança</p>
+                  <p className="text-[10px] text-slate-300 font-medium">Institucional</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[11px] font-extrabold text-white">Alta Governança</p>
-                <p className="text-[10px] text-slate-300 font-medium">Padrão institucional</p>
+
+              <div className="p-3 rounded-2xl bg-[#061020]/85 border border-[#D4AF37]/30 backdrop-blur-md text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <TrendingUp className="w-4 h-4 text-[#F5D77F]" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-white">Geração de Valor</p>
+                  <p className="text-[10px] text-slate-300 font-medium">Negócios & M&A</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-[#061020]/85 border border-[#D4AF37]/30 backdrop-blur-md text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Building2 className="w-4 h-4 text-[#F5D77F]" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-white">Grandes Líderes</p>
+                  <p className="text-[10px] text-slate-300 font-medium">C-Level & Founders</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-[#061020]/85 border border-[#D4AF37]/30 backdrop-blur-md text-left flex items-center gap-2.5 hover:border-[#D4AF37] transition-colors shadow-lg">
+                <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Globe2 className="w-4 h-4 text-[#F5D77F]" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-white">Eventos Oficiais</p>
+                  <p className="text-[10px] text-slate-300 font-medium">Presencial & Online</p>
+                </div>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <TrendingUp className="w-4 h-4 text-[#F5D77F]" />
-              </div>
-              <div>
-                <p className="text-[11px] font-extrabold text-white">Geração de Valor</p>
-                <p className="text-[10px] text-slate-300 font-medium">Negócios & M&A</p>
-              </div>
+            {/* Quick tab switcher pill in hero */}
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setTab('eventos')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'eventos'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
+                }`}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                <span>Eventos Oficiais ({meetings.length})</span>
+              </button>
+              <button
+                onClick={() => setTab('podcast')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'podcast'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
+                }`}
+              >
+                <Tv className="w-4 h-4" />
+                <span>EdvancedCast ({episodes.length})</span>
+              </button>
+              <button
+                onClick={() => setTab('materiais')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'materiais'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
+                }`}
+              >
+                <FolderOpen className="w-4 h-4" />
+                <span>Materiais & Galeria ({materials.length})</span>
+              </button>
             </div>
-
-            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Building2 className="w-4 h-4 text-[#F5D77F]" />
-              </div>
-              <div>
-                <p className="text-[11px] font-extrabold text-white">Grandes Líderes</p>
-                <p className="text-[10px] text-slate-300 font-medium">C-Level & Founders</p>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-[#061020]/80 border border-[#D4AF37]/25 backdrop-blur-sm text-left flex items-center gap-2.5 hover:border-[#D4AF37]/60 transition-colors">
-              <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Globe2 className="w-4 h-4 text-[#F5D77F]" />
-              </div>
-              <div>
-                <p className="text-[11px] font-extrabold text-white">Eventos Oficiais</p>
-                <p className="text-[10px] text-slate-300 font-medium">Presencial & Online</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick tab switcher pill in hero */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => setTab('eventos')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
-                activeTab === 'eventos'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
-              }`}
-            >
-              <CalendarIcon className="w-4 h-4" />
-              <span>Eventos Oficiais ({meetings.length})</span>
-            </button>
-            <button
-              onClick={() => setTab('podcast')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
-                activeTab === 'podcast'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
-              }`}
-            >
-              <Tv className="w-4 h-4" />
-              <span>EdvancedCast ({episodes.length})</span>
-            </button>
-            <button
-              onClick={() => setTab('materiais')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
-                activeTab === 'materiais'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
-                  : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/10 hover:border-[#D4AF37]/50'
-              }`}
-            >
-              <FolderOpen className="w-4 h-4" />
-              <span>Materiais & Galeria ({materials.length})</span>
-            </button>
           </div>
         </div>
       </section>
