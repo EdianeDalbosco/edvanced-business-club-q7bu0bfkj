@@ -138,12 +138,18 @@ export default function PublicPortal() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
 
-  // Tab switch: 'eventos' | 'podcast' | 'materiais'
+  // Tab switch: 'sobre' | 'eventos' | 'podcast' | 'materiais'
   const rawTab = searchParams.get('aba')
-  const activeTab: 'eventos' | 'podcast' | 'materiais' =
-    rawTab === 'podcast' ? 'podcast' : rawTab === 'materiais' ? 'materiais' : 'eventos'
+  const activeTab: 'sobre' | 'eventos' | 'podcast' | 'materiais' =
+    rawTab === 'sobre'
+      ? 'sobre'
+      : rawTab === 'podcast'
+        ? 'podcast'
+        : rawTab === 'materiais'
+          ? 'materiais'
+          : 'eventos'
 
-  const setTab = (tab: 'eventos' | 'podcast' | 'materiais') => {
+  const setTab = (tab: 'sobre' | 'eventos' | 'podcast' | 'materiais') => {
     setSearchParams({ aba: tab })
   }
 
@@ -669,11 +675,24 @@ export default function PublicPortal() {
           </Link>
 
           {/* Tab Navigation Center (Desktop) */}
-          <nav className="hidden md:flex items-center gap-1.5 bg-[#0A1A33] p-1.5 rounded-2xl border border-white/10 shadow-inner">
+          <nav className="hidden md:flex items-center gap-1 bg-[#0A1A33] p-1.5 rounded-2xl border border-white/10 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setTab('sobre')}
+              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                activeTab === 'sobre'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Crown className="w-4 h-4" />
+              <span>Sobre o Business Club</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setTab('eventos')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'eventos'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -686,7 +705,7 @@ export default function PublicPortal() {
             <button
               type="button"
               onClick={() => setTab('podcast')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'podcast'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -703,7 +722,7 @@ export default function PublicPortal() {
             <button
               type="button"
               onClick={() => setTab('materiais')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                 activeTab === 'materiais'
                   ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -738,42 +757,54 @@ export default function PublicPortal() {
         </div>
 
         {/* Mobile Tab switcher */}
-        <div className="md:hidden flex border-t border-white/10 bg-[#061020]">
+        <div className="md:hidden grid grid-cols-4 border-t border-white/10 bg-[#061020]">
+          <button
+            type="button"
+            onClick={() => setTab('sobre')}
+            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+              activeTab === 'sobre'
+                ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Crown className="w-3.5 h-3.5" />
+            <span>Sobre</span>
+          </button>
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'eventos'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
-            Eventos
+            <span>Eventos</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'podcast'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Mic className="w-3.5 h-3.5" />
-            EdvancedCast
+            <span>Cast</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('materiais')}
-            className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'materiais'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            Materiais
+            <span>Galeria</span>
           </button>
         </div>
       </header>
@@ -869,6 +900,17 @@ export default function PublicPortal() {
             {/* Quick tab switcher pill in hero */}
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <button
+                onClick={() => setTab('sobre')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'sobre'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
+                }`}
+              >
+                <Crown className="w-4 h-4" />
+                <span>Sobre o Business Club</span>
+              </button>
+              <button
                 onClick={() => setTab('eventos')}
                 className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                   activeTab === 'eventos'
@@ -899,7 +941,7 @@ export default function PublicPortal() {
                 }`}
               >
                 <FolderOpen className="w-4 h-4" />
-                <span>Galeria de Fotos & Vídeos ({publicMaterialsOnly.length})</span>
+                <span>Galeria ({publicMaterialsOnly.length})</span>
               </button>
             </div>
           </div>
@@ -911,378 +953,515 @@ export default function PublicPortal() {
          ========================================================================= */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-16 animate-fade-in">
         {/* =====================================================================
-            SEÇÃO DE DESTAQUE: SELEÇÃO DE MEMBROS (PROPOSTA EXCLUSIVA)
-            (Posicionada logo após o Hero Institucional e antes da seção de Eventos)
+            ABA: SOBRE O BUSINESS CLUB (INFORMAÇÕES INSTITUCIONAIS COMPLETAS)
            ===================================================================== */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#061020] border border-[#D4AF37]/40 shadow-2xl p-6 sm:p-10 md:p-12 text-white">
-          {/* Ambient Glows */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute -top-24 right-1/4 w-[500px] h-[300px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 -left-20 w-[400px] h-[300px] bg-[#0055B8]/20 rounded-full blur-3xl" />
-            <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:32px_32px] opacity-10" />
-          </div>
-
-          <div className="relative z-10 space-y-12">
-            {/* Header da Seção de Seleção */}
-            <div className="text-center max-w-3xl mx-auto space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020] border border-[#D4AF37]/50 text-[#F5D77F] text-xs font-black uppercase tracking-widest shadow-lg shadow-[#D4AF37]/15">
-                <Crown className="w-4 h-4 text-[#D4AF37]" />
-                <span>Proposta Exclusiva &bull; Edvanced Business Club</span>
+        {activeTab === 'sobre' && (
+          <div className="space-y-12 animate-fade-in">
+            {/* Banner Institucional Principal */}
+            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#061020] via-[#0A1A33] to-[#061020] border border-[#D4AF37]/40 shadow-2xl p-6 sm:p-10 md:p-12 text-white">
+              {/* Ambient Glows */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-24 right-1/4 w-[500px] h-[300px] bg-[#D4AF37]/15 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 -left-20 w-[400px] h-[300px] bg-[#0055B8]/20 rounded-full blur-3xl" />
+                <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:32px_32px] opacity-10" />
               </div>
 
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                Seleção de{' '}
-                <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
-                  Membros
-                </span>
-              </h2>
-
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                Faça parte de um ambiente de alta performance criado para empresários, líderes e
-                profissionais em constante movimento.
-              </p>
-
-              {isAdmin && (
-                <div className="pt-2">
-                  <Link to="/admin/selecao-membros">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-[#D4AF37]/70 text-[#F5D77F] bg-[#061020]/90 hover:bg-[#0A1A33] text-xs font-bold rounded-xl"
-                    >
-                      <Edit2 className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" /> Gerenciar Benefícios &
-                      Fotos (Painel Adm)
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* ================= BLOCO 1: "PARA QUEM É" ================= */}
-            <div className="bg-gradient-to-br from-[#061020]/95 via-[#0A1A33]/90 to-[#061020]/95 rounded-3xl p-6 sm:p-8 md:p-10 border border-[#D4AF37]/35 shadow-xl space-y-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center shadow-md">
-                    <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-[#F5D77F]" />
-                    </div>
+              <div className="relative z-10 space-y-12">
+                {/* Header Institucional */}
+                <div className="text-center max-w-3xl mx-auto space-y-4">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#061020] border border-[#D4AF37]/50 text-[#F5D77F] text-xs font-black uppercase tracking-widest shadow-lg shadow-[#D4AF37]/15">
+                    <Crown className="w-4 h-4 text-[#D4AF37]" />
+                    <span>Institucional &bull; Edvanced Business Club</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#D4AF37] block">
-                      Manifesto do Club
+
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                    Sobre o{' '}
+                    <span className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#FFF0B8] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
+                      Edvanced Business Club
                     </span>
-                    <h3 className="text-xl sm:text-2xl font-black text-white">Para Quem É</h3>
-                  </div>
-                </div>
+                  </h2>
 
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-bold">
-                  <span>O lugar certo &bull; As pessoas certas &bull; As oportunidades certas</span>
-                </div>
-              </div>
-
-              {/* Textos exatos extraídos do PDF de divulgação */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-7 space-y-5">
-                  <div className="relative pl-6 border-l-2 border-[#D4AF37] space-y-3">
-                    <p className="text-base sm:text-lg md:text-xl text-slate-100 font-medium leading-relaxed">
-                      &ldquo;Empresários de alta performance não crescem apenas através de
-                      conhecimento. Acontece também pelos ambientes que você frequenta, pelas
-                      pessoas com quem se conecta e pelas decisões que passa a tomar.&rdquo;
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <p className="text-sm sm:text-base text-[#F5D77F] font-bold">
-                      Foi exatamente por isso que nasceu o Edvanced Business Club.
-                    </p>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                      Um clube empresarial exclusivo criado para empresários, líderes e
-                      profissionais que desejam evoluir continuamente, compartilhar experiências e
-                      gerar oportunidades reais de crescimento.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Pilares do Perfil de Membros */}
-                <div className="lg:col-span-5 space-y-3">
-                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
-                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Empreendedores & Founders</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
-                      Que desejam acelerar seu crescimento com estratégia e conexões de alto nível.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
-                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Empresários & Executivos</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
-                      Que buscam estruturar, fortalecer governança e expandir seus negócios.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
-                    <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Líderes de Mercado</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
-                      Que buscam desenvolver pessoas, equipes e resultados exponenciais.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ================= BLOCO 2: "BENEFÍCIOS" ================= */}
-            <div className="space-y-6">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
-                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    O que você recebe ao ser selecionado
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    Benefícios Exclusivos do Club
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-                    Uma infraestrutura completa de ambiência, conteúdos estratégicos e conexões de
-                    negócios para impulsionar a sua jornada.
+                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+                    Ecossistema de Alta Governança & Negócios criado para empresários,
+                    empreendedores e líderes em constante evolução que buscam conexões estratégicas
+                    e geração de valor.
                   </p>
+
+                  {isAdmin && (
+                    <div className="pt-2">
+                      <Link to="/admin/selecao-membros">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-[#D4AF37]/70 text-[#F5D77F] bg-[#061020]/90 hover:bg-[#0A1A33] text-xs font-bold rounded-xl"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 mr-1 text-[#D4AF37]" /> Gerenciar Benefícios
+                          & Fotos (Painel Adm)
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
-                    {benefits.length} Benefício(s) Inclusos
-                  </span>
-                </div>
-              </div>
+                {/* ================= OS 4 PILARES ESTRATÉGICOS ================= */}
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#D4AF37] block">
+                      Fundamentos do Ecossistema
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-white">
+                      Os 4 Pilares do Edvanced Business Club
+                    </h3>
+                  </div>
 
-              {/* Grid de Cards de Benefícios */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {benefits.map((benefit) => {
-                  const IconComp = AVAILABLE_ICONS[benefit.icon_name || 'Sparkles'] || Sparkles
-                  return (
-                    <div
-                      key={benefit.id}
-                      className="group relative rounded-3xl bg-gradient-to-b from-[#0A1A33] to-[#061020] border border-white/10 hover:border-[#D4AF37] p-6 shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/10 transition-all duration-300 flex flex-col justify-between"
-                    >
-                      <div className="space-y-4">
-                        {/* Top Icon + Category */}
-                        <div className="flex items-center justify-between">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#B89324] p-[1.5px] flex items-center justify-center shadow-md">
-                            <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center group-hover:bg-[#0A1A33] transition-colors">
-                              <IconComp className="w-6 h-6 text-[#F5D77F] group-hover:scale-110 transition-transform" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                    <div className="p-5 rounded-2xl bg-[#0A1A33]/90 border border-[#D4AF37]/35 space-y-3 hover:border-[#D4AF37] transition-colors shadow-lg">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center">
+                        <div className="w-full h-full bg-[#061020] rounded-[10px] flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-[#F5D77F]" />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">Alta Governança</h4>
+                        <p className="text-xs text-[#F5D77F] font-bold">Institucional</p>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Estruturação corporativa, compliance, integridade nos processos e
+                        direcionamento sólido para sustentabilidade dos negócios.
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-[#0A1A33]/90 border border-[#D4AF37]/35 space-y-3 hover:border-[#D4AF37] transition-colors shadow-lg">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center">
+                        <div className="w-full h-full bg-[#061020] rounded-[10px] flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-[#F5D77F]" />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">Geração de Valor</h4>
+                        <p className="text-xs text-[#F5D77F] font-bold">Negócios & M&A</p>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Aceleração estratégica de resultados, atração de investimentos, fusões e
+                        aquisições com foco em escalabilidade real.
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-[#0A1A33]/90 border border-[#D4AF37]/35 space-y-3 hover:border-[#D4AF37] transition-colors shadow-lg">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center">
+                        <div className="w-full h-full bg-[#061020] rounded-[10px] flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-[#F5D77F]" />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">Grandes Líderes</h4>
+                        <p className="text-xs text-[#F5D77F] font-bold">C-Level & Founders</p>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Conexões qualificadas de alta densidade entre tomadores de decisão,
+                        presidentes de conselho e empresários seniores.
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-[#0A1A33]/90 border border-[#D4AF37]/35 space-y-3 hover:border-[#D4AF37] transition-colors shadow-lg">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center">
+                        <div className="w-full h-full bg-[#061020] rounded-[10px] flex items-center justify-center">
+                          <Globe2 className="w-5 h-5 text-[#F5D77F]" />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">Eventos Oficiais</h4>
+                        <p className="text-xs text-[#F5D77F] font-bold">Presencial & Online</p>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Encontros executivos periódicos, imersões estratégicas e summits desenhados
+                        para gerar conhecimento prático e negócios.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ================= BLOCO: "PARA QUEM É" ================= */}
+                <div className="bg-gradient-to-br from-[#061020]/95 via-[#0A1A33]/90 to-[#061020]/95 rounded-3xl p-6 sm:p-8 md:p-10 border border-[#D4AF37]/35 shadow-xl space-y-8">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] p-[1.5px] flex items-center justify-center shadow-md">
+                        <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center">
+                          <Sparkles className="w-5 h-5 text-[#F5D77F]" />
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#D4AF37] block">
+                          Manifesto do Club
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-black text-white">Para Quem É</h3>
+                      </div>
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5D77F] text-xs font-bold">
+                      <span>
+                        O lugar certo &bull; As pessoas certas &bull; As oportunidades certas
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div className="lg:col-span-7 space-y-5">
+                      <div className="relative pl-6 border-l-2 border-[#D4AF37] space-y-3">
+                        <p className="text-base sm:text-lg md:text-xl text-slate-100 font-medium leading-relaxed">
+                          &ldquo;Empresários de alta performance não crescem apenas através de
+                          conhecimento. Acontece também pelos ambientes que você frequenta, pelas
+                          pessoas com quem se conecta e pelas decisões que passa a tomar.&rdquo;
+                        </p>
+                      </div>
+
+                      <div className="space-y-3 pt-2">
+                        <p className="text-sm sm:text-base text-[#F5D77F] font-bold">
+                          Foi exatamente por isso que nasceu o Edvanced Business Club.
+                        </p>
+                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                          Um clube empresarial exclusivo criado para empresários, líderes e
+                          profissionais que desejam evoluir continuamente, compartilhar experiências
+                          e gerar oportunidades reais de crescimento.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Pilares do Perfil de Membros */}
+                    <div className="lg:col-span-5 space-y-3">
+                      <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                        <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                          <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                          <span>Empreendedores & Founders</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                          Que desejam acelerar seu crescimento com estratégia e conexões de alto
+                          nível.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                        <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                          <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                          <span>Empresários & Executivos</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                          Que buscam estruturar, fortalecer governança e expandir seus negócios.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/25 space-y-1.5">
+                        <div className="flex items-center gap-2 text-[#F5D77F] font-bold text-xs uppercase tracking-wide">
+                          <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                          <span>Líderes de Mercado</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 pl-6 leading-relaxed">
+                          Que buscam desenvolver pessoas, equipes e resultados exponenciais.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ================= BLOCO: "BENEFÍCIOS E DIFERENCIAIS" ================= */}
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        Diferenciais do Club
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        Benefícios Exclusivos do Club
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                        Uma infraestrutura completa de ambiência, conteúdos estratégicos e conexões
+                        de negócios para impulsionar a sua jornada.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
+                        {benefits.length} Benefício(s) Inclusos
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Grid de Cards de Benefícios */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {benefits.map((benefit) => {
+                      const IconComp = AVAILABLE_ICONS[benefit.icon_name || 'Sparkles'] || Sparkles
+                      return (
+                        <div
+                          key={benefit.id}
+                          className="group relative rounded-3xl bg-gradient-to-b from-[#0A1A33] to-[#061020] border border-white/10 hover:border-[#D4AF37] p-6 shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/10 transition-all duration-300 flex flex-col justify-between"
+                        >
+                          <div className="space-y-4">
+                            {/* Top Icon + Category */}
+                            <div className="flex items-center justify-between">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#B89324] p-[1.5px] flex items-center justify-center shadow-md">
+                                <div className="w-full h-full bg-[#061020] rounded-[14px] flex items-center justify-center group-hover:bg-[#0A1A33] transition-colors">
+                                  <IconComp className="w-6 h-6 text-[#F5D77F] group-hover:scale-110 transition-transform" />
+                                </div>
+                              </div>
+
+                              {benefit.category && (
+                                <Badge className="bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F5D77F] text-[9px] font-extrabold uppercase tracking-wider">
+                                  {benefit.category}
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* Text */}
+                            <div className="space-y-2">
+                              <h4 className="text-base sm:text-lg font-black text-white group-hover:text-[#F5D77F] transition-colors leading-snug">
+                                {benefit.title}
+                              </h4>
+                              <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                {benefit.description}
+                              </p>
                             </div>
                           </div>
 
-                          {benefit.category && (
-                            <Badge className="bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F5D77F] text-[9px] font-extrabold uppercase tracking-wider">
-                              {benefit.category}
-                            </Badge>
-                          )}
+                          <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-[#F5D77F]">
+                            <span className="font-bold flex items-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                              Incluso para Membros
+                            </span>
+                            <Sparkles className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                          </div>
                         </div>
-
-                        {/* Text */}
-                        <div className="space-y-2">
-                          <h4 className="text-base sm:text-lg font-black text-white group-hover:text-[#F5D77F] transition-colors leading-snug">
-                            {benefit.title}
-                          </h4>
-                          <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {benefit.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-[#F5D77F]">
-                        <span className="font-bold flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" />
-                          Incluso para Membros
-                        </span>
-                        <Sparkles className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* ================= BLOCO 3: "CONHEÇA O LOCAL E AS SALAS" ================= */}
-            <div className="space-y-6 pt-4 border-t border-white/10">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
-                    <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    Infraestrutura Premium
+                      )
+                    })}
                   </div>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    Conheça o Local e as Salas
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-                    Tenha acesso exclusivo a um ambiente empresarial moderno e de alto padrão (Sala
-                    de Reunião e Sala Compartilhada) sem os altos custos fixos de manter uma
-                    estrutura própria.
-                  </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
-                    {spacesPhotos.length} Foto(s) dos Ambientes
-                  </span>
-                </div>
-              </div>
+                {/* ================= BLOCO: "ESTRUTURA FÍSICA E SALAS" ================= */}
+                <div className="space-y-6 pt-4 border-t border-white/10">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#F5D77F] text-xs font-bold uppercase tracking-wider mb-2">
+                        <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        Infraestrutura Premium
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        Conheça o Local e as Salas
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                        Tenha acesso exclusivo a um ambiente empresarial moderno e de alto padrão
+                        (Sala de Reunião e Sala Compartilhada) sem os altos custos fixos de manter
+                        uma estrutura própria.
+                      </p>
+                    </div>
 
-              {/* Galeria de Fotos Reais */}
-              {spacesPhotos.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {spacesPhotos.map((photoItem) => {
-                    const src = getSpacePhotoSrc(photoItem)
-                    return (
-                      <div
-                        key={photoItem.id}
-                        onClick={() => setPreviewSpacePhoto(photoItem)}
-                        className="group relative rounded-3xl overflow-hidden bg-[#061020] border border-white/10 hover:border-[#D4AF37] shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
-                      >
-                        {/* Imagem */}
-                        <div className="relative aspect-[16/10] w-full bg-[#0A1A33] overflow-hidden">
-                          {src ? (
-                            <img
-                              src={src}
-                              alt={photoItem.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                              <Building2 className="w-10 h-10 text-[#F5D77F] mb-2" />
-                              <span className="text-[11px] font-black uppercase text-[#F5D77F]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#F5D77F] bg-[#061020] px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/40 shadow-xs">
+                        {spacesPhotos.length} Foto(s) dos Ambientes
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Galeria de Fotos Reais */}
+                  {spacesPhotos.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {spacesPhotos.map((photoItem) => {
+                        const src = getSpacePhotoSrc(photoItem)
+                        return (
+                          <div
+                            key={photoItem.id}
+                            onClick={() => setPreviewSpacePhoto(photoItem)}
+                            className="group relative rounded-3xl overflow-hidden bg-[#061020] border border-white/10 hover:border-[#D4AF37] shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                          >
+                            {/* Imagem */}
+                            <div className="relative aspect-[16/10] w-full bg-[#0A1A33] overflow-hidden">
+                              {src ? (
+                                <img
+                                  src={src}
+                                  alt={photoItem.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                                  <Building2 className="w-10 h-10 text-[#F5D77F] mb-2" />
+                                  <span className="text-[11px] font-black uppercase text-[#F5D77F]">
+                                    {photoItem.title}
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+
+                              {/* Tipo de Espaço */}
+                              <div className="absolute top-3 left-3">
+                                <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
+                                  {photoItem.space_type || 'Espaço Edvanced'}
+                                </Badge>
+                              </div>
+
+                              {/* Hover Zoom Icon */}
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                                  <Eye className="w-5 h-5" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-5 space-y-1.5">
+                              <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2">
                                 {photoItem.title}
+                              </h4>
+                              {photoItem.caption && (
+                                <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                                  {photoItem.caption}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-5 pt-0 flex items-center justify-between text-[11px] text-[#F5D77F] border-t border-white/5 mt-1">
+                              <span className="font-bold flex items-center gap-1">
+                                <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                                Estrutura Oficial
+                              </span>
+                              <span className="text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
+                                Ampliar foto &rarr;
                               </span>
                             </div>
-                          )}
-
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-
-                          {/* Tipo de Espaço */}
-                          <div className="absolute top-3 left-3">
-                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
-                              {photoItem.space_type || 'Espaço Edvanced'}
-                            </Badge>
                           </div>
-
-                          {/* Hover Zoom Icon */}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F5D77F] to-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
-                              <Eye className="w-5 h-5" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-5 space-y-1.5">
-                          <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2">
-                            {photoItem.title}
-                          </h4>
-                          {photoItem.caption && (
-                            <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
-                              {photoItem.caption}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="p-5 pt-0 flex items-center justify-between text-[11px] text-[#F5D77F] border-t border-white/5 mt-1">
-                          <span className="font-bold flex items-center gap-1">
-                            <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
-                            Estrutura Oficial
-                          </span>
-                          <span className="text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
-                            Ampliar foto &rarr;
-                          </span>
-                        </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-3xl bg-[#061020]/90 border border-dashed border-[#D4AF37]/40 p-8 sm:p-12 text-center space-y-4">
+                      <div className="w-16 h-16 rounded-3xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center mx-auto text-[#F5D77F]">
+                        <Building2 className="w-8 h-8" />
                       </div>
-                    )
-                  })}
+                      <div className="space-y-1 max-w-lg mx-auto">
+                        <h4 className="font-black text-lg text-white">
+                          Estrutura Física do Ecossistema Edvanced
+                        </h4>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          Salas de reunião executivas e salas compartilhadas de alto padrão para
+                          potencializar sua produtividade e realizar reuniões estratégicas com seus
+                          parceiros.
+                        </p>
+                      </div>
+                      {isAdmin ? (
+                        <Link
+                          to="/admin/selecao-membros"
+                          className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+                        >
+                          <Upload className="w-4 h-4 mr-1.5" /> Fazer Upload das Fotos Reais (Painel
+                          Adm)
+                        </Link>
+                      ) : (
+                        <a
+                          href={WHATSAPP_SELECTION_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1.5" /> Solicitar Apresentação do
+                          Espaço
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                /* Fallback informativo se o admin ainda não tiver feito upload das fotos reais */
-                <div className="rounded-3xl bg-[#061020]/90 border border-dashed border-[#D4AF37]/40 p-8 sm:p-12 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-3xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center mx-auto text-[#F5D77F]">
-                    <Building2 className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-1 max-w-lg mx-auto">
-                    <h4 className="font-black text-lg text-white">
-                      Estrutura Física do Ecossistema Edvanced
-                    </h4>
+
+                {/* ================= BLOCO: EXCLUSIVIDADE & CONTATOS OFICIAIS ================= */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+                  {/* Exclusividade */}
+                  <div className="p-6 rounded-3xl bg-[#061020] border border-[#D4AF37]/30 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
+                        <Lock className="w-4 h-4 text-[#F5D77F]" />
+                      </div>
+                      <h4 className="font-extrabold text-sm text-white">
+                        Exclusividade para Membros
+                      </h4>
+                    </div>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      Salas de reunião executivas e salas compartilhadas de alto padrão para
-                      potencializar sua produtividade e realizar reuniões estratégicas com seus
-                      parceiros.
+                      Os materiais estratégicos em PDF, relatórios e apresentações completas são
+                      restritos aos membros associados do Edvanced Business Club.
                     </p>
                   </div>
-                  {isAdmin ? (
-                    <Link
-                      to="/admin/selecao-membros"
-                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
-                    >
-                      <Upload className="w-4 h-4 mr-1.5" /> Fazer Upload das Fotos Reais (Painel
-                      Adm)
-                    </Link>
-                  ) : (
+
+                  {/* Canais Oficiais */}
+                  <div className="p-6 rounded-3xl bg-[#061020] border border-[#D4AF37]/30 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-4 h-4 text-[#F5D77F]" />
+                      </div>
+                      <h4 className="font-extrabold text-sm text-white">
+                        Canais Oficiais de Atendimento
+                      </h4>
+                    </div>
+                    <div className="space-y-1.5 text-xs text-slate-300">
+                      <p className="flex items-center gap-2">
+                        <span className="text-[#F5D77F] font-bold">WhatsApp:</span>
+                        <a
+                          href="https://wa.me/5565981003969"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-white underline underline-offset-2"
+                        >
+                          (65) 98100-3969
+                        </a>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="text-[#F5D77F] font-bold">E-mail:</span>
+                        <a
+                          href="mailto:contatoedvanced@gmail.com"
+                          className="hover:text-white underline underline-offset-2"
+                        >
+                          contatoedvanced@gmail.com
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ================= BOTÃO "MAIS INFORMAÇÕES" EM DESTAQUE ================= */}
+                <div className="rounded-3xl bg-gradient-to-r from-[#061020] via-[#0D2142] to-[#061020] border-2 border-[#D4AF37]/60 p-8 sm:p-10 text-center space-y-5 shadow-2xl">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-wider">
+                    <Crown className="w-4 h-4 text-[#D4AF37]" />
+                    Vagas Limitadas &bull; Processo Seletivo
+                  </div>
+
+                  <div className="space-y-2 max-w-2xl mx-auto">
+                    <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                      Pronto para transformar a ambiência e as conexões do seu negócio?
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                      Entre em contato com a equipe de curadoria do Edvanced Business Club para
+                      consultar critérios de seleção de membros, disponibilidade de salas e
+                      benefícios exclusivos.
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a
                       href={WHATSAPP_SELECTION_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+                      className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-sm uppercase tracking-wider py-5 px-8 rounded-2xl shadow-xl shadow-[#D4AF37]/30 hover:scale-105 transition-all flex items-center justify-center gap-2.5"
                     >
-                      <MessageCircle className="w-4 h-4 mr-1.5" /> Solicitar Apresentação do Espaço
+                      <MessageCircle className="w-5 h-5 text-slate-950 fill-current" />
+                      <span>Mais Informações sobre Seleção de Membros</span>
+                      <ArrowRight className="w-4 h-4" />
                     </a>
-                  )}
+                  </div>
+
+                  <p className="text-[11px] text-slate-400">
+                    Atendimento direto via WhatsApp (65) 98100-3969 com a nossa curadoria executiva.
+                  </p>
                 </div>
-              )}
-            </div>
-
-            {/* ================= BOTÃO "MAIS INFORMAÇÕES" EM DESTAQUE ================= */}
-            {/* Sem NENHUM valor/preço/mensalidade exibido, conforme regra obrigatória */}
-            <div className="rounded-3xl bg-gradient-to-r from-[#061020] via-[#0D2142] to-[#061020] border-2 border-[#D4AF37]/60 p-8 sm:p-10 text-center space-y-5 shadow-2xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F5D77F] text-xs font-bold uppercase tracking-wider">
-                <Crown className="w-4 h-4 text-[#D4AF37]" />
-                Vagas Limitadas &bull; Processo Seletivo
               </div>
-
-              <div className="space-y-2 max-w-2xl mx-auto">
-                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
-                  Pronto para transformar a ambiência e as conexões do seu negócio?
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                  Entre em contato com a equipe de curadoria do Edvanced Business Club para
-                  consultar critérios de seleção de membros, disponibilidade de salas e benefícios
-                  exclusivos.
-                </p>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a
-                  href={WHATSAPP_SELECTION_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-sm uppercase tracking-wider py-5 px-8 rounded-2xl shadow-xl shadow-[#D4AF37]/30 hover:scale-105 transition-all flex items-center justify-center gap-2.5"
-                >
-                  <MessageCircle className="w-5 h-5 text-slate-950 fill-current" />
-                  <span>Mais Informações sobre Seleção de Membros</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-
-              <p className="text-[11px] text-slate-400">
-                Atendimento direto via WhatsApp com a nossa curadoria executiva.
-              </p>
-            </div>
+            </section>
           </div>
-        </section>
+        )}
 
         {/* =====================================================================
             ABA 1: EVENTOS OFICIAIS DO CLUB COM INSCRIÇÃO EXTERNA
@@ -2506,6 +2685,19 @@ export default function PublicPortal() {
               <Layers className="w-3.5 h-3.5 text-[#D4AF37]" /> Navegação do Portal
             </p>
             <ul className="space-y-2.5">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab('sobre')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
+                >
+                  <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Sobre o Business Club</span>
+                </button>
+              </li>
               <li>
                 <button
                   type="button"
