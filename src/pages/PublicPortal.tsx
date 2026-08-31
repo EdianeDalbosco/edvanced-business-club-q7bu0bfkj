@@ -31,8 +31,6 @@ import {
   Upload,
   Image as ImageIcon,
   RotateCcw,
-  FileText,
-  FileSpreadsheet,
   Eye,
   Instagram,
   Phone,
@@ -74,8 +72,6 @@ import type {
 import { AVAILABLE_ICONS } from '@/pages/AdminClubSelection'
 import { useAuth } from '@/contexts/AuthContext'
 import { detectMaterialKind } from '@/lib/utils'
-import PdfDocumentViewer from '@/components/PdfDocumentViewer'
-import PdfThumbnail from '@/components/PdfThumbnail'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -171,11 +167,9 @@ export default function PublicPortal() {
   // Search for Podcast Episodes
   const [podcastSearch, setPodcastSearch] = useState('')
 
-  // Search and filters for Public Materials
+  // Search and filters for Public Materials (Exclusivo Fotos e Vídeos — PDFs restritos aos membros)
   const [materialSearch, setMaterialSearch] = useState('')
-  const [materialTypeFilter, setMaterialTypeFilter] = useState<
-    'todos' | 'photo' | 'video' | 'document'
-  >('todos')
+  const [materialTypeFilter, setMaterialTypeFilter] = useState<'todos' | 'photo' | 'video'>('todos')
   const [materialMeetingFilter, setMaterialMeetingFilter] = useState<string>('todos')
 
   // Video Player Modal
@@ -475,9 +469,22 @@ export default function PublicPortal() {
     })
   }, [episodes, podcastSearch])
 
-  // Filtered Public Materials
-  const filteredMaterials = useMemo(() => {
+  // Public Materials (Apenas Fotos e Vídeos — PDFs/documentos são exclusivos para membros VIP)
+  const publicMaterialsOnly = useMemo(() => {
     return materials.filter((mat) => {
+      const kind = detectMaterialKind({
+        file: mat.file,
+        url: mat.url,
+        title: mat.title,
+        type: mat.type,
+      })
+      return kind.category === 'photo' || kind.category === 'video'
+    })
+  }, [materials])
+
+  // Filtered Public Materials (Fotos e Vídeos apenas)
+  const filteredMaterials = useMemo(() => {
+    return publicMaterialsOnly.filter((mat) => {
       const q = materialSearch.toLowerCase().trim()
       const matchesSearch =
         !q ||
@@ -505,7 +512,7 @@ export default function PublicPortal() {
 
       return true
     })
-  }, [materials, materialSearch, materialTypeFilter, materialMeetingFilter])
+  }, [publicMaterialsOnly, materialSearch, materialTypeFilter, materialMeetingFilter])
 
   // Admin: Open Add/Edit Episode
   const handleOpenAddEpisode = () => {
@@ -892,7 +899,7 @@ export default function PublicPortal() {
                 }`}
               >
                 <FolderOpen className="w-4 h-4" />
-                <span>Materiais & Galeria ({materials.length})</span>
+                <span>Galeria de Fotos & Vídeos ({publicMaterialsOnly.length})</span>
               </button>
             </div>
           </div>
@@ -1977,7 +1984,7 @@ export default function PublicPortal() {
         )}
 
         {/* =====================================================================
-            ABA 3: MATERIAIS PÚBLICOS DOS ENCONTROS OFICIAIS DO CLUB
+            ABA 3: MATERIAIS PÚBLICOS DOS ENCONTROS OFICIAIS DO CLUB (FOTOS E VÍDEOS APENAS)
            ===================================================================== */}
         {activeTab === 'materiais' && (
           <div className="space-y-8 animate-fade-in">
@@ -1991,19 +1998,57 @@ export default function PublicPortal() {
                         <FolderOpen className="w-4 h-4 text-[#F5D77F]" />
                       </div>
                     </div>
-                    <span>Galeria e Materiais Oficiais do Club</span>
+                    <span>Galeria Oficial &bull; Fotos e Vídeos dos Eventos</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Fotos em alta definição, vídeos de cobertura e apresentações oficiais dos nossos
+                    Visualização de registros fotográficos e vídeos de cobertura dos nossos
                     encontros presenciais e summits.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#8C6D07] bg-amber-50 px-3.5 py-2 rounded-xl border border-[#D4AF37]/40 shadow-xs">
-                    {filteredMaterials.length} material(is)
+                    {filteredMaterials.length} registro(s) visualizável(is)
                   </span>
                 </div>
+              </div>
+
+              {/* Banner informativo de exclusividade dos PDFs para membros */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#061020] via-[#0A1A33] to-[#061020] border border-[#D4AF37]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4 h-4 text-[#F5D77F]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#F5D77F]">
+                      Materiais em PDF, slides e apresentações são exclusivos aos membros
+                    </p>
+                    <p className="text-[11px] text-slate-300">
+                      O público pode visualizar apenas registros de fotos e vídeos dos eventos (sem
+                      opção de download).
+                    </p>
+                  </div>
+                </div>
+
+                {user ? (
+                  <Link to="/encontros" className="flex-shrink-0">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 shadow-md"
+                    >
+                      Acessar Acervo VIP Completo &rarr;
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/login" className="flex-shrink-0">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 shadow-md"
+                    >
+                      Login de Membro &rarr;
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               {/* Filters row */}
@@ -2012,7 +2057,7 @@ export default function PublicPortal() {
                 <div className="relative">
                   <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
-                    placeholder="Buscar fotos, vídeos, temas..."
+                    placeholder="Buscar fotos, vídeos dos eventos..."
                     value={materialSearch}
                     onChange={(e) => setMaterialSearch(e.target.value)}
                     className="pl-9 text-xs rounded-xl bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#D4AF37]"
@@ -2026,10 +2071,9 @@ export default function PublicPortal() {
                     onChange={(e) => setMaterialTypeFilter(e.target.value as any)}
                     className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37]"
                   >
-                    <option value="todos">Todos os Formatos (Fotos & Vídeos)</option>
+                    <option value="todos">Todos os Registros (Fotos & Vídeos)</option>
                     <option value="photo">📸 Apenas Fotos dos Encontros</option>
-                    <option value="video">🎥 Apenas Vídeos / Gravações</option>
-                    <option value="document">📄 Apenas Documentos & PDFs</option>
+                    <option value="video">🎥 Apenas Vídeos / Coberturas</option>
                   </select>
                 </div>
 
@@ -2072,12 +2116,7 @@ export default function PublicPortal() {
                       variant="secondary"
                       className="text-[10px] bg-amber-50 text-[#8C6D07] border border-[#D4AF37]/40 gap-1 pr-1 font-bold"
                     >
-                      Tipo:{' '}
-                      {materialTypeFilter === 'photo'
-                        ? 'Fotos'
-                        : materialTypeFilter === 'video'
-                          ? 'Vídeos'
-                          : 'Documentos'}
+                      Tipo: {materialTypeFilter === 'photo' ? 'Fotos' : 'Vídeos'}
                       <button
                         onClick={() => setMaterialTypeFilter('todos')}
                         className="hover:text-rose-600"
@@ -2116,7 +2155,7 @@ export default function PublicPortal() {
               )}
             </div>
 
-            {/* Public Materials Grid */}
+            {/* Public Materials Grid (Fotos e Vídeos apenas) */}
             {filteredMaterials.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMaterials.map((mat) => {
@@ -2128,9 +2167,6 @@ export default function PublicPortal() {
                   })
                   const isPhoto = kind.subtype === 'photo'
                   const isVideo = kind.subtype === 'video'
-                  const isExcel = kind.subtype === 'excel'
-                  const isPdf = kind.subtype === 'pdf'
-                  const isDoc = kind.category === 'document'
 
                   const fileUrl = mat.file ? getFileUrl('materials', mat.id, mat.file) : ''
                   const externalUrl = mat.url || ''
@@ -2146,34 +2182,24 @@ export default function PublicPortal() {
                     <Card
                       key={mat.id}
                       onClick={() => setPreviewMediaModal(mat)}
-                      className="group border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
+                      className="group border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer select-none"
                     >
                       <div>
                         {/* Media Thumbnail Container */}
                         <div className="relative aspect-[16/10] w-full bg-slate-100 overflow-hidden">
-                          {isPdf && fileUrl ? (
-                            <PdfThumbnail
-                              url={fileUrl}
-                              title={mat.title}
-                              showBadge={false}
-                              className="w-full h-full"
-                            />
-                          ) : displayThumb ? (
+                          {displayThumb ? (
                             <img
                               src={displayThumb}
                               alt={mat.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              onContextMenu={(e) => e.preventDefault()}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
                               {isPhoto ? (
                                 <ImageIcon className="w-10 h-10 text-[#F5D77F] mb-2" />
-                              ) : isVideo ? (
-                                <Video className="w-10 h-10 text-[#F5D77F] mb-2" />
-                              ) : isExcel ? (
-                                <FileSpreadsheet className="w-10 h-10 text-emerald-400 mb-2" />
                               ) : (
-                                <FileText className="w-10 h-10 text-[#F5D77F] mb-2" />
+                                <Video className="w-10 h-10 text-[#F5D77F] mb-2" />
                               )}
                               <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F]">
                                 {kind.label.toUpperCase()}
@@ -2188,9 +2214,7 @@ export default function PublicPortal() {
                             <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow flex items-center gap-1">
                               {isPhoto && <ImageIcon className="w-3 h-3" />}
                               {isVideo && <Video className="w-3 h-3" />}
-                              {isExcel && <FileSpreadsheet className="w-3 h-3" />}
-                              {!isPhoto && !isVideo && !isExcel && <FileText className="w-3 h-3" />}
-                              <span>{kind.label}</span>
+                              <span>{isPhoto ? 'Foto do Evento' : 'Vídeo do Evento'}</span>
                             </Badge>
                           </div>
 
@@ -2259,7 +2283,7 @@ export default function PublicPortal() {
                         </div>
                       </div>
 
-                      {/* Footer Info */}
+                      {/* Footer Info (Apenas Visualização) */}
                       <div className="p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
                         <span className="text-[11px] font-semibold text-slate-500">
                           {mat.created ? formatShortDate(mat.created) : 'Oficial do Club'}
@@ -2275,13 +2299,33 @@ export default function PublicPortal() {
                 })}
               </div>
             ) : (
-              <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
-                <FolderOpen className="w-12 h-12 text-slate-400 mx-auto" />
-                <h3 className="font-bold text-slate-900 text-base">Nenhum material encontrado</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Fotos e vídeos dos próximos encontros serão catalogados aqui após a realização de
-                  cada evento.
-                </p>
+              <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-4">
+                <div className="w-16 h-16 rounded-3xl bg-amber-50 border border-[#D4AF37]/30 flex items-center justify-center mx-auto text-[#8C6D07]">
+                  <ImageIcon className="w-8 h-8" />
+                </div>
+                <div className="space-y-1.5 max-w-md mx-auto">
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Nenhum registro de foto ou vídeo encontrado
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Fotos e vídeos de cobertura dos encontros oficiais são publicados aqui após a
+                    realização de cada evento. Os materiais e apresentações em PDF são de acesso
+                    exclusivo aos membros do Club.
+                  </p>
+                </div>
+                {user ? (
+                  <Link to="/encontros" className="inline-block pt-1">
+                    <Button className="bg-[#0A1A33] hover:bg-[#122443] text-white text-xs font-bold rounded-xl px-4 py-2">
+                      Ver Materiais no Portal VIP de Membros
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/login" className="inline-block pt-1">
+                    <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 text-xs font-bold rounded-xl px-4 py-2">
+                      Acessar Portal de Membros
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -2666,36 +2710,21 @@ export default function PublicPortal() {
       )}
 
       {/* =========================================================================
-          MODAL PREVIEW DE MÍDIA / MATERIAL PÚBLICO (FOTO / VÍDEO / DOCUMENTO)
+          MODAL PREVIEW DE MÍDIA PÚBLICA (VISUALIZAÇÃO DE FOTOS E VÍDEOS — SEM DOWNLOAD)
          ========================================================================= */}
       {previewMediaModal && (
         <Dialog
           open={!!previewMediaModal}
           onOpenChange={(open) => !open && setPreviewMediaModal(null)}
         >
-          <DialogContent
-            className={`bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[92vh] overflow-y-auto transition-all ${(() => {
-              const k = detectMaterialKind({
-                file: previewMediaModal.file,
-                url: previewMediaModal.url,
-                title: previewMediaModal.title,
-                type: previewMediaModal.type,
-              })
-              return k.subtype === 'pdf' ? 'max-w-6xl w-[95vw]' : 'max-w-3xl'
-            })()}`}
-          >
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[92vh] overflow-y-auto">
             {(() => {
-              const fileUrl = previewMediaModal.file
-                ? getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)
-                : previewMediaModal.url
               const kind = detectMaterialKind({
                 file: previewMediaModal.file,
                 url: previewMediaModal.url,
                 title: previewMediaModal.title,
                 type: previewMediaModal.type,
               })
-              const isPdf = kind.subtype === 'pdf'
-              const isExcel = kind.subtype === 'excel'
               const isVideo = kind.subtype === 'video'
               const isPhoto = kind.subtype === 'photo'
 
@@ -2704,13 +2733,11 @@ export default function PublicPortal() {
                   <DialogHeader className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
-                        {kind.label}
+                        {isPhoto ? 'Registro Fotográfico' : 'Vídeo do Evento'}
                       </Badge>
-                      {isPdf && (
-                        <span className="text-[10px] font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-full">
-                          Visualização Completa de Todas as Páginas
-                        </span>
-                      )}
+                      <span className="text-[10px] font-bold text-[#F5D77F] bg-[#061020] px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
+                        Visualização Pública
+                      </span>
                       {previewMediaModal.created && (
                         <span className="text-[11px] text-slate-300 font-semibold">
                           {formatDateString(previewMediaModal.created)}
@@ -2730,150 +2757,91 @@ export default function PublicPortal() {
                     )}
                   </DialogHeader>
 
-                  {/* Media Player or Large Image or PDF Viewer */}
+                  {/* Visualizador de Foto ou Player Embutido de Vídeo (Sem link de download) */}
                   <div className="my-4">
-                    {/* Visualizador de PDF Completo Inline */}
-                    {isPdf && fileUrl ? (
-                      <PdfDocumentViewer
-                        url={fileUrl}
-                        title={previewMediaModal.title}
-                        fileName={previewMediaModal.file}
-                        className="w-full"
-                      />
-                    ) : (
-                      <div className="rounded-2xl overflow-hidden bg-[#061020] border border-slate-800 flex items-center justify-center p-4">
-                        {/* Video Player */}
-                        {isVideo && (
-                          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-inner">
-                            {getVideoEmbedUrl(previewMediaModal.url) ? (
-                              <iframe
-                                src={getVideoEmbedUrl(previewMediaModal.url)!}
-                                title={previewMediaModal.title}
-                                className="w-full h-full border-0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                              />
-                            ) : previewMediaModal.file ? (
-                              <video
-                                src={getFileUrl(
-                                  'materials',
-                                  previewMediaModal.id,
-                                  previewMediaModal.file,
-                                )}
-                                controls
-                                autoPlay
-                                className="w-full h-full object-contain"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                                <Video className="w-10 h-10 mb-2 text-[#D4AF37]" />
-                                <p className="text-xs">
-                                  Vídeo não disponível para reprodução direta.
-                                </p>
-                                {previewMediaModal.url && (
-                                  <a
-                                    href={previewMediaModal.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="mt-3 text-xs text-[#F5D77F] underline font-bold flex items-center gap-1"
-                                  >
-                                    Abrir link externo <ExternalLink className="w-3.5 h-3.5" />
-                                  </a>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Photo Viewer */}
-                        {isPhoto && (
-                          <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
-                            {previewMediaModal.file ? (
-                              <img
-                                src={getFileUrl(
-                                  'materials',
-                                  previewMediaModal.id,
-                                  previewMediaModal.file,
-                                )}
-                                alt={previewMediaModal.title}
-                                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
-                              />
-                            ) : previewMediaModal.url ? (
-                              <img
-                                src={previewMediaModal.url}
-                                alt={previewMediaModal.title}
-                                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
-                              />
-                            ) : (
-                              <div className="p-12 text-center text-slate-400">
-                                <ImageIcon className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
-                                <p className="text-xs">Imagem não encontrada.</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Excel Spreadsheet Viewer / PowerPoint / Word / Generic document */}
-                        {!isVideo && !isPhoto && !isPdf && (
-                          <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4 w-full">
-                            {isExcel ? (
-                              <FileSpreadsheet className="w-14 h-14 text-emerald-400 mx-auto opacity-90" />
-                            ) : kind.subtype === 'powerpoint' ? (
-                              <FileText className="w-14 h-14 text-amber-400 mx-auto opacity-90" />
-                            ) : kind.subtype === 'word' ? (
-                              <FileText className="w-14 h-14 text-sky-400 mx-auto opacity-90" />
-                            ) : (
-                              <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
-                            )}
-                            <div>
-                              <h5 className="text-base font-bold text-white">
-                                {previewMediaModal.title}
-                              </h5>
-                              <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
-                                {previewMediaModal.description ||
-                                  (isExcel
-                                    ? 'Planilha eletrônica executiva disponível para consulta e download.'
-                                    : kind.subtype === 'powerpoint'
-                                      ? 'Apresentação em slides executiva disponível para download.'
-                                      : kind.subtype === 'word'
-                                        ? 'Documento Word executivo disponível para download.'
-                                        : 'Arquivo executivo disponibilizado para consulta e download.')}
-                              </p>
+                    <div className="rounded-2xl overflow-hidden bg-[#061020] border border-slate-800 flex items-center justify-center p-4">
+                      {/* Video Player Embutido */}
+                      {isVideo && (
+                        <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-inner">
+                          {getVideoEmbedUrl(previewMediaModal.url) ? (
+                            <iframe
+                              src={getVideoEmbedUrl(previewMediaModal.url)!}
+                              title={previewMediaModal.title}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                            />
+                          ) : previewMediaModal.file ? (
+                            <video
+                              src={getFileUrl(
+                                'materials',
+                                previewMediaModal.id,
+                                previewMediaModal.file,
+                              )}
+                              controls
+                              controlsList="nodownload"
+                              disablePictureInPicture
+                              onContextMenu={(e) => e.preventDefault()}
+                              autoPlay
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
+                              <Video className="w-10 h-10 mb-2 text-[#D4AF37]" />
+                              <p className="text-xs">Vídeo em processamento de cobertura.</p>
                             </div>
-                            {fileUrl && (
-                              <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download={previewMediaModal.file || previewMediaModal.title}
-                                className={`inline-flex items-center justify-center font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors ${
-                                  isExcel
-                                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                                    : kind.subtype === 'powerpoint'
-                                      ? 'bg-amber-500 hover:bg-amber-600 text-slate-950'
-                                      : kind.subtype === 'word'
-                                        ? 'bg-sky-600 hover:bg-sky-700 text-white'
-                                        : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
-                                }`}
-                              >
-                                Baixar Arquivo (
-                                {previewMediaModal.file
-                                  ? previewMediaModal.file.split('.').pop()?.toUpperCase()
-                                  : kind.label}
-                                )
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      )}
+
+                      {/* Photo Viewer (Apenas visualização em alta resolução na tela, sem salvar) */}
+                      {isPhoto && (
+                        <div className="relative w-full max-h-[65vh] bg-black/50 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center select-none">
+                          {previewMediaModal.file ? (
+                            <img
+                              src={getFileUrl(
+                                'materials',
+                                previewMediaModal.id,
+                                previewMediaModal.file,
+                              )}
+                              alt={previewMediaModal.title}
+                              onContextMenu={(e) => e.preventDefault()}
+                              className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl pointer-events-none"
+                            />
+                          ) : previewMediaModal.url ? (
+                            <img
+                              src={previewMediaModal.url}
+                              alt={previewMediaModal.title}
+                              onContextMenu={(e) => e.preventDefault()}
+                              className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl pointer-events-none"
+                            />
+                          ) : (
+                            <div className="p-12 text-center text-slate-400">
+                              <ImageIcon className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
+                              <p className="text-xs">Registro fotográfico indisponível.</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {previewMediaModal.description && !isPdf && (
+                  {previewMediaModal.description && (
                     <div className="p-4 bg-[#061020] rounded-2xl border border-slate-800 text-xs text-slate-200 leading-relaxed">
                       <p className="whitespace-pre-wrap">{previewMediaModal.description}</p>
                     </div>
                   )}
+
+                  {/* Selo de exclusividade no rodapé do modal */}
+                  <div className="p-3 rounded-xl bg-[#061020] border border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1.5 text-[#F5D77F] font-semibold">
+                      <Eye className="w-3.5 h-3.5" />
+                      Visualização exclusiva na plataforma
+                    </span>
+                    <span className="text-slate-400 text-[10px]">
+                      Downloads e PDFs restritos a membros
+                    </span>
+                  </div>
 
                   <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
                     <div className="flex items-center gap-2">
@@ -2914,16 +2882,19 @@ export default function PublicPortal() {
                       )}
                     </div>
 
-                    {previewMediaModal.file && (
-                      <a
-                        href={getFileUrl('materials', previewMediaModal.id, previewMediaModal.file)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download
-                        className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
-                      >
-                        Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                      </a>
+                    {user ? (
+                      <Link to="/encontros">
+                        <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2 rounded-xl shadow-md">
+                          Ver PDFs e Acervo VIP &rarr;
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/login">
+                        <Button className="bg-[#0A1A33] hover:bg-[#122443] border border-[#D4AF37]/50 text-[#F5D77F] font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl">
+                          <Lock className="w-3.5 h-3.5 mr-1" />
+                          Login de Membros
+                        </Button>
+                      </Link>
                     )}
                   </DialogFooter>
                 </>
