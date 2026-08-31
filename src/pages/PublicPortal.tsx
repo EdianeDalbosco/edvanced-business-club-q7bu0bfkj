@@ -330,7 +330,7 @@ export default function PublicPortal() {
     if (!startStr) {
       return {
         key: 'scheduled',
-        label: 'Inscrições Abertas',
+        label: 'Confirmado',
         badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
         icon: CalendarIcon,
       }
@@ -343,7 +343,7 @@ export default function PublicPortal() {
     if (now < start) {
       return {
         key: 'scheduled',
-        label: 'Inscrições Abertas',
+        label: 'Confirmado',
         badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold',
         icon: CalendarIcon,
       }
@@ -357,7 +357,7 @@ export default function PublicPortal() {
     } else {
       return {
         key: 'completed',
-        label: 'Encerrado',
+        label: 'Realizado',
         badgeClass: 'bg-slate-100 text-slate-600 border-slate-300',
         icon: CalendarCheck2,
       }
@@ -903,7 +903,7 @@ export default function PublicPortal() {
                     onChange={(e) => setEventPricing(e.target.value as any)}
                     className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
-                    <option value="todos">Todas as Inscrições</option>
+                    <option value="todos">Todas as Modalidades</option>
                     <option value="gratuito">🎟️ Exclusivo Membros Club</option>
                     <option value="pago">💳 Apenas Pagos / Ingressos</option>
                   </select>
@@ -1105,29 +1105,23 @@ export default function PublicPortal() {
                         </div>
                       </div>
 
-                      {/* Card Footer: Action Buttons */}
-                      <div className="p-5 sm:p-6 pt-0 space-y-2 border-t border-slate-100 mt-2">
-                        {event.registration_url ? (
-                          <a
-                            href={event.registration_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full"
-                          >
-                            <Button className="w-full bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-md shadow-[#D4AF37]/20 flex items-center justify-center gap-2 transition-all">
-                              <span>Garantir Inscrição / Ingressos</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </Button>
-                          </a>
-                        ) : (
-                          <Button
-                            onClick={() => setSelectedEventModal(event)}
-                            className="w-full bg-[#0A1A33] hover:bg-[#122443] text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
-                          >
-                            <span>Ver Detalhes do Evento</span>
-                            <ArrowRight className="w-3.5 h-3.5 text-[#F5D77F]" />
-                          </Button>
-                        )}
+                      {/* Card Footer: Exclusive Member Notice & Detail Action */}
+                      <div className="p-5 sm:p-6 pt-0 space-y-2.5 border-t border-slate-100 mt-2">
+                        {/* Selo/Aviso de Exclusividade para Membros */}
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#D4AF37]/15 to-amber-500/10 border border-[#D4AF37]/40 text-[#8C6D07]">
+                          <Lock className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider line-clamp-1">
+                            Exclusivo para Membros do Edvanced Business Club
+                          </span>
+                        </div>
+
+                        <Button
+                          onClick={() => setSelectedEventModal(event)}
+                          className="w-full bg-[#0A1A33] hover:bg-[#122443] text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all border border-slate-800 hover:border-[#D4AF37]/50"
+                        >
+                          <span>Ver Detalhes do Evento</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-[#F5D77F]" />
+                        </Button>
 
                         <Button
                           variant="ghost"
@@ -1991,7 +1985,7 @@ export default function PublicPortal() {
                   className="hover:text-[#F5D77F] transition-colors flex items-center gap-2 text-slate-300"
                 >
                   <CalendarIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Eventos Oficiais com Inscrição</span>
+                  <span>Eventos Oficiais do Club</span>
                 </button>
               </li>
               <li>
@@ -2358,6 +2352,22 @@ export default function PublicPortal() {
               )}
             </div>
 
+            {/* Aviso de exclusividade no modal */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37]/15 via-[#F5D77F]/10 to-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#061020] border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-4 h-4 text-[#F5D77F]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black uppercase tracking-wider text-[#F5D77F]">
+                  Exclusivo para Membros do Edvanced Business Club
+                </p>
+                <p className="text-[11px] text-slate-300">
+                  Evento fechado e restrito aos membros associados. Não há inscrições abertas para o
+                  público externo.
+                </p>
+              </div>
+            </div>
+
             <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
               <Button
                 variant="outline"
@@ -2367,16 +2377,20 @@ export default function PublicPortal() {
                 Fechar
               </Button>
 
-              {selectedEventModal.registration_url && (
-                <a
-                  href={selectedEventModal.registration_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-lg shadow-[#D4AF37]/20">
-                    Ir para Inscrição Externa <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+              {user ? (
+                <Link to={`/encontros?id=${selectedEventModal.id}`}>
+                  <Button className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-lg shadow-[#D4AF37]/20 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Acessar no Portal de Membros</span>
                   </Button>
-                </a>
+                </Link>
+              ) : (
+                <Link to="/login">
+                  <Button className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-lg shadow-[#D4AF37]/20 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Entrar como Membro</span>
+                  </Button>
+                </Link>
               )}
             </DialogFooter>
           </DialogContent>
