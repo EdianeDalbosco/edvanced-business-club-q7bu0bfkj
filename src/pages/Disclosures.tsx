@@ -13,10 +13,25 @@ import {
   Info,
   Building,
   UserCheck,
+  FileText,
+  FileSpreadsheet,
+  Download,
+  Eye,
+  Video as VideoIcon,
+  Image as ImageIcon,
+  Paperclip,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
-import { getMemberDisclosures, getApprovedDisclosures } from '@/services/api'
+import { getMemberDisclosures, getApprovedDisclosures, getFileUrl } from '@/services/api'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import type { Disclosure } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,6 +46,35 @@ export default function Disclosures() {
   const [myDisclosures, setMyDisclosures] = useState<Disclosure[]>([])
   const [allApprovedDisclosures, setAllApprovedDisclosures] = useState<Disclosure[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [previewMedia, setPreviewMedia] = useState<{
+    url: string
+    filename: string
+    title: string
+    category: 'image' | 'video' | 'pdf' | 'excel' | 'document'
+  } | null>(null)
+
+  const getMediaCategory = (filename: string) => {
+    const lower = filename.toLowerCase()
+    if (
+      lower.endsWith('.jpg') ||
+      lower.endsWith('.jpeg') ||
+      lower.endsWith('.png') ||
+      lower.endsWith('.webp') ||
+      lower.endsWith('.gif')
+    ) {
+      return 'image'
+    }
+    if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')) {
+      return 'video'
+    }
+    if (lower.endsWith('.pdf')) {
+      return 'pdf'
+    }
+    if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) {
+      return 'excel'
+    }
+    return 'document'
+  }
 
   const loadData = async () => {
     setIsLoading(true)
@@ -210,6 +254,51 @@ export default function Disclosures() {
                         </div>
                       )}
 
+                      {/* Anexo de Mídia/Arquivo */}
+                      {item.media && (
+                        <div className="p-3 bg-amber-50/50 rounded-2xl border border-amber-200/60 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {getMediaCategory(item.media) === 'image' && (
+                              <ImageIcon className="w-4 h-4 text-[#8C6D07] flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'video' && (
+                              <VideoIcon className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'pdf' && (
+                              <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'excel' && (
+                              <FileSpreadsheet className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'document' && (
+                              <FileText className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                            )}
+                            <span
+                              className="text-xs font-semibold text-slate-800 truncate"
+                              title={item.media}
+                            >
+                              {item.media}
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setPreviewMedia({
+                                url: getFileUrl('disclosures', item.id, item.media!),
+                                filename: item.media!,
+                                title: item.title,
+                                category: getMediaCategory(item.media!),
+                              })
+                            }
+                            className="text-xs text-[#8C6D07] hover:bg-amber-100/60 font-bold h-7 px-2"
+                          >
+                            <Eye className="w-3.5 h-3.5 mr-1" /> Ver / Baixar
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Admin Feedback Box for Rejected / Notes */}
                       {item.admin_feedback && (
                         <div
@@ -314,6 +403,51 @@ export default function Disclosures() {
                           )}
                         </div>
                       )}
+
+                      {/* Anexo de Mídia/Arquivo no Mural Público */}
+                      {item.media && (
+                        <div className="p-3 bg-amber-50/50 rounded-2xl border border-amber-200/60 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {getMediaCategory(item.media) === 'image' && (
+                              <ImageIcon className="w-4 h-4 text-[#8C6D07] flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'video' && (
+                              <VideoIcon className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'pdf' && (
+                              <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'excel' && (
+                              <FileSpreadsheet className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                            )}
+                            {getMediaCategory(item.media) === 'document' && (
+                              <FileText className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                            )}
+                            <span
+                              className="text-xs font-semibold text-slate-800 truncate"
+                              title={item.media}
+                            >
+                              {item.media}
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setPreviewMedia({
+                                url: getFileUrl('disclosures', item.id, item.media!),
+                                filename: item.media!,
+                                title: item.title,
+                                category: getMediaCategory(item.media!),
+                              })
+                            }
+                            className="text-xs text-[#8C6D07] hover:bg-amber-100/60 font-bold h-7 px-2"
+                          >
+                            <Eye className="w-3.5 h-3.5 mr-1" /> Ver / Baixar
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -345,6 +479,142 @@ export default function Disclosures() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Media Preview / Download Modal */}
+      {previewMedia && (
+        <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
+                  {previewMedia.category === 'image' && 'Foto / Imagem'}
+                  {previewMedia.category === 'video' && 'Vídeo Anexo'}
+                  {previewMedia.category === 'pdf' && 'Documento PDF'}
+                  {previewMedia.category === 'excel' && 'Planilha Excel'}
+                  {previewMedia.category === 'document' && 'Documento Anexo'}
+                </Badge>
+              </div>
+              <DialogTitle className="text-lg font-bold text-white">
+                {previewMedia.title}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-slate-300">
+                Arquivo: {previewMedia.filename}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[260px] border border-slate-800 p-4">
+              {previewMedia.category === 'image' && (
+                <img
+                  src={previewMedia.url}
+                  alt={previewMedia.title}
+                  className="max-h-[60vh] w-auto max-w-full object-contain rounded-xl"
+                />
+              )}
+
+              {previewMedia.category === 'video' && (
+                <video
+                  src={previewMedia.url}
+                  controls
+                  autoPlay
+                  className="max-h-[60vh] w-full object-contain rounded-xl"
+                />
+              )}
+
+              {previewMedia.category === 'pdf' && (
+                <div className="p-6 text-center text-white space-y-4">
+                  <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
+                  <div>
+                    <p className="text-sm font-bold">Documento em Formato PDF</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Você pode visualizar online ou baixar o arquivo completo no seu dispositivo.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <a
+                      href={previewMedia.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20">
+                        <Eye className="w-3.5 h-3.5 mr-1.5" /> Abrir no Navegador
+                      </Button>
+                    </a>
+                    <a
+                      href={previewMedia.url}
+                      download={previewMedia.filename}
+                      className="inline-block"
+                    >
+                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar PDF
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {previewMedia.category === 'excel' && (
+                <div className="p-6 text-center text-white space-y-4">
+                  <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
+                  <div>
+                    <p className="text-sm font-bold">Planilha Eletrônica Excel (.xlsx / .xls)</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Clique no botão abaixo para fazer o download da planilha para o seu
+                      computador.
+                    </p>
+                  </div>
+                  <a
+                    href={previewMedia.url}
+                    download={previewMedia.filename}
+                    className="inline-block"
+                  >
+                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
+                      <Download className="w-3.5 h-3.5 mr-1.5" /> Fazer Download da Planilha Excel
+                    </Button>
+                  </a>
+                </div>
+              )}
+
+              {previewMedia.category === 'document' && (
+                <div className="p-6 text-center text-white space-y-4">
+                  <FileText className="w-16 h-16 text-blue-400 mx-auto" />
+                  <div>
+                    <p className="text-sm font-bold">Documento Anexo</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Baixe o arquivo para abrir com o aplicativo compatível.
+                    </p>
+                  </div>
+                  <a
+                    href={previewMedia.url}
+                    download={previewMedia.filename}
+                    className="inline-block"
+                  >
+                    <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                      <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
+                    </Button>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewMedia(null)}
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
+              >
+                Fechar
+              </Button>
+              <a href={previewMedia.url} download={previewMedia.filename} className="inline-block">
+                <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs flex items-center gap-1.5">
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Original</span>
+                </Button>
+              </a>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

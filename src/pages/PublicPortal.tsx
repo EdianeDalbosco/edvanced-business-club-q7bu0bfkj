@@ -32,6 +32,7 @@ import {
   Image as ImageIcon,
   RotateCcw,
   FileText,
+  FileSpreadsheet,
   Eye,
   Instagram,
   Phone,
@@ -2708,12 +2709,16 @@ export default function PublicPortal() {
 
               {previewMediaModal.type === 'document' && (
                 <div className="p-8 rounded-2xl bg-[#061020] border border-slate-800 text-center space-y-4">
-                  <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
+                  {/\.(xlsx?|csv)$/i.test(previewMediaModal.file || previewMediaModal.url || '') ? (
+                    <FileSpreadsheet className="w-14 h-14 text-emerald-400 mx-auto opacity-90" />
+                  ) : (
+                    <FileText className="w-14 h-14 text-[#D4AF37] mx-auto opacity-90" />
+                  )}
                   <div>
                     <h5 className="text-base font-bold text-white">{previewMediaModal.title}</h5>
                     <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
                       {previewMediaModal.description ||
-                        'Documento oficial disponibilizado para consulta.'}
+                        'Arquivo executivo disponibilizado para consulta e download.'}
                     </p>
                   </div>
                   {previewMediaModal.file && (
@@ -2722,9 +2727,13 @@ export default function PublicPortal() {
                       target="_blank"
                       rel="noopener noreferrer"
                       download
-                      className="inline-flex items-center justify-center bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
+                      className={`inline-flex items-center justify-center font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors ${
+                        /\.(xlsx?|csv)$/i.test(previewMediaModal.file)
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                          : 'bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950'
+                      }`}
                     >
-                      Baixar Arquivo / Documento
+                      Baixar Arquivo ({previewMediaModal.file.split('.').pop()?.toUpperCase()})
                     </a>
                   )}
                 </div>

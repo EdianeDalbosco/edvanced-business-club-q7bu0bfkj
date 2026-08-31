@@ -8,6 +8,7 @@ import {
   Megaphone,
   ShieldCheck,
   FileText,
+  FileSpreadsheet,
   Image as ImageIcon,
   Video,
   Play,
@@ -903,81 +904,185 @@ export default function Index() {
       {/* Media Viewer Modal */}
       {selectedMedia && (
         <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl">
-            <DialogHeader>
-              <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
-                  {selectedMedia.type}
-                </Badge>
-              </div>
-              <DialogTitle className="text-lg font-bold text-white">
-                {selectedMedia.title}
-              </DialogTitle>
-              {selectedMedia.description && (
-                <DialogDescription className="text-xs text-slate-300">
-                  {selectedMedia.description}
-                </DialogDescription>
-              )}
-            </DialogHeader>
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {(() => {
+              const fileUrl = selectedMedia.file
+                ? getFileUrl('materials', selectedMedia.id, selectedMedia.file)
+                : selectedMedia.url
+              const lowerTarget = (selectedMedia.file || selectedMedia.url || '').toLowerCase()
+              const isExcel =
+                lowerTarget.includes('.xls') ||
+                lowerTarget.includes('.xlsx') ||
+                lowerTarget.includes('.csv')
+              const isPdf = lowerTarget.includes('.pdf')
+              const isVideo =
+                selectedMedia.type === 'video' ||
+                lowerTarget.includes('.mp4') ||
+                lowerTarget.includes('.webm') ||
+                lowerTarget.includes('.mov')
+              const isPhoto =
+                selectedMedia.type === 'photo' ||
+                lowerTarget.includes('.jpg') ||
+                lowerTarget.includes('.jpeg') ||
+                lowerTarget.includes('.png') ||
+                lowerTarget.includes('.webp')
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800">
-              {selectedMedia.type === 'photo' && selectedMedia.url && (
-                <img
-                  src={selectedMedia.url}
-                  alt={selectedMedia.title}
-                  className="max-h-[500px] w-auto object-contain"
-                />
-              )}
-              {selectedMedia.type === 'video' && (
-                <div className="p-8 text-center text-white space-y-4">
-                  <Video className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
-                  <p className="text-sm font-semibold">Vídeo / Gravação na Íntegra</p>
-                  <p className="text-xs text-slate-300 max-w-md mx-auto">
-                    A reprodução de vídeo em alta definição está pronta para streaming.
-                  </p>
-                  {selectedMedia.url && (
-                    <a
-                      href={selectedMedia.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block"
-                    >
-                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                        Abrir Vídeo Completo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              )}
-              {selectedMedia.type === 'document' && (
-                <div className="p-8 text-center text-white space-y-4">
-                  <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
-                  <p className="text-sm font-semibold">Documento Executivo (PDF / Slides)</p>
-                  {selectedMedia.url && (
-                    <a
-                      href={selectedMedia.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block"
-                    >
-                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                        <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Documento
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
+              return (
+                <>
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
+                        {isExcel
+                          ? 'Planilha Excel'
+                          : isPdf
+                            ? 'Documento PDF'
+                            : isVideo
+                              ? 'Vídeo / Gravação'
+                              : isPhoto
+                                ? 'Foto / Imagem HD'
+                                : 'Material / Documento'}
+                      </Badge>
+                    </div>
+                    <DialogTitle className="text-lg font-bold text-white">
+                      {selectedMedia.title}
+                    </DialogTitle>
+                    {selectedMedia.description && (
+                      <DialogDescription className="text-xs text-slate-300">
+                        {selectedMedia.description}
+                      </DialogDescription>
+                    )}
+                  </DialogHeader>
 
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedMedia(null)}
-                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
-              >
-                Fechar
-              </Button>
-            </div>
+                  <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
+                    {/* Visualizador de Foto */}
+                    {isPhoto && fileUrl && (
+                      <img
+                        src={fileUrl}
+                        alt={selectedMedia.title}
+                        className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                      />
+                    )}
+
+                    {/* Visualizador de Vídeo */}
+                    {isVideo && fileUrl && (
+                      <div className="w-full flex flex-col items-center justify-center">
+                        <video
+                          src={fileUrl}
+                          controls
+                          className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
+                        />
+                      </div>
+                    )}
+
+                    {/* Visualizador de PDF */}
+                    {isPdf && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">Documento Executivo (PDF)</p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Você pode abrir este documento no navegador ou baixá-lo no seu
+                            dispositivo.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                          <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block"
+                          >
+                            <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20">
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Abrir no Navegador
+                            </Button>
+                          </a>
+                          <a
+                            href={fileUrl}
+                            download={selectedMedia.file || selectedMedia.title}
+                            className="inline-block"
+                          >
+                            <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar PDF
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visualizador de Excel */}
+                    {isExcel && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">
+                            Planilha Eletrônica Excel (.xlsx / .xls)
+                          </p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Arquivo de planilha executiva disponível para download.
+                          </p>
+                        </div>
+                        <div className="pt-2">
+                          <a
+                            href={fileUrl}
+                            download={selectedMedia.file || selectedMedia.title}
+                            className="inline-block"
+                          >
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outros tipos genéricos */}
+                    {!isPhoto && !isVideo && !isPdf && !isExcel && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileText className="w-16 h-16 text-blue-400 mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">Arquivo do Acervo</p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Clique abaixo para acessar ou transferir o arquivo.
+                          </p>
+                        </div>
+                        <a
+                          href={fileUrl}
+                          download={selectedMedia.file || selectedMedia.title}
+                          className="inline-block pt-2"
+                        >
+                          <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                            <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
+                          </Button>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedMedia(null)}
+                      className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
+                    >
+                      Fechar
+                    </Button>
+
+                    {fileUrl && (
+                      <a
+                        href={fileUrl}
+                        download={selectedMedia.file || selectedMedia.title}
+                        className="inline-block"
+                      >
+                        <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs flex items-center gap-1.5">
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Baixar Arquivo</span>
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </>
+              )
+            })()}
           </DialogContent>
         </Dialog>
       )}

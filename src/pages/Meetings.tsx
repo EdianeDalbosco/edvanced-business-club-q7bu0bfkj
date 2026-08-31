@@ -7,6 +7,7 @@ import {
   Image as ImageIcon,
   Video,
   FileText,
+  FileSpreadsheet,
   Download,
   Search,
   ExternalLink,
@@ -28,6 +29,8 @@ import {
   CalendarPlus,
   Smartphone,
   Share2,
+  Upload,
+  Paperclip,
 } from 'lucide-react'
 import { downloadICSFile } from '@/lib/ics'
 import { useAuth } from '@/contexts/AuthContext'
@@ -179,6 +182,8 @@ export default function MeetingsAndMaterials() {
   const [newMatTitle, setNewMatTitle] = useState('')
   const [newMatType, setNewMatType] = useState<'photo' | 'video' | 'document'>('photo')
   const [newMatUrl, setNewMatUrl] = useState('')
+  const [newMatFile, setNewMatFile] = useState<File | null>(null)
+  const [newMatFilePreview, setNewMatFilePreview] = useState<string | null>(null)
   const [newMatDesc, setNewMatDesc] = useState('')
   const [newMatMeetingId, setNewMatMeetingId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -771,24 +776,43 @@ export default function MeetingsAndMaterials() {
       toast.error('Selecione um encontro para vincular o material.')
       return
     }
-    if (!newMatTitle || !newMatUrl) {
-      toast.error('Título e Link/URL do material são obrigatórios.')
+    if (!newMatTitle.trim()) {
+      toast.error('O título do material é obrigatório.')
+      return
+    }
+    if (!newMatFile && !newMatUrl.trim()) {
+      toast.error('Por favor, selecione um arquivo do computador ou informe um Link/URL.')
       return
     }
     setIsSubmitting(true)
     try {
-      await createMaterial({
-        title: newMatTitle,
-        type: newMatType,
-        url: newMatUrl,
-        description: newMatDesc,
-        meeting: targetMeetingId,
-      })
+      if (newMatFile) {
+        const formData = new FormData()
+        formData.append('title', newMatTitle.trim())
+        formData.append('type', newMatType)
+        formData.append('meeting', targetMeetingId)
+        if (newMatDesc.trim()) formData.append('description', newMatDesc.trim())
+        if (newMatUrl.trim()) formData.append('url', newMatUrl.trim())
+        formData.append('file', newMatFile)
+
+        await createMaterial(formData)
+      } else {
+        await createMaterial({
+          title: newMatTitle.trim(),
+          type: newMatType,
+          url: newMatUrl.trim(),
+          description: newMatDesc.trim(),
+          meeting: targetMeetingId,
+        })
+      }
+
       toast.success('Material adicionado ao acervo com sucesso!')
       setShowAddMaterialModal(false)
       setNewMatTitle('')
       setNewMatUrl('')
       setNewMatDesc('')
+      setNewMatFile(null)
+      setNewMatFilePreview(null)
       await loadAllData()
     } catch (err: any) {
       toast.error('Erro ao adicionar material: ' + err.message)
@@ -2094,84 +2118,188 @@ export default function MeetingsAndMaterials() {
       {/* =========================================================================
           MODAIS: PREVIEW DE MÍDIA, DETALHES DE ENCONTRO E DETALHES DO EVENTO CALENDÁRIO
          ========================================================================= */}
-      {/* 1. Modal Preview de Foto / Vídeo / Documento */}
+      {/* 1. Modal Preview de Foto / Vídeo / Documento / Planilha */}
       {previewMedia && (
         <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
-          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl">
-            <DialogHeader>
-              <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
-                  {previewMedia.type}
-                </Badge>
-              </div>
-              <DialogTitle className="text-lg font-bold text-white">
-                {previewMedia.title}
-              </DialogTitle>
-              {previewMedia.description && (
-                <DialogDescription className="text-xs text-slate-300">
-                  {previewMedia.description}
-                </DialogDescription>
-              )}
-            </DialogHeader>
+          <DialogContent className="max-w-3xl bg-[#0A1A33] text-white border-slate-800 p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {(() => {
+              const fileUrl = previewMedia.file
+                ? getFileUrl('materials', previewMedia.id, previewMedia.file)
+                : previewMedia.url
+              const lowerTarget = (previewMedia.file || previewMedia.url || '').toLowerCase()
+              const isExcel =
+                lowerTarget.includes('.xls') ||
+                lowerTarget.includes('.xlsx') ||
+                lowerTarget.includes('.csv')
+              const isPdf = lowerTarget.includes('.pdf')
+              const isVideo =
+                previewMedia.type === 'video' ||
+                lowerTarget.includes('.mp4') ||
+                lowerTarget.includes('.webm') ||
+                lowerTarget.includes('.mov')
+              const isPhoto =
+                previewMedia.type === 'photo' ||
+                lowerTarget.includes('.jpg') ||
+                lowerTarget.includes('.jpeg') ||
+                lowerTarget.includes('.png') ||
+                lowerTarget.includes('.webp')
 
-            <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800">
-              {previewMedia.type === 'photo' && previewMedia.url && (
-                <img
-                  src={previewMedia.url}
-                  alt={previewMedia.title}
-                  className="max-h-[500px] w-auto object-contain"
-                />
-              )}
-              {previewMedia.type === 'video' && (
-                <div className="p-8 text-center text-white space-y-4">
-                  <Video className="w-16 h-16 text-[#D4AF37] mx-auto animate-pulse" />
-                  <p className="text-sm font-semibold">Vídeo / Gravação na Íntegra</p>
-                  <p className="text-xs text-slate-300 max-w-md mx-auto">
-                    A reprodução de vídeo em alta definição está pronta para streaming.
-                  </p>
-                  {previewMedia.url && (
-                    <a
-                      href={previewMedia.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block"
-                    >
-                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                        Abrir Streaming do Vídeo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              )}
-              {previewMedia.type === 'document' && (
-                <div className="p-8 text-center text-white space-y-4">
-                  <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
-                  <p className="text-sm font-semibold">Documento Executivo (PDF / Slides)</p>
-                  {previewMedia.url && (
-                    <a
-                      href={previewMedia.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block"
-                    >
-                      <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
-                        <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Documento PDF
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
+              return (
+                <>
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
+                        {isExcel
+                          ? 'Planilha Excel'
+                          : isPdf
+                            ? 'Documento PDF'
+                            : isVideo
+                              ? 'Vídeo / Gravação'
+                              : isPhoto
+                                ? 'Foto / Imagem HD'
+                                : 'Material / Documento'}
+                      </Badge>
+                    </div>
+                    <DialogTitle className="text-lg font-bold text-white">
+                      {previewMedia.title}
+                    </DialogTitle>
+                    {previewMedia.description && (
+                      <DialogDescription className="text-xs text-slate-300">
+                        {previewMedia.description}
+                      </DialogDescription>
+                    )}
+                  </DialogHeader>
 
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setPreviewMedia(null)}
-                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
-              >
-                Fechar
-              </Button>
-            </div>
+                  <div className="my-4 rounded-2xl overflow-hidden bg-[#061020] flex items-center justify-center min-h-[300px] border border-slate-800 p-4">
+                    {/* Visualizador de Foto */}
+                    {isPhoto && fileUrl && (
+                      <img
+                        src={fileUrl}
+                        alt={previewMedia.title}
+                        className="max-h-[500px] w-auto max-w-full object-contain rounded-xl"
+                      />
+                    )}
+
+                    {/* Visualizador de Vídeo */}
+                    {isVideo && fileUrl && (
+                      <div className="w-full flex flex-col items-center justify-center">
+                        <video
+                          src={fileUrl}
+                          controls
+                          className="max-h-[500px] w-full object-contain rounded-xl shadow-lg"
+                        />
+                      </div>
+                    )}
+
+                    {/* Visualizador de PDF */}
+                    {isPdf && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileText className="w-16 h-16 text-[#D4AF37] mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">Documento Executivo (PDF)</p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Você pode visualizar este documento no navegador ou baixá-lo no seu
+                            computador.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                          <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block"
+                          >
+                            <Button className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20">
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Abrir no Navegador
+                            </Button>
+                          </a>
+                          <a
+                            href={fileUrl}
+                            download={previewMedia.file || previewMedia.title}
+                            className="inline-block"
+                          >
+                            <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar PDF
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visualizador de Excel */}
+                    {isExcel && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">
+                            Planilha Eletrônica Excel (.xlsx / .xls)
+                          </p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Arquivo de planilha executiva disponível para download.
+                          </p>
+                        </div>
+                        <div className="pt-2">
+                          <a
+                            href={fileUrl}
+                            download={previewMedia.file || previewMedia.title}
+                            className="inline-block"
+                          >
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20">
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Planilha Excel
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outros tipos genéricos de documento */}
+                    {!isPhoto && !isVideo && !isPdf && !isExcel && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileText className="w-16 h-16 text-blue-400 mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">Arquivo do Acervo</p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Clique abaixo para acessar ou transferir o arquivo.
+                          </p>
+                        </div>
+                        <a
+                          href={fileUrl}
+                          download={previewMedia.file || previewMedia.title}
+                          className="inline-block pt-2"
+                        >
+                          <Button className="bg-[#D4AF37] text-slate-950 font-bold hover:bg-[#F5D77F] text-xs">
+                            <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Arquivo
+                          </Button>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPreviewMedia(null)}
+                      className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800"
+                    >
+                      Fechar
+                    </Button>
+
+                    {fileUrl && (
+                      <a
+                        href={fileUrl}
+                        download={previewMedia.file || previewMedia.title}
+                        className="inline-block"
+                      >
+                        <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs flex items-center gap-1.5">
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Baixar Arquivo</span>
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </>
+              )
+            })()}
           </DialogContent>
         </Dialog>
       )}
@@ -2700,17 +2828,27 @@ export default function MeetingsAndMaterials() {
         </Dialog>
       )}
       {/* =========================================================================
-          ADMIN: ADICIONAR MATERIAL MODAL
+          ADMIN: ADICIONAR MATERIAL MODAL (Com Upload Direto de Vídeo, Foto, Excel, PDF)
          ========================================================================= */}
       {showAddMaterialModal && (
-        <Dialog open={showAddMaterialModal} onOpenChange={setShowAddMaterialModal}>
-          <DialogContent className="max-w-lg bg-[#0A1A33] text-white border-slate-800 rounded-3xl p-6 shadow-2xl">
+        <Dialog
+          open={showAddMaterialModal}
+          onOpenChange={(open) => {
+            setShowAddMaterialModal(open)
+            if (!open) {
+              setNewMatFile(null)
+              setNewMatFilePreview(null)
+            }
+          }}
+        >
+          <DialogContent className="max-w-lg bg-[#0A1A33] text-white border-slate-800 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-white">
                 Adicionar Material ao Acervo
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-300">
-                Selecione a qual encontro vincular e o tipo de mídia (Foto, Vídeo ou Documento).
+                Selecione o encontro e anexe um arquivo direto do computador (Vídeo, Foto, PDF,
+                Excel) ou insira um link externo.
               </DialogDescription>
             </DialogHeader>
 
@@ -2735,7 +2873,7 @@ export default function MeetingsAndMaterials() {
               <div className="space-y-1">
                 <Label className="text-slate-200">Título do Arquivo / Álbum *</Label>
                 <Input
-                  placeholder="Ex: Galeria de Fotos em Alta - Welcome Dinner"
+                  placeholder="Ex: Apresentação Executiva em Slides / Planilha de Metas"
                   value={newMatTitle}
                   onChange={(e) => setNewMatTitle(e.target.value)}
                   className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
@@ -2750,20 +2888,112 @@ export default function MeetingsAndMaterials() {
                   onChange={(e) => setNewMatType(e.target.value as any)}
                   className="w-full h-9 px-3 rounded-xl bg-[#061020] border border-slate-800 text-white text-xs"
                 >
-                  <option value="photo">Foto (Galeria de Imagens)</option>
-                  <option value="video">Vídeo (Streaming / Gravação)</option>
-                  <option value="document">Documento (PDF / Slides)</option>
+                  <option value="photo">Foto / Imagem (Galeria JPG, PNG, WEBP)</option>
+                  <option value="video">Vídeo (Gravação MP4, WEBM, MOV)</option>
+                  <option value="document">Documento (PDF, Planilha Excel .xlsx/.xls)</option>
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-slate-200">URL / Link Direto *</Label>
+              {/* Upload direto de arquivo do computador */}
+              <div className="p-4 rounded-2xl bg-[#061020] border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[#F5D77F] font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <Paperclip className="w-3.5 h-3.5 text-[#D4AF37]" /> Upload Direto do Computador
+                  </Label>
+                  <span className="text-[10px] text-slate-400">Até 100MB</span>
+                </div>
+
                 <Input
-                  placeholder="https://img.usecurling.com/... ou link de vídeo/pdf"
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,image/jpeg,image/png,image/webp,image/gif,.pdf,.xls,.xlsx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      if (file.size > 100 * 1024 * 1024) {
+                        toast.error('O arquivo excede o limite máximo permitido de 100MB.')
+                        return
+                      }
+                      setNewMatFile(file)
+                      if (file.type.startsWith('image/')) {
+                        setNewMatType('photo')
+                        setNewMatFilePreview(URL.createObjectURL(file))
+                      } else if (file.type.startsWith('video/')) {
+                        setNewMatType('video')
+                        setNewMatFilePreview(URL.createObjectURL(file))
+                      } else {
+                        setNewMatType('document')
+                        setNewMatFilePreview(null)
+                      }
+                      if (!newMatTitle) {
+                        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+                        setNewMatTitle(nameWithoutExt)
+                      }
+                    }
+                  }}
+                  className="text-xs bg-[#0A1A33] border-slate-700 text-white rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#D4AF37] file:text-slate-950 hover:file:bg-[#F5D77F] file:cursor-pointer"
+                />
+
+                {newMatFile && (
+                  <div className="p-3 bg-[#0A1A33] rounded-xl border border-slate-700 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {newMatFile.type.startsWith('image/') && (
+                        <ImageIcon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+                      )}
+                      {newMatFile.type.startsWith('video/') && (
+                        <Video className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                      )}
+                      {newMatFile.name.toLowerCase().endsWith('.pdf') && (
+                        <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      )}
+                      {/\.(xlsx?)$/i.test(newMatFile.name) && (
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <p
+                          className="text-xs font-semibold text-white truncate"
+                          title={newMatFile.name}
+                        >
+                          {newMatFile.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {(newMatFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setNewMatFile(null)
+                        setNewMatFilePreview(null)
+                      }}
+                      className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 h-7 px-2"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover
+                    </Button>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-400">
+                  Formatos aceitos: Vídeos (.mp4, .webm, .mov), Fotos (.jpg, .png, .webp), Planilhas
+                  (.xls, .xlsx) e PDFs (.pdf).
+                </p>
+              </div>
+
+              {/* Ou URL Externa alternativa */}
+              <div className="space-y-1">
+                <Label className="text-slate-300 flex items-center justify-between">
+                  <span>Ou Link / URL Externa</span>
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    Opcional se enviar arquivo acima
+                  </span>
+                </Label>
+                <Input
+                  placeholder="https://... (ex: link do YouTube, Vimeo, Google Drive)"
                   value={newMatUrl}
                   onChange={(e) => setNewMatUrl(e.target.value)}
-                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl"
-                  required
+                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl placeholder:text-slate-500"
                 />
               </div>
 

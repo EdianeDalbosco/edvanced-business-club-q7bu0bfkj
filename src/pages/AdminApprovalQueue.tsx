@@ -16,8 +16,15 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
-import { getAllDisclosuresForAdmin, updateDisclosureStatus } from '@/services/api'
+import { getAllDisclosuresForAdmin, updateDisclosureStatus, getFileUrl } from '@/services/api'
 import type { Disclosure } from '@/types'
+import {
+  FileText,
+  FileSpreadsheet,
+  Download,
+  Video as VideoIcon,
+  Image as ImageIcon,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -496,6 +503,104 @@ export default function AdminApprovalQueue() {
                     </a>
                   </div>
                   <ExternalLink className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                </div>
+              )}
+
+              {/* Anexo de Mídia/Arquivo no Review do Admin */}
+              {selectedDisclosure.media && (
+                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block">
+                      Arquivo Anexo Enviado pelo Membro:
+                    </span>
+                    <a
+                      href={getFileUrl(
+                        'disclosures',
+                        selectedDisclosure.id,
+                        selectedDisclosure.media,
+                      )}
+                      download={selectedDisclosure.media}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-[#8C6D07] hover:underline flex items-center gap-1"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Baixar Original
+                    </a>
+                  </div>
+
+                  <p className="text-xs font-semibold text-slate-800 break-all">
+                    {selectedDisclosure.media}
+                  </p>
+
+                  {/* Visualização direta no painel de moderação */}
+                  {/\.(jpe?g|png|webp|gif)$/i.test(selectedDisclosure.media) && (
+                    <div className="rounded-xl overflow-hidden bg-white max-h-60 flex items-center justify-center border border-amber-200">
+                      <img
+                        src={getFileUrl(
+                          'disclosures',
+                          selectedDisclosure.id,
+                          selectedDisclosure.media,
+                        )}
+                        alt="Preview"
+                        className="max-h-60 w-auto object-contain"
+                      />
+                    </div>
+                  )}
+
+                  {/\.(mp4|webm|mov)$/i.test(selectedDisclosure.media) && (
+                    <div className="rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center border border-slate-800">
+                      <video
+                        src={getFileUrl(
+                          'disclosures',
+                          selectedDisclosure.id,
+                          selectedDisclosure.media,
+                        )}
+                        controls
+                        className="max-h-60 w-full object-contain"
+                      />
+                    </div>
+                  )}
+
+                  {/\.pdf$/i.test(selectedDisclosure.media) && (
+                    <div className="p-3 bg-white rounded-xl border border-blue-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        <span className="text-xs font-semibold text-slate-800">Documento PDF</span>
+                      </div>
+                      <a
+                        href={getFileUrl(
+                          'disclosures',
+                          selectedDisclosure.id,
+                          selectedDisclosure.media,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Abrir PDF
+                      </a>
+                    </div>
+                  )}
+
+                  {/\.(xlsx?|csv)$/i.test(selectedDisclosure.media) && (
+                    <div className="p-3 bg-white rounded-xl border border-emerald-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                        <span className="text-xs font-semibold text-slate-800">Planilha Excel</span>
+                      </div>
+                      <a
+                        href={getFileUrl(
+                          'disclosures',
+                          selectedDisclosure.id,
+                          selectedDisclosure.media,
+                        )}
+                        download={selectedDisclosure.media}
+                        className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Baixar Planilha
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 

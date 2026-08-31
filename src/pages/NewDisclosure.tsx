@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   Megaphone,
@@ -9,6 +9,13 @@ import {
   Calendar,
   MapPin,
   Globe,
+  Upload,
+  FileText,
+  FileSpreadsheet,
+  Video as VideoIcon,
+  Image as ImageIcon,
+  Trash2,
+  Paperclip,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { createDisclosure } from '@/services/api'
@@ -31,6 +38,57 @@ export default function NewDisclosure() {
   const [formatType, setFormatType] = useState<'presencial' | 'online' | 'hibrido'>('presencial')
   const [pricingType, setPricingType] = useState<'gratuito' | 'pago'>('gratuito')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Direct file attachment state
+  const [mediaFile, setMediaFile] = useState<File | null>(null)
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('O arquivo selecionado excede o limite máximo permitido de 100MB.')
+      return
+    }
+
+    setMediaFile(file)
+    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+      setMediaPreview(URL.createObjectURL(file))
+    } else {
+      setMediaPreview(null)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setMediaFile(null)
+    setMediaPreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const getFileCategory = (file: File) => {
+    if (file.type.startsWith('image/')) return 'image'
+    if (file.type.startsWith('video/')) return 'video'
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) return 'pdf'
+    if (
+      file.name.toLowerCase().endsWith('.xls') ||
+      file.name.toLowerCase().endsWith('.xlsx') ||
+      file.type.includes('spreadsheet') ||
+      file.type.includes('excel')
+    ) {
+      return 'excel'
+    }
+    return 'document'
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +120,9 @@ export default function NewDisclosure() {
       }
       if (contactLink.trim()) {
         formData.append('contact_link', contactLink.trim())
+      }
+      if (mediaFile) {
+        formData.append('media', mediaFile)
       }
 
       await createDisclosure(formData)
@@ -237,6 +298,121 @@ export default function NewDisclosure() {
                 onChange={(e) => setContactLink(e.target.value)}
                 className="text-sm rounded-xl"
               />
+            </div>
+
+            {/* Direct File Attachment (Upload do Computador: Vídeo, Foto, Excel, PDF) */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="file-upload"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
+                >
+                  <Paperclip className="w-4 h-4 text-[#8C6D07]" /> Anexo Direto do Computador
+                  (Vídeo, Foto, Excel, PDF)
+                </Label>
+                <span className="text-[10px] font-semibold text-slate-400">
+                  Opcional &bull; Até 100MB
+                </span>
+              </div>
+
+              <input
+                id="file-upload"
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,video/mpeg,image/jpeg,image/png,image/webp,image/gif,.pdf,.xls,.xlsx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {!mediaFile ? (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-300 hover:border-[#D4AF37] bg-white rounded-2xl p-6 text-center cursor-pointer transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-amber-50 group-hover:bg-[#D4AF37]/20 text-[#8C6D07] flex items-center justify-center mx-auto mb-3 transition-colors">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-[#8C6D07]">
+                    Clique para selecionar um arquivo direto do seu computador
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Formatos aceitos: <strong>Vídeos</strong> (.mp4, .webm, .mov),{' '}
+                    <strong>Fotos</strong> (.jpg, .png, .webp), <strong>Planilhas Excel</strong>{' '}
+                    (.xls, .xlsx) e <strong>PDFs</strong> (.pdf)
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-amber-50 text-[#8C6D07] flex items-center justify-center flex-shrink-0">
+                        {getFileCategory(mediaFile) === 'image' && (
+                          <ImageIcon className="w-5 h-5 text-[#8C6D07]" />
+                        )}
+                        {getFileCategory(mediaFile) === 'video' && (
+                          <VideoIcon className="w-5 h-5 text-rose-500" />
+                        )}
+                        {getFileCategory(mediaFile) === 'pdf' && (
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        )}
+                        {getFileCategory(mediaFile) === 'excel' && (
+                          <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                        )}
+                        {getFileCategory(mediaFile) === 'document' && (
+                          <FileText className="w-5 h-5 text-slate-600" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className="text-xs font-bold text-slate-900 truncate"
+                          title={mediaFile.name}
+                        >
+                          {mediaFile.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {formatFileSize(mediaFile.size)} &bull;{' '}
+                          {getFileCategory(mediaFile) === 'image' && 'Foto / Imagem'}
+                          {getFileCategory(mediaFile) === 'video' && 'Vídeo'}
+                          {getFileCategory(mediaFile) === 'pdf' && 'Documento PDF'}
+                          {getFileCategory(mediaFile) === 'excel' && 'Planilha Excel (.xlsx/.xls)'}
+                          {getFileCategory(mediaFile) === 'document' && 'Documento'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveFile}
+                      className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl flex-shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover
+                    </Button>
+                  </div>
+
+                  {/* Previews for Images and Videos */}
+                  {mediaPreview && getFileCategory(mediaFile) === 'image' && (
+                    <div className="rounded-xl overflow-hidden bg-slate-900/5 max-h-56 flex items-center justify-center border border-slate-100">
+                      <img
+                        src={mediaPreview}
+                        alt="Preview do anexo"
+                        className="max-h-56 w-auto object-contain rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {mediaPreview && getFileCategory(mediaFile) === 'video' && (
+                    <div className="rounded-xl overflow-hidden bg-black max-h-64 flex items-center justify-center border border-slate-800">
+                      <video
+                        src={mediaPreview}
+                        controls
+                        className="max-h-64 w-full object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Notice */}
