@@ -92,19 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     phone?: string
     bio?: string
     instagram?: string
+    emailVisibility?: boolean
   }): Promise<User> => {
-    const password = data.password || 'Skip@Pass'
+    const password = data.password?.trim() || 'Skip@Pass'
     const newRecord = await pb.collection('users').create<User>({
-      email: data.email,
+      email: data.email.trim().toLowerCase(),
       password: password,
       passwordConfirm: password,
-      name: data.name,
-      company: data.company || '',
-      phone: data.phone || '',
-      bio: data.bio || '',
-      instagram: data.instagram || '',
+      name: data.name.trim(),
+      company: data.company?.trim() || '',
+      phone: data.phone?.trim() || '',
+      bio: data.bio?.trim() || '',
+      instagram: data.instagram?.trim() || '',
       role: data.role || 'member',
       status: data.status || 'active',
+      emailVisibility: data.emailVisibility ?? true,
       verified: true,
     })
     return newRecord

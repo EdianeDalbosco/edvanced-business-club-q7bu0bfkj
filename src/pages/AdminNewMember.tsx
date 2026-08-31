@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { createMemberByAdmin } from '@/services/api'
+import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 import { formatPhone, normalizePhone } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -74,9 +75,34 @@ export default function AdminNewMember() {
       navigate('/membros')
     } catch (err: any) {
       console.error('Erro ao cadastrar membro:', err)
-      toast.error(
-        'Erro ao cadastrar membro: ' + (err.message || 'Verifique se o e-mail já está cadastrado.'),
-      )
+      const fieldErrors = extractFieldErrors(err)
+      if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+        const details = Object.entries(fieldErrors)
+          .map(([f, msg]) => {
+            const fieldNameMap: Record<string, string> = {
+              email: 'E-mail',
+              password: 'Senha',
+              passwordConfirm: 'Confirmação de Senha',
+              name: 'Nome',
+              role: 'Nível',
+              status: 'Status',
+            }
+            return `${fieldNameMap[f] || f}: ${msg}`
+          })
+          .join(' | ')
+        toast.error(`Erro ao cadastrar membro: ${details}`)
+      } else {
+        const errorMsg = getErrorMessage(err)
+        if (
+          errorMsg.toLowerCase().includes('unique') ||
+          errorMsg.toLowerCase().includes('already in use') ||
+          errorMsg.toLowerCase().includes('exist')
+        ) {
+          toast.error('Este e-mail já está cadastrado no sistema. Use outro endereço.')
+        } else {
+          toast.error(`Erro ao cadastrar membro: ${errorMsg || 'Verifique os dados informados.'}`)
+        }
+      }
     } finally {
       setIsLoading(false)
     }

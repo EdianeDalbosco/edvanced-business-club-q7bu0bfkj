@@ -178,21 +178,25 @@ export async function createMemberByAdmin(data: {
   phone?: string
   bio?: string
   instagram?: string
+  emailVisibility?: boolean
 }): Promise<User> {
-  const defaultPassword = data.password || 'Skip@Pass'
-  return pb.collection('users').create<User>({
-    name: data.name,
-    email: data.email,
+  const defaultPassword = data.password?.trim() || 'Skip@Pass'
+  const payload: Record<string, any> = {
+    name: data.name.trim(),
+    email: data.email.trim().toLowerCase(),
     password: defaultPassword,
     passwordConfirm: defaultPassword,
     role: data.role || 'member',
     status: data.status || 'active',
-    company: data.company || '',
-    phone: data.phone || '',
-    bio: data.bio || '',
-    instagram: data.instagram || '',
+    company: data.company?.trim() || '',
+    phone: data.phone?.trim() || '',
+    bio: data.bio?.trim() || '',
+    instagram: data.instagram?.trim() || '',
+    emailVisibility: data.emailVisibility ?? true,
     verified: true,
-  })
+  }
+
+  return pb.collection('users').create<User>(payload)
 }
 
 export async function updateUserByAdmin(
