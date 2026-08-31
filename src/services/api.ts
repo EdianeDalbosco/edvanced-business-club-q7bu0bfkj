@@ -193,10 +193,23 @@ export async function createMemberByAdmin(data: {
     bio: data.bio?.trim() || '',
     instagram: data.instagram?.trim() || '',
     emailVisibility: data.emailVisibility ?? true,
-    verified: true,
   }
 
-  return pb.collection('users').create<User>(payload)
+  const createdUser = await pb.collection('users').create<User>(payload)
+
+  // In case the backend requires a post-creation update to ensure verified is set
+  if (!createdUser.verified) {
+    try {
+      return await pb.collection('users').update<User>(createdUser.id, {
+        verified: true,
+      })
+    } catch {
+      // If update fails due to rule or verification token, return the created record
+      return createdUser
+    }
+  }
+
+  return createdUser
 }
 
 export async function updateUserByAdmin(

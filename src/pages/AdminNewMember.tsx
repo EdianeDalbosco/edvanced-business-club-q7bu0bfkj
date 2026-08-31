@@ -84,10 +84,23 @@ export default function AdminNewMember() {
               password: 'Senha',
               passwordConfirm: 'Confirmação de Senha',
               name: 'Nome',
-              role: 'Nível',
+              role: 'Nível de Permissão',
               status: 'Status',
+              verified: 'Verificação',
             }
-            return `${fieldNameMap[f] || f}: ${msg}`
+            let cleanMsg = msg
+            if (
+              msg.toLowerCase().includes("values don't match") ||
+              msg.toLowerCase().includes('match')
+            ) {
+              cleanMsg = 'Os dados informados não coincidem ou não são válidos'
+            } else if (
+              msg.toLowerCase().includes('unique') ||
+              msg.toLowerCase().includes('already in use')
+            ) {
+              cleanMsg = 'Já cadastrado no sistema'
+            }
+            return `${fieldNameMap[f] || f}: ${cleanMsg}`
           })
           .join(' | ')
         toast.error(`Erro ao cadastrar membro: ${details}`)
@@ -99,6 +112,8 @@ export default function AdminNewMember() {
           errorMsg.toLowerCase().includes('exist')
         ) {
           toast.error('Este e-mail já está cadastrado no sistema. Use outro endereço.')
+        } else if (errorMsg.toLowerCase().includes("values don't match")) {
+          toast.error('Erro na validação dos campos. Verifique as credenciais e tente novamente.')
         } else {
           toast.error(`Erro ao cadastrar membro: ${errorMsg || 'Verifique os dados informados.'}`)
         }

@@ -107,8 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.role || 'member',
       status: data.status || 'active',
       emailVisibility: data.emailVisibility ?? true,
-      verified: true,
     })
+
+    if (!newRecord.verified) {
+      try {
+        return await pb.collection('users').update<User>(newRecord.id, {
+          verified: true,
+        })
+      } catch {
+        return newRecord
+      }
+    }
+
     return newRecord
   }
 
