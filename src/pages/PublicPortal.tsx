@@ -1204,18 +1204,21 @@ export default function PublicPortal() {
                     </p>
                   </div>
                   {isAdmin ? (
-                    <Link to="/admin/selecao-membros">
-                      <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
-                        <Upload className="w-4 h-4 mr-1.5" /> Fazer Upload das Fotos Reais (Painel
-                        Adm)
-                      </Button>
+                    <Link
+                      to="/admin/selecao-membros"
+                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+                    >
+                      <Upload className="w-4 h-4 mr-1.5" /> Fazer Upload das Fotos Reais (Painel
+                      Adm)
                     </Link>
                   ) : (
-                    <a href={WHATSAPP_SELECTION_URL} target="_blank" rel="noopener noreferrer">
-                      <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
-                        <MessageCircle className="w-4 h-4 mr-1.5" /> Solicitar Apresentação do
-                        Espaço
-                      </Button>
+                    <a
+                      href={WHATSAPP_SELECTION_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-1.5" /> Solicitar Apresentação do Espaço
                     </a>
                   )}
                 </div>
@@ -1246,13 +1249,11 @@ export default function PublicPortal() {
                   href={WHATSAPP_SELECTION_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-sm uppercase tracking-wider py-5 px-8 rounded-2xl shadow-xl shadow-[#D4AF37]/30 hover:scale-105 transition-all flex items-center justify-center gap-2.5"
                 >
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-sm uppercase tracking-wider py-6 px-8 rounded-2xl shadow-xl shadow-[#D4AF37]/30 hover:scale-105 transition-all flex items-center justify-center gap-2.5">
-                    <MessageCircle className="w-5 h-5 text-slate-950 fill-current" />
-                    <span>Mais Informações sobre Seleção de Membros</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+                  <MessageCircle className="w-5 h-5 text-slate-950 fill-current" />
+                  <span>Mais Informações sobre Seleção de Membros</span>
+                  <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
 
@@ -1678,10 +1679,9 @@ export default function PublicPortal() {
                               href={featuredEp.video_url}
                               target="_blank"
                               rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition-colors"
                             >
-                              <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs">
-                                Abrir Player Externo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                              </Button>
+                              Abrir Player Externo <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                             </a>
                           </div>
                         </div>
@@ -1746,16 +1746,10 @@ export default function PublicPortal() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center justify-center h-8 px-3 border border-emerald-700 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900 text-xs font-medium rounded-xl transition-colors"
                             >
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                type="button"
-                                className="border-emerald-700 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900 text-xs rounded-xl"
-                              >
-                                <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                                WhatsApp
-                              </Button>
+                              <MessageCircle className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                              WhatsApp
                             </a>
                           </div>
 
@@ -2600,11 +2594,14 @@ export default function PublicPortal() {
                 Fechar
               </Button>
 
-              <a href={WHATSAPP_SELECTION_URL} target="_blank" rel="noopener noreferrer">
-                <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Mais Informações sobre as Salas</span>
-                </Button>
+              <a
+                href={WHATSAPP_SELECTION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md gap-1.5 transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Mais Informações sobre as Salas</span>
               </a>
             </DialogFooter>
           </DialogContent>
@@ -2725,10 +2722,9 @@ export default function PublicPortal() {
                       target="_blank"
                       rel="noopener noreferrer"
                       download
+                      className="inline-flex items-center justify-center bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
                     >
-                      <Button className="bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 font-bold text-xs uppercase tracking-wider px-5 rounded-xl shadow-md">
-                        Baixar Arquivo / Documento
-                      </Button>
+                      Baixar Arquivo / Documento
                     </a>
                   )}
                 </div>
@@ -2756,10 +2752,9 @@ export default function PublicPortal() {
                   target="_blank"
                   rel="noopener noreferrer"
                   download
+                  className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition-colors"
                 >
-                  <Button className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 shadow-md">
-                    Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                  </Button>
+                  Baixar Mídia Original <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                 </a>
               )}
             </DialogFooter>
