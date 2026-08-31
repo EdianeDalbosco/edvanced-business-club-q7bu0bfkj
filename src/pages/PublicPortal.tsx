@@ -141,13 +141,13 @@ export default function PublicPortal() {
   // Tab switch: 'sobre' | 'eventos' | 'podcast' | 'materiais'
   const rawTab = searchParams.get('aba')
   const activeTab: 'sobre' | 'eventos' | 'podcast' | 'materiais' =
-    rawTab === 'sobre'
-      ? 'sobre'
+    rawTab === 'eventos'
+      ? 'eventos'
       : rawTab === 'podcast'
         ? 'podcast'
         : rawTab === 'materiais'
           ? 'materiais'
-          : 'eventos'
+          : 'sobre'
 
   const setTab = (tab: 'sobre' | 'eventos' | 'podcast' | 'materiais') => {
     setSearchParams({ aba: tab })
