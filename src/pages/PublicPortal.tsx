@@ -1790,7 +1790,7 @@ export default function PublicPortal() {
                       <Mic className="w-4 h-4" />
                     </div>
                     <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                      EdvancedCast — O Videocast Oficial
+                      EdvancedCast — O PodCast Oficial
                     </h2>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
