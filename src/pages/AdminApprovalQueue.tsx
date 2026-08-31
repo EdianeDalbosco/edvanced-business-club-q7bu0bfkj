@@ -452,7 +452,7 @@ export default function AdminApprovalQueue() {
                           : 'text-emerald-700 border-emerald-300 bg-emerald-50'
                       }`}
                     >
-                      {selectedDisclosure.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                      {selectedDisclosure.pricing === 'pago' ? 'Pago' : 'Exclusivo Membros Club'}
                     </Badge>
                   </div>
                 </div>

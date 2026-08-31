@@ -479,8 +479,8 @@ export default function CalendarPage() {
               onChange={(e) => setCalPricingFilter(e.target.value)}
               className="w-full h-9 px-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-hidden focus:border-[#D4AF37]"
             >
-              <option value="todos">Todos (Gratuito & Pago)</option>
-              <option value="gratuito">Apenas Gratuitos / Inclusos</option>
+              <option value="todos">Todos (Exclusivo Membros & Pago)</option>
+              <option value="gratuito">Exclusivo Membros Club</option>
               <option value="pago">Apenas Pagos / Inscrição</option>
             </select>
           </div>
@@ -524,7 +524,7 @@ export default function CalendarPage() {
               variant="outline"
               className="text-[9px] uppercase font-bold text-emerald-700 border-emerald-300 bg-emerald-50"
             >
-              Gratuito
+              Exclusivo Membros Club
             </Badge>
             <Badge
               variant="outline"
@@ -833,7 +833,7 @@ export default function CalendarPage() {
                                   : 'text-emerald-800 border-emerald-300 bg-emerald-50'
                             }`}
                           >
-                            {ev.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                            {ev.pricing === 'pago' ? 'Pago' : 'Exclusivo Membros Club'}
                           </Badge>
 
                           <span
@@ -950,7 +950,7 @@ export default function CalendarPage() {
                       : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
                   }`}
                 >
-                  {selectedCalendarEvent.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                  {selectedCalendarEvent.pricing === 'pago' ? 'Pago' : 'Exclusivo Membros Club'}
                 </Badge>
               </div>
 

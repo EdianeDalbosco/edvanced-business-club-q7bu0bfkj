@@ -904,7 +904,7 @@ export default function PublicPortal() {
                     className="w-full h-9 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                   >
                     <option value="todos">Todas as Inscrições</option>
-                    <option value="gratuito">🎟️ Apenas Gratuitos / Inclusos</option>
+                    <option value="gratuito">🎟️ Exclusivo Membros Club</option>
                     <option value="pago">💳 Apenas Pagos / Ingressos</option>
                   </select>
                 </div>
@@ -963,7 +963,8 @@ export default function PublicPortal() {
                       variant="secondary"
                       className="text-[10px] bg-slate-100 text-slate-800 border border-slate-300 gap-1 pr-1"
                     >
-                      Cobrança: {eventPricing}
+                      Cobrança:{' '}
+                      {eventPricing === 'gratuito' ? 'Exclusivo Membros Club' : 'Pago / Inscrição'}
                       <button
                         onClick={() => setEventPricing('todos')}
                         className="hover:text-rose-600"
@@ -1056,7 +1057,9 @@ export default function PublicPortal() {
                               {formatShortDate(event.start_date || event.date)}
                             </span>
                             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-slate-950/80 border border-white/20 text-white">
-                              {event.pricing === 'pago' ? 'Inscrição Paga' : 'Acesso Gratuito'}
+                              {event.pricing === 'pago'
+                                ? 'Inscrição Paga'
+                                : 'Exclusivo Membros Club'}
                             </span>
                           </div>
                         </div>
@@ -2292,7 +2295,9 @@ export default function PublicPortal() {
                       : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
                   }`}
                 >
-                  {selectedEventModal.pricing === 'pago' ? 'Inscrição Paga' : 'Acesso Gratuito'}
+                  {selectedEventModal.pricing === 'pago'
+                    ? 'Inscrição Paga'
+                    : 'Exclusivo Membros Club'}
                 </Badge>
               </div>
 

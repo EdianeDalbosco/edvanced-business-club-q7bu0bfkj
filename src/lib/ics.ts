@@ -92,7 +92,8 @@ export function generateICSContent(
           ? 'Híbrido (Presencial + Online)'
           : 'Presencial'
 
-    const pricingLabel = ev.pricing === 'pago' ? 'Pago / Inscrição Especial' : 'Gratuito / Incluso'
+    const pricingLabel =
+      ev.pricing === 'pago' ? 'Pago / Inscrição Especial' : 'Exclusivo Membros Club'
 
     const originLabel =
       ev.origin === 'meeting' ? 'Edvanced Business Club (Oficial)' : 'Divulgação de Membro VIP'

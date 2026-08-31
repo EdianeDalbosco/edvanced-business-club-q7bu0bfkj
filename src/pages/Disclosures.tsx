@@ -189,26 +189,7 @@ export default function Disclosures() {
                               : 'text-emerald-800 border-emerald-300 bg-emerald-50'
                           }`}
                         >
-                          {item.pricing === 'pago' ? 'Pago' : 'Gratuito'}
-                        </Badge>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] uppercase font-bold text-slate-700 bg-slate-100"
-                        >
-                          {item.format || 'Presencial'}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] uppercase font-bold ${
-                            item.pricing === 'pago'
-                              ? 'text-amber-800 border-amber-300 bg-amber-50'
-                              : 'text-emerald-800 border-emerald-300 bg-emerald-50'
-                          }`}
-                        >
-                          {item.pricing === 'pago' ? 'Pago' : 'Gratuito'}
+                          {item.pricing === 'pago' ? 'Pago' : 'Exclusivo Membros Club'}
                         </Badge>
                       </div>
 

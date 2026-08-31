@@ -179,7 +179,7 @@ export default function NewDisclosure() {
                   onChange={(e) => setPricingType(e.target.value as any)}
                   className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-background ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="gratuito">Gratuito (Exclusivo / Free)</option>
+                  <option value="gratuito">Exclusivo para Membros (Incluso)</option>
                   <option value="pago">Pago / Com Inscrição</option>
                 </select>
               </div>
