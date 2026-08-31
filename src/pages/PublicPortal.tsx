@@ -710,7 +710,7 @@ export default function PublicPortal() {
               }`}
             >
               <FolderOpen className="w-4 h-4" />
-              <span>Materiais & Galeria</span>
+              <span>Galeria</span>
             </button>
           </nav>
 
