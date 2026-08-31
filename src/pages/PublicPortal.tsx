@@ -761,7 +761,7 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('sobre')}
-            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
+            className={`w-full min-h-[52px] py-2 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-normal border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'sobre'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
                 : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
@@ -770,15 +770,19 @@ export default function PublicPortal() {
             <Crown
               className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'sobre' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
             />
-            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
-              Sobre o Business Club
+            <span
+              lang="pt-BR"
+              className="w-full text-center leading-tight break-words"
+              style={{ overflowWrap: 'break-word', wordBreak: 'normal' }}
+            >
+              Sobre o Business&nbsp;Club
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
+            className={`w-full min-h-[52px] py-2 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-normal border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'eventos'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
                 : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
@@ -787,15 +791,19 @@ export default function PublicPortal() {
             <CalendarIcon
               className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'eventos' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
             />
-            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
-              Eventos do Club
+            <span
+              lang="pt-BR"
+              className="w-full text-center leading-tight break-words"
+              style={{ overflowWrap: 'break-word', wordBreak: 'normal' }}
+            >
+              Eventos do&nbsp;Club
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
+            className={`w-full min-h-[52px] py-2 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-normal border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'podcast'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
                 : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
@@ -810,7 +818,11 @@ export default function PublicPortal() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
               </span>
             </div>
-            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+            <span
+              lang="pt-BR"
+              className="w-full text-center leading-tight break-words"
+              style={{ overflowWrap: 'break-word', wordBreak: 'normal' }}
+            >
               EdvancedCast
             </span>
           </button>
@@ -818,7 +830,7 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('materiais')}
-            className={`min-h-[52px] py-2.5 px-1 sm:px-2 text-center text-[11px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
+            className={`w-full min-h-[52px] py-2 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-normal border-b-2 flex flex-col items-center justify-center gap-1 transition-all select-none ${
               activeTab === 'materiais'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33] shadow-inner font-black'
                 : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 active:bg-[#0A1A33]/50'
@@ -827,7 +839,11 @@ export default function PublicPortal() {
             <FolderOpen
               className={`w-4 h-4 shrink-0 transition-transform ${activeTab === 'materiais' ? 'text-[#F5D77F] scale-110' : 'text-slate-400'}`}
             />
-            <span className="leading-tight text-center break-words hyphens-auto line-clamp-2 max-w-full">
+            <span
+              lang="pt-BR"
+              className="w-full text-center leading-tight break-words"
+              style={{ overflowWrap: 'break-word', wordBreak: 'normal' }}
+            >
               Galeria
             </span>
           </button>
