@@ -65,3 +65,143 @@ export function normalizePhone(value?: string | null): string {
   if (!value) return ''
   return value.replace(/\D/g, '')
 }
+
+export type DetectedMaterialCategory = 'photo' | 'video' | 'document'
+export type DetailedMaterialSubtype =
+  | 'photo'
+  | 'video'
+  | 'pdf'
+  | 'excel'
+  | 'word'
+  | 'powerpoint'
+  | 'document'
+
+/**
+ * Detects the category ('photo' | 'video' | 'document') and subtype of a file or URL
+ * by evaluating both MIME type and file extension (name/url fallback).
+ */
+export function detectMaterialKind(fileOrName?: { name?: string; type?: string } | string | null): {
+  category: DetectedMaterialCategory
+  subtype: DetailedMaterialSubtype
+  label: string
+  shortLabel: string
+} {
+  if (!fileOrName) {
+    return {
+      category: 'document',
+      subtype: 'document',
+      label: 'Documento',
+      shortLabel: 'Doc',
+    }
+  }
+
+  const name = typeof fileOrName === 'string' ? fileOrName : fileOrName.name || ''
+  const mime = (
+    typeof fileOrName === 'object' && fileOrName !== null ? fileOrName.type || '' : ''
+  ).toLowerCase()
+  const lowerName = name.toLowerCase()
+
+  // 1. Images
+  const imageExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|avif|ico|tiff?|heic|heif)$/i
+  const isImageMime = mime.startsWith('image/')
+  const isImageExt = imageExtensions.test(lowerName)
+
+  if (isImageMime || isImageExt) {
+    return {
+      category: 'photo',
+      subtype: 'photo',
+      label: 'Foto',
+      shortLabel: 'Foto',
+    }
+  }
+
+  // 2. Videos
+  const videoExtensions = /\.(mp4|webm|mov|avi|mpeg|mpg|mkv|m4v|3gp|wmv|flv|ogv)$/i
+  const isVideoMime = mime.startsWith('video/')
+  const isVideoExt = videoExtensions.test(lowerName)
+
+  if (isVideoMime || isVideoExt) {
+    return {
+      category: 'video',
+      subtype: 'video',
+      label: 'Vídeo',
+      shortLabel: 'Vídeo',
+    }
+  }
+
+  // 3. Excel / Spreadsheets
+  const excelExtensions = /\.(xlsx|xls|csv|ods)$/i
+  const isExcelMime =
+    mime === 'application/vnd.ms-excel' ||
+    mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mime === 'text/csv' ||
+    mime === 'application/csv' ||
+    mime.includes('spreadsheet')
+  const isExcelExt = excelExtensions.test(lowerName)
+
+  if (isExcelMime || isExcelExt) {
+    return {
+      category: 'document',
+      subtype: 'excel',
+      label: 'Planilha',
+      shortLabel: 'Planilha',
+    }
+  }
+
+  // 4. PDF
+  const isPdfMime = mime === 'application/pdf'
+  const isPdfExt = /\.pdf$/i.test(lowerName)
+
+  if (isPdfMime || isPdfExt) {
+    return {
+      category: 'document',
+      subtype: 'pdf',
+      label: 'PDF/Documento',
+      shortLabel: 'PDF',
+    }
+  }
+
+  // 5. PowerPoint / Presentations
+  const pptExtensions = /\.(pptx|ppt|pps|ppsx|odp)$/i
+  const isPptMime =
+    mime === 'application/vnd.ms-powerpoint' ||
+    mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    mime === 'application/vnd.openxmlformats-officedocument.presentationml.slideshow' ||
+    mime.includes('presentation')
+  const isPptExt = pptExtensions.test(lowerName)
+
+  if (isPptMime || isPptExt) {
+    return {
+      category: 'document',
+      subtype: 'powerpoint',
+      label: 'Apresentação',
+      shortLabel: 'Slides',
+    }
+  }
+
+  // 6. Word / Text Docs
+  const wordExtensions = /\.(docx|doc|rtf|odt|txt)$/i
+  const isWordMime =
+    mime === 'application/msword' ||
+    mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    mime.includes('wordprocessingml') ||
+    mime.includes('msword')
+  const isWordExt = wordExtensions.test(lowerName)
+
+  if (isWordMime || isWordExt) {
+    return {
+      category: 'document',
+      subtype: 'word',
+      label: 'Documento',
+      shortLabel: 'Doc',
+    }
+  }
+
+  // Default fallback
+  return {
+    category: 'document',
+    subtype: 'document',
+    label: 'Documento',
+    shortLabel: 'Doc',
+  }
+}

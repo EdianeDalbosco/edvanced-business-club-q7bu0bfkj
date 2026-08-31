@@ -44,6 +44,7 @@ import {
   getMembers,
   getFileUrl,
 } from '@/services/api'
+import { detectMaterialKind } from '@/lib/utils'
 import type { Meeting, Material, Disclosure, User } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -636,9 +637,14 @@ export default function Index() {
       >
         {materials.length > 0 ? (
           materials.map((item) => {
-            const isVideo = item.type === 'video'
-            const isDoc = item.type === 'document'
-            const isPhoto = item.type === 'photo'
+            const kind = detectMaterialKind({
+              name: item.file || item.url || item.title,
+              type: item.type === 'video' ? 'video/' : item.type === 'photo' ? 'image/' : undefined,
+            })
+            const isVideo = kind.subtype === 'video' || item.type === 'video'
+            const isPhoto = kind.subtype === 'photo' || item.type === 'photo'
+            const isExcel = kind.subtype === 'excel'
+            const fileUrl = item.file ? getFileUrl('materials', item.id, item.file) : item.url
 
             return (
               <div
@@ -648,9 +654,9 @@ export default function Index() {
               >
                 {/* Media Poster / Thumbnail */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#061020] flex items-center justify-center">
-                  {isPhoto && item.url ? (
+                  {isPhoto && fileUrl ? (
                     <img
-                      src={item.url}
+                      src={fileUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                     />
@@ -669,11 +675,21 @@ export default function Index() {
                     </>
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#122443] to-[#061020] flex flex-col items-center justify-center text-slate-200 p-4 text-center">
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 mb-2 group-hover:scale-110 transition-transform">
-                        <FileText className="w-6 h-6" />
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${
+                          isExcel
+                            ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
+                            : 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                        }`}
+                      >
+                        {isExcel ? (
+                          <FileSpreadsheet className="w-6 h-6" />
+                        ) : (
+                          <FileText className="w-6 h-6" />
+                        )}
                       </div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5D77F]">
-                        Documento Executivo
+                        {isExcel ? 'Planilha Eletrônica' : 'Documento Executivo'}
                       </span>
                     </div>
                   )}
@@ -686,12 +702,14 @@ export default function Index() {
                       className={`text-[9px] uppercase font-bold tracking-wider ${
                         isVideo
                           ? 'bg-rose-600 text-white'
-                          : isDoc
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-[#D4AF37] text-slate-950'
+                          : isExcel
+                            ? 'bg-emerald-600 text-white'
+                            : isPhoto
+                              ? 'bg-[#D4AF37] text-slate-950'
+                              : 'bg-blue-600 text-white'
                       }`}
                     >
-                      {isVideo ? 'Vídeo' : isDoc ? 'PDF / Slides' : 'Foto'}
+                      {kind.label}
                     </Badge>
                   </div>
 
@@ -909,23 +927,21 @@ export default function Index() {
               const fileUrl = selectedMedia.file
                 ? getFileUrl('materials', selectedMedia.id, selectedMedia.file)
                 : selectedMedia.url
-              const lowerTarget = (selectedMedia.file || selectedMedia.url || '').toLowerCase()
-              const isExcel =
-                lowerTarget.includes('.xls') ||
-                lowerTarget.includes('.xlsx') ||
-                lowerTarget.includes('.csv')
-              const isPdf = lowerTarget.includes('.pdf')
-              const isVideo =
-                selectedMedia.type === 'video' ||
-                lowerTarget.includes('.mp4') ||
-                lowerTarget.includes('.webm') ||
-                lowerTarget.includes('.mov')
-              const isPhoto =
-                selectedMedia.type === 'photo' ||
-                lowerTarget.includes('.jpg') ||
-                lowerTarget.includes('.jpeg') ||
-                lowerTarget.includes('.png') ||
-                lowerTarget.includes('.webp')
+              const kind = detectMaterialKind({
+                name: selectedMedia.file || selectedMedia.url || selectedMedia.title,
+                type:
+                  selectedMedia.type === 'video'
+                    ? 'video/'
+                    : selectedMedia.type === 'photo'
+                      ? 'image/'
+                      : undefined,
+              })
+              const isExcel = kind.subtype === 'excel'
+              const isPdf = kind.subtype === 'pdf'
+              const isPpt = kind.subtype === 'powerpoint'
+              const isWord = kind.subtype === 'word'
+              const isVideo = kind.subtype === 'video' || selectedMedia.type === 'video'
+              const isPhoto = kind.subtype === 'photo' || selectedMedia.type === 'photo'
 
               return (
                 <>
@@ -933,14 +949,18 @@ export default function Index() {
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
                         {isExcel
-                          ? 'Planilha Excel'
+                          ? 'Planilha'
                           : isPdf
-                            ? 'Documento PDF'
-                            : isVideo
-                              ? 'Vídeo / Gravação'
-                              : isPhoto
-                                ? 'Foto / Imagem HD'
-                                : 'Material / Documento'}
+                            ? 'PDF/Documento'
+                            : isPpt
+                              ? 'Apresentação'
+                              : isWord
+                                ? 'Documento'
+                                : isVideo
+                                  ? 'Vídeo'
+                                  : isPhoto
+                                    ? 'Foto'
+                                    : 'Documento'}
                       </Badge>
                     </div>
                     <DialogTitle className="text-lg font-bold text-white">
@@ -1015,7 +1035,7 @@ export default function Index() {
                         <FileSpreadsheet className="w-16 h-16 text-emerald-400 mx-auto" />
                         <div>
                           <p className="text-sm font-bold">
-                            Planilha Eletrônica Excel (.xlsx / .xls)
+                            Planilha Eletrônica Excel (.xlsx / .xls / .csv)
                           </p>
                           <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
                             Arquivo de planilha executiva disponível para download.
@@ -1035,14 +1055,40 @@ export default function Index() {
                       </div>
                     )}
 
-                    {/* Outros tipos genéricos */}
-                    {!isPhoto && !isVideo && !isPdf && !isExcel && fileUrl && (
+                    {/* Visualizador de PowerPoint */}
+                    {isPpt && fileUrl && (
+                      <div className="p-8 text-center text-white space-y-4">
+                        <FileText className="w-16 h-16 text-amber-400 mx-auto" />
+                        <div>
+                          <p className="text-sm font-bold">Apresentação em Slides (.pptx / .ppt)</p>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                            Arquivo de apresentação executiva disponível para download.
+                          </p>
+                        </div>
+                        <div className="pt-2">
+                          <a
+                            href={fileUrl}
+                            download={selectedMedia.file || selectedMedia.title}
+                            className="inline-block"
+                          >
+                            <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Baixar Apresentação
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outros tipos genéricos de documento / Word */}
+                    {!isPhoto && !isVideo && !isPdf && !isExcel && !isPpt && fileUrl && (
                       <div className="p-8 text-center text-white space-y-4">
                         <FileText className="w-16 h-16 text-blue-400 mx-auto" />
                         <div>
-                          <p className="text-sm font-bold">Arquivo do Acervo</p>
+                          <p className="text-sm font-bold">
+                            {isWord ? 'Documento Word (.docx / .doc)' : 'Arquivo do Acervo'}
+                          </p>
                           <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                            Clique abaixo para acessar ou transferir o arquivo.
+                            Clique abaixo para acessar ou baixar o arquivo.
                           </p>
                         </div>
                         <a
@@ -1057,7 +1103,6 @@ export default function Index() {
                       </div>
                     )}
                   </div>
-
                   <div className="flex items-center justify-between pt-2 border-t border-slate-800">
                     <Button
                       variant="outline"
