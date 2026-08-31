@@ -2681,7 +2681,7 @@ export default function PublicPortal() {
                 title: previewMediaModal.title,
                 type: previewMediaModal.type,
               })
-              return k.subtype === 'pdf' ? 'max-w-5xl' : 'max-w-3xl'
+              return k.subtype === 'pdf' ? 'max-w-6xl w-[95vw]' : 'max-w-3xl'
             })()}`}
           >
             {(() => {
