@@ -675,43 +675,43 @@ export default function PublicPortal() {
           </Link>
 
           {/* Tab Navigation Center (Desktop) */}
-          <nav className="hidden md:flex items-center gap-1 bg-[#0A1A33] p-1.5 rounded-2xl border border-white/10 shadow-inner">
+          <nav className="hidden md:flex items-center gap-1.5 bg-[#0A1A33] p-1.5 rounded-2xl border border-white/10 shadow-inner">
             <button
               type="button"
               onClick={() => setTab('sobre')}
-              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${
                 activeTab === 'sobre'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-md shadow-[#D4AF37]/20'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Crown className="w-4 h-4" />
+              <Crown className="w-4 h-4 shrink-0" />
               <span>Sobre o Business Club</span>
             </button>
 
             <button
               type="button"
               onClick={() => setTab('eventos')}
-              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${
                 activeTab === 'eventos'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-md shadow-[#D4AF37]/20'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              <CalendarIcon className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4 shrink-0" />
               <span>Eventos do Club</span>
             </button>
 
             <button
               type="button"
               onClick={() => setTab('podcast')}
-              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${
                 activeTab === 'podcast'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-md shadow-[#D4AF37]/20'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Mic className="w-4 h-4" />
+              <Mic className="w-4 h-4 shrink-0" />
               <span>EdvancedCast</span>
               <span className="relative flex h-2 w-2 ml-0.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
@@ -722,13 +722,13 @@ export default function PublicPortal() {
             <button
               type="button"
               onClick={() => setTab('materiais')}
-              className={`flex items-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-3.5 lg:px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${
                 activeTab === 'materiais'
-                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 font-black shadow-lg shadow-[#D4AF37]/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-md shadow-[#D4AF37]/20'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              <FolderOpen className="w-4 h-4" />
+              <FolderOpen className="w-4 h-4 shrink-0" />
               <span>Galeria</span>
             </button>
           </nav>
@@ -761,50 +761,50 @@ export default function PublicPortal() {
           <button
             type="button"
             onClick={() => setTab('sobre')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'sobre'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Crown className="w-3.5 h-3.5" />
-            <span>Sobre</span>
+            <Crown className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Sobre o Business Club</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('eventos')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'eventos'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <CalendarIcon className="w-3.5 h-3.5" />
-            <span>Eventos</span>
+            <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Eventos do Club</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('podcast')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'podcast'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Mic className="w-3.5 h-3.5" />
-            <span>Cast</span>
+            <Mic className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">EdvancedCast</span>
           </button>
           <button
             type="button"
             onClick={() => setTab('materiais')}
-            className={`py-3 px-1 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-tight border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
+            className={`py-3 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 transition-colors ${
               activeTab === 'materiais'
                 ? 'border-[#D4AF37] text-[#F5D77F] bg-[#0A1A33]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <FolderOpen className="w-3.5 h-3.5" />
-            <span>Galeria</span>
+            <FolderOpen className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Galeria</span>
           </button>
         </div>
       </header>
@@ -898,49 +898,53 @@ export default function PublicPortal() {
             </div>
 
             {/* Quick tab switcher pill in hero */}
-            <div className="pt-2 flex flex-wrap items-center gap-3">
+            <div className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3">
               <button
+                type="button"
                 onClick={() => setTab('sobre')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 flex items-center gap-2 ${
                   activeTab === 'sobre'
-                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30'
                     : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
                 }`}
               >
-                <Crown className="w-4 h-4" />
+                <Crown className="w-4 h-4 shrink-0" />
                 <span>Sobre o Business Club</span>
               </button>
               <button
+                type="button"
                 onClick={() => setTab('eventos')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 flex items-center gap-2 ${
                   activeTab === 'eventos'
-                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30'
                     : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
                 }`}
               >
-                <CalendarIcon className="w-4 h-4" />
-                <span>Eventos Oficiais ({meetings.length})</span>
+                <CalendarIcon className="w-4 h-4 shrink-0" />
+                <span>Eventos do Club ({meetings.length})</span>
               </button>
               <button
+                type="button"
                 onClick={() => setTab('podcast')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 flex items-center gap-2 ${
                   activeTab === 'podcast'
-                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30'
                     : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
                 }`}
               >
-                <Tv className="w-4 h-4" />
+                <Mic className="w-4 h-4 shrink-0" />
                 <span>EdvancedCast ({episodes.length})</span>
               </button>
               <button
+                type="button"
                 onClick={() => setTab('materiais')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 flex items-center gap-2 ${
                   activeTab === 'materiais'
-                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30 scale-105 font-black'
+                    ? 'bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] text-slate-950 shadow-lg shadow-[#D4AF37]/30'
                     : 'bg-[#061020]/90 hover:bg-[#0A1A33] text-slate-200 border border-white/15 hover:border-[#D4AF37]/60 backdrop-blur-md'
                 }`}
               >
-                <FolderOpen className="w-4 h-4" />
+                <FolderOpen className="w-4 h-4 shrink-0" />
                 <span>Galeria ({publicMaterialsOnly.length})</span>
               </button>
             </div>
