@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T04:39:47.634Z",
+  "generatedAt": "2026-08-31T04:44:34.295Z",
   "collections": [
     {
       "name": "users",
@@ -86,8 +86,8 @@
       "name": "meetings",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
+        "list": "",
+        "view": "",
         "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
