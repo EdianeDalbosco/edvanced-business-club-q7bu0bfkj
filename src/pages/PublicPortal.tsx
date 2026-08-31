@@ -1282,8 +1282,8 @@ export default function PublicPortal() {
                     <span>Eventos Oficiais Edvanced Business Club</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Palestras magnas, jantares de gala, summits executivos e rodadas de negócios de
-                    alta governança.
+                    Encontros, experiências e conexões estratégicas para desenvolver você,
+                    fortalecer seu negócio e gerar novas oportunidades.
                   </p>
                 </div>
 
