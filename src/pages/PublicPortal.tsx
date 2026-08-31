@@ -2438,7 +2438,7 @@ export default function PublicPortal() {
             </p>
             <div className="space-y-2.5 text-slate-300">
               <a
-                href="https://wa.me/5511999999999"
+                href="https://wa.me/5565981003969"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-emerald-500/50 hover:bg-[#0A1A33] transition-all group"
@@ -2448,7 +2448,7 @@ export default function PublicPortal() {
                 </div>
                 <div>
                   <span className="font-bold text-white block text-[11px]">WhatsApp Edvanced</span>
-                  <span className="text-[11px] text-emerald-300">+55 (65) 98100-3969</span>
+                  <span className="text-[11px] text-emerald-300">(65) 98100-3969</span>
                 </div>
               </a>
 
@@ -2468,7 +2468,7 @@ export default function PublicPortal() {
               </a>
 
               <a
-                href="mailto:contato@edvanced.com.br"
+                href="mailto:contatoedvanced@gmail.com"
                 className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#061020] border border-slate-800 hover:border-[#D4AF37]/50 hover:bg-[#0A1A33] transition-all group"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#F5D77F] group-hover:scale-105 transition-transform flex-shrink-0">
@@ -2476,7 +2476,7 @@ export default function PublicPortal() {
                 </div>
                 <div>
                   <span className="font-bold text-white block text-[11px]">E-mail de Contato</span>
-                  <span className="text-[11px] text-slate-300">contato@edvanced.com.br</span>
+                  <span className="text-[11px] text-slate-300">contatoedvanced@gmail.com</span>
                 </div>
               </a>
             </div>

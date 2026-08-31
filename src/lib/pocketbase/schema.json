@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T00:41:34.575Z",
+  "generatedAt": "2026-08-31T00:58:33.405Z",
   "collections": [
     {
       "name": "users",
@@ -614,12 +614,6 @@
           "system": false
         },
         {
-          "name": "photo_url",
-          "type": "url",
-          "required": false,
-          "system": false
-        },
-        {
           "name": "space_type",
           "type": "text",
           "required": false,
@@ -650,6 +644,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "photo_url",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
