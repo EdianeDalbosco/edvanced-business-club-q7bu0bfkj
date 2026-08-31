@@ -21,6 +21,8 @@ import {
   ExternalLink,
   Info,
 } from 'lucide-react'
+import salaReuniaoImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-1-2d279.jpeg'
+import salaCompartilhadaImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-c0958.jpeg'
 import {
   getAllClubBenefitsForAdmin,
   createClubBenefit,
@@ -310,6 +312,12 @@ export default function AdminClubSelection() {
   const getSpacePhotoSrc = (item: ClubSpacePhoto) => {
     if (item.photo) {
       return getFileUrl('club_spaces_photos', item.id, item.photo)
+    }
+    if (item.photo_url === '/images/sala-de-reuniao.jpeg') {
+      return salaReuniaoImg
+    }
+    if (item.photo_url === '/images/sala-compartilhada.jpeg') {
+      return salaCompartilhadaImg
     }
     if (item.photo_url) {
       return item.photo_url

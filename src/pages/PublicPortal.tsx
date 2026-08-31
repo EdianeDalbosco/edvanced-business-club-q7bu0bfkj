@@ -46,6 +46,8 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import salaReuniaoImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-1-2d279.jpeg'
+import salaCompartilhadaImg from '../assets/whatsapp-image-2026-05-29-at-16.27.10-c0958.jpeg'
 import {
   getMeetings,
   getEdvancedCastEpisodes,
@@ -318,6 +320,12 @@ export default function PublicPortal() {
   const getSpacePhotoSrc = (sp: ClubSpacePhoto) => {
     if (sp.photo) {
       return getFileUrl('club_spaces_photos', sp.id, sp.photo)
+    }
+    if (sp.photo_url === '/images/sala-de-reuniao.jpeg') {
+      return salaReuniaoImg
+    }
+    if (sp.photo_url === '/images/sala-compartilhada.jpeg') {
+      return salaCompartilhadaImg
     }
     if (sp.photo_url) {
       return sp.photo_url
