@@ -124,8 +124,8 @@ export default function Layout() {
       icon: Users,
     },
     {
-      label: 'Portal Público (Eventos & Cast)',
-      path: '/publico',
+      label: 'Portal Público (Início)',
+      path: '/',
       icon: ExternalLink,
       badge: 'Aberto',
     },

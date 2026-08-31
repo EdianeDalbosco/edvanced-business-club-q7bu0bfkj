@@ -140,10 +140,10 @@ export default function Login() {
                 Quer ver a agenda de eventos abertos e assistir aos episódios do EdvancedCast?
               </p>
               <Link
-                to="/publico"
+                to="/"
                 className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#F5D77F] text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-xs"
               >
-                <span>Acessar Página Pública</span>
+                <span>Acessar Página Inicial Pública</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
             </div>
