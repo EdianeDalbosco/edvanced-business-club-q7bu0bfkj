@@ -1747,14 +1747,24 @@ export default function PublicPortal() {
                             className="group relative border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                           >
                             <div>
-                              {/* Cover image adaptável a qualquer proporção */}
-                              <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
+                              {/* Cover image com exibição inteira sem cortes (object-contain + fundo neutro/desfocado) */}
+                              <div className="relative aspect-[16/9] w-full bg-[#061020] overflow-hidden flex items-center justify-center">
                                 {coverUrl ? (
-                                  <img
-                                    src={coverUrl}
-                                    alt={event.title}
-                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                                  />
+                                  <>
+                                    {/* Backdrop desfocado para preenchimento de moldura */}
+                                    <img
+                                      src={coverUrl}
+                                      alt=""
+                                      aria-hidden="true"
+                                      className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                                    />
+                                    {/* Capa original inteira sem corte */}
+                                    <img
+                                      src={coverUrl}
+                                      alt={event.title}
+                                      className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                                    />
+                                  </>
                                 ) : (
                                   <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
                                     <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
@@ -1940,14 +1950,24 @@ export default function PublicPortal() {
                             className="group relative border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                           >
                             <div>
-                              {/* Cover image adaptável a qualquer proporção */}
-                              <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
+                              {/* Cover image com exibição inteira sem cortes (object-contain + fundo neutro/desfocado) */}
+                              <div className="relative aspect-[16/9] w-full bg-[#061020] overflow-hidden flex items-center justify-center">
                                 {coverUrl ? (
-                                  <img
-                                    src={coverUrl}
-                                    alt={event.title}
-                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                                  />
+                                  <>
+                                    {/* Backdrop desfocado para preenchimento de moldura */}
+                                    <img
+                                      src={coverUrl}
+                                      alt=""
+                                      aria-hidden="true"
+                                      className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                                    />
+                                    {/* Capa original inteira sem corte */}
+                                    <img
+                                      src={coverUrl}
+                                      alt={event.title}
+                                      className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                                    />
+                                  </>
                                 ) : (
                                   <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
                                     <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
@@ -3411,15 +3431,23 @@ export default function PublicPortal() {
           onOpenChange={(open) => !open && setSelectedEventModal(null)}
         >
           <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
-            {/* Capa do Evento no Topo do Modal (se existir) */}
+            {/* Capa do Evento no Topo do Modal (exibição inteira sem corte, adaptável a 16:9, quadrada ou vertical) */}
             {selectedEventModal.cover_image && (
-              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
+              <div className="relative w-full max-h-[380px] rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-3 flex items-center justify-center">
+                {/* Backdrop desfocado elegante */}
+                <img
+                  src={getMeetingCover(selectedEventModal)}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-30 select-none pointer-events-none"
+                />
+                {/* Capa original inteira sem corte */}
                 <img
                   src={getMeetingCover(selectedEventModal)}
                   alt={selectedEventModal.title}
-                  className="w-full h-full object-cover object-center"
+                  className="relative z-[1] max-h-[380px] w-auto max-w-full object-contain drop-shadow-xl"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/20 pointer-events-none" />
               </div>
             )}
 

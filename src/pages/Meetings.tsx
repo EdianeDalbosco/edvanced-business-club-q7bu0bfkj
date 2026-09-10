@@ -1206,14 +1206,24 @@ export default function MeetingsAndMaterials() {
                           : 'border-slate-800 hover:border-emerald-400 shadow-lg'
                       }`}
                     >
-                      {/* Thumbnail Cover com aspecto 16:9 fixo e object-cover centralizado */}
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
+                      {/* Thumbnail Cover com exibição inteira sem cortes (object-contain + fundo neutro/desfocado) */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020] flex items-center justify-center">
                         {getMeetingHeroCover(m) ? (
-                          <img
-                            src={getMeetingHeroCover(m)}
-                            alt={m.title}
-                            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                          />
+                          <>
+                            {/* Backdrop desfocado elegante que preenche o container */}
+                            <img
+                              src={getMeetingHeroCover(m)}
+                              alt=""
+                              aria-hidden="true"
+                              className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                            />
+                            {/* Imagem de capa inteira, nítida, preservando a proporção original sem cortes */}
+                            <img
+                              src={getMeetingHeroCover(m)}
+                              alt={m.title}
+                              className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                            />
+                          </>
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/20 rounded-full blur-xl pointer-events-none" />
@@ -1386,14 +1396,24 @@ export default function MeetingsAndMaterials() {
                           : 'border-slate-800 hover:border-[#D4AF37] shadow-lg'
                       }`}
                     >
-                      {/* Thumbnail Cover adaptável com aspect-[16/9] e object-cover */}
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
+                      {/* Thumbnail Cover com exibição inteira sem cortes (object-contain + fundo neutro/desfocado) */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020] flex items-center justify-center">
                         {getMeetingHeroCover(m) ? (
-                          <img
-                            src={getMeetingHeroCover(m)}
-                            alt={m.title}
-                            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                          />
+                          <>
+                            {/* Backdrop desfocado elegante que preenche o container */}
+                            <img
+                              src={getMeetingHeroCover(m)}
+                              alt=""
+                              aria-hidden="true"
+                              className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                            />
+                            {/* Imagem de capa inteira, nítida, preservando a proporção original sem cortes */}
+                            <img
+                              src={getMeetingHeroCover(m)}
+                              alt={m.title}
+                              className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                            />
+                          </>
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
@@ -2779,15 +2799,23 @@ export default function MeetingsAndMaterials() {
       {detailMeeting && (
         <Dialog open={!!detailMeeting} onOpenChange={(open) => !open && setDetailMeeting(null)}>
           <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
-            {/* Capa do Encontro no Topo do Modal (se existir) */}
+            {/* Capa do Encontro no Topo do Modal (exibição inteira sem corte, adaptável a 16:9, quadrada ou vertical) */}
             {detailMeeting.cover_image && (
-              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
+              <div className="relative w-full max-h-[380px] rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-3 flex items-center justify-center">
+                {/* Backdrop desfocado elegante */}
+                <img
+                  src={getFileUrl('meetings', detailMeeting.id, detailMeeting.cover_image)}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-30 select-none pointer-events-none"
+                />
+                {/* Capa original sem corte */}
                 <img
                   src={getFileUrl('meetings', detailMeeting.id, detailMeeting.cover_image)}
                   alt={detailMeeting.title}
-                  className="w-full h-full object-cover object-center"
+                  className="relative z-[1] max-h-[380px] w-auto max-w-full object-contain drop-shadow-xl"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/20 pointer-events-none" />
               </div>
             )}
 
@@ -3079,11 +3107,11 @@ export default function MeetingsAndMaterials() {
           onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
         >
           <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
-            {/* Capa do Evento no Topo do Modal (se existir) */}
+            {/* Capa do Evento no Topo do Modal (exibição inteira sem corte, adaptável a qualquer proporção) */}
             {selectedCalendarEvent.coverImage && (
-              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
-                <img
-                  src={
+              <div className="relative w-full max-h-[380px] rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-3 flex items-center justify-center">
+                {(() => {
+                  const coverUrl =
                     selectedCalendarEvent.origin === 'meeting' &&
                     selectedCalendarEvent.originalMeeting
                       ? getFileUrl(
@@ -3092,11 +3120,25 @@ export default function MeetingsAndMaterials() {
                           selectedCalendarEvent.coverImage,
                         )
                       : selectedCalendarEvent.coverImage
-                  }
-                  alt={selectedCalendarEvent.title}
-                  className="w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+                  return (
+                    <>
+                      {/* Backdrop desfocado elegante */}
+                      <img
+                        src={coverUrl}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-30 select-none pointer-events-none"
+                      />
+                      {/* Capa original sem corte */}
+                      <img
+                        src={coverUrl}
+                        alt={selectedCalendarEvent.title}
+                        className="relative z-[1] max-h-[380px] w-auto max-w-full object-contain drop-shadow-xl"
+                      />
+                    </>
+                  )
+                })()}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/20 pointer-events-none" />
               </div>
             )}
 
@@ -3365,13 +3407,19 @@ export default function MeetingsAndMaterials() {
                 </Label>
 
                 {meetingCoverPreview && (
-                  <div className="relative aspect-[16/9] w-full max-h-48 rounded-xl overflow-hidden border border-[#D4AF37]/40 bg-black/40 group">
+                  <div className="relative aspect-[16/9] w-full max-h-48 rounded-xl overflow-hidden border border-[#D4AF37]/40 bg-[#061020] group flex items-center justify-center">
+                    <img
+                      src={meetingCoverPreview}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full object-cover blur-sm opacity-30 scale-110"
+                    />
                     <img
                       src={meetingCoverPreview}
                       alt="Preview da Capa"
-                      className="w-full h-full object-cover object-center"
+                      className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain drop-shadow-md"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 z-[2] bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Button
                         type="button"
                         variant="destructive"

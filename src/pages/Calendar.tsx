@@ -922,7 +922,42 @@ export default function CalendarPage() {
           open={!!selectedCalendarEvent}
           onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-[#061020] p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-[#061020] p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {/* Capa do Evento no Topo do Modal (exibição inteira sem corte) */}
+            {selectedCalendarEvent.coverImage && (
+              <div className="relative w-full max-h-[380px] rounded-2xl border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-3 flex items-center justify-center overflow-hidden">
+                {(() => {
+                  const coverUrl =
+                    selectedCalendarEvent.origin === 'meeting' &&
+                    selectedCalendarEvent.originalMeeting
+                      ? getFileUrl(
+                          'meetings',
+                          selectedCalendarEvent.originalMeeting.id,
+                          selectedCalendarEvent.coverImage,
+                        )
+                      : selectedCalendarEvent.coverImage
+                  return (
+                    <>
+                      {/* Backdrop desfocado elegante */}
+                      <img
+                        src={coverUrl}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-30 select-none pointer-events-none"
+                      />
+                      {/* Capa original sem corte */}
+                      <img
+                        src={coverUrl}
+                        alt={selectedCalendarEvent.title}
+                        className="relative z-[1] max-h-[380px] w-auto max-w-full object-contain drop-shadow-xl"
+                      />
+                    </>
+                  )
+                })()}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/20 pointer-events-none" />
+              </div>
+            )}
+
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge

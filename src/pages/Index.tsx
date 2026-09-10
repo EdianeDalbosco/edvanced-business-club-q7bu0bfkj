@@ -561,14 +561,24 @@ export default function Index() {
                 onClick={() => navigate(`/encontros?id=${meeting.id}`)}
                 className="group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border border-slate-800 hover:border-[#D4AF37] shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
               >
-                {/* Card Media Preview with Fallback */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
+                {/* Card Media Preview with Fallback (imagem inteira sem cortes) */}
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020] flex items-center justify-center">
                   {getMeetingHeroCover(meeting) ? (
-                    <img
-                      src={getMeetingHeroCover(meeting)}
-                      alt={meeting.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
-                    />
+                    <>
+                      {/* Backdrop desfocado para efeito de moldura */}
+                      <img
+                        src={getMeetingHeroCover(meeting)}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                      />
+                      {/* Capa original inteira sem corte */}
+                      <img
+                        src={getMeetingHeroCover(meeting)}
+                        alt={meeting.title}
+                        className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                      />
+                    </>
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                       <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
@@ -1217,7 +1227,33 @@ export default function Index() {
           open={!!selectedMeetingModal}
           onOpenChange={(open) => !open && setSelectedMeetingModal(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {/* Capa do Encontro no Topo do Modal (exibição inteira sem corte) */}
+            {selectedMeetingModal.cover_image && (
+              <div className="relative w-full max-h-[380px] rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-3 flex items-center justify-center">
+                <img
+                  src={getFileUrl(
+                    'meetings',
+                    selectedMeetingModal.id,
+                    selectedMeetingModal.cover_image,
+                  )}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-30 select-none pointer-events-none"
+                />
+                <img
+                  src={getFileUrl(
+                    'meetings',
+                    selectedMeetingModal.id,
+                    selectedMeetingModal.cover_image,
+                  )}
+                  alt={selectedMeetingModal.title}
+                  className="relative z-[1] max-h-[380px] w-auto max-w-full object-contain drop-shadow-xl"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/20 pointer-events-none" />
+              </div>
+            )}
+
             <DialogHeader className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
