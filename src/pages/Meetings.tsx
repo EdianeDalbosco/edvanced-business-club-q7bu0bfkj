@@ -1215,17 +1215,17 @@ export default function MeetingsAndMaterials() {
                               src={getMeetingHeroCover(m)}
                               alt=""
                               aria-hidden="true"
-                              className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                              className="absolute inset-0 z-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
                             />
                             {/* Imagem de capa inteira, nítida, preservando a proporção original sem cortes */}
                             <img
                               src={getMeetingHeroCover(m)}
                               alt={m.title}
-                              className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                              className="relative z-0 max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
                             />
                           </>
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative z-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/20 rounded-full blur-xl pointer-events-none" />
                             <Ticket className="w-8 h-8 text-emerald-400 mb-1 opacity-80" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 line-clamp-1">
@@ -1233,10 +1233,10 @@ export default function MeetingsAndMaterials() {
                             </span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
+                        <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40 pointer-events-none" />
 
                         {/* Badges Top */}
-                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                        <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-1 pointer-events-none">
                           <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-400 text-slate-950 tracking-wider shadow">
                             Aberto ao Público
                           </span>
@@ -1250,15 +1250,15 @@ export default function MeetingsAndMaterials() {
                         </div>
 
                         {/* Play / Inspect Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                           <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
                             <Eye className="w-5 h-5 text-slate-950" />
                           </div>
                         </div>
 
                         {/* Bottom Date & Price */}
-                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-200">
-                          <span className="font-semibold text-[#F5D77F]">
+                        <div className="absolute bottom-2 left-3 right-3 z-20 flex items-center justify-between text-[11px] text-slate-200 pointer-events-none">
+                          <span className="font-semibold text-[#F5D77F] drop-shadow-sm">
                             {formatShortDate(m.start_date || m.date)}
                           </span>
                           <span className="font-black text-emerald-300 bg-slate-950/80 px-2 py-0.5 rounded-full text-[10px] border border-emerald-500/30">
@@ -1405,17 +1405,17 @@ export default function MeetingsAndMaterials() {
                               src={getMeetingHeroCover(m)}
                               alt=""
                               aria-hidden="true"
-                              className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                              className="absolute inset-0 z-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
                             />
                             {/* Imagem de capa inteira, nítida, preservando a proporção original sem cortes */}
                             <img
                               src={getMeetingHeroCover(m)}
                               alt={m.title}
-                              className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                              className="relative z-0 max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
                             />
                           </>
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative z-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
                             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl pointer-events-none" />
                             <Sparkles className="w-8 h-8 text-[#D4AF37] mb-1 opacity-80" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-[#F5D77F] line-clamp-1">
@@ -1423,10 +1423,10 @@ export default function MeetingsAndMaterials() {
                             </span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
+                        <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40 pointer-events-none" />
 
                         {/* Badges Top */}
-                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                        <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-1 pointer-events-none">
                           <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#D4AF37] text-slate-950 tracking-wider shadow">
                             {m.type || 'Presencial'}
                           </span>
@@ -1440,18 +1440,20 @@ export default function MeetingsAndMaterials() {
                         </div>
 
                         {/* Play / Inspect Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                           <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
                             <Eye className="w-5 h-5 text-slate-950" />
                           </div>
                         </div>
 
                         {/* Bottom Date */}
-                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-200">
-                          <span className="font-semibold text-[#F5D77F]">
+                        <div className="absolute bottom-2 left-3 right-3 z-20 flex items-center justify-between text-[11px] text-slate-200 pointer-events-none">
+                          <span className="font-semibold text-[#F5D77F] drop-shadow-sm">
                             {formatShortDate(m.start_date || m.date)}
                           </span>
-                          <span>{formatTimeString(m.start_date || m.date)}</span>
+                          <span className="drop-shadow-sm">
+                            {formatTimeString(m.start_date || m.date)}
+                          </span>
                         </div>
                       </div>
 

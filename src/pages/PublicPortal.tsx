@@ -1756,17 +1756,17 @@ export default function PublicPortal() {
                                       src={coverUrl}
                                       alt=""
                                       aria-hidden="true"
-                                      className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                                      className="absolute inset-0 z-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
                                     />
                                     {/* Capa original inteira sem corte */}
                                     <img
                                       src={coverUrl}
                                       alt={event.title}
-                                      className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                                      className="relative z-0 max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
                                     />
                                   </>
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
+                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center relative z-0">
                                     <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
                                     <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
                                       {event.event_name || 'Edvanced Business Club'}
@@ -1774,10 +1774,10 @@ export default function PublicPortal() {
                                   </div>
                                 )}
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                                <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
                                 {/* Top badges */}
-                                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
+                                <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-1.5 pointer-events-none">
                                   <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
                                     {event.type || 'Presencial'}
                                   </Badge>
@@ -1792,7 +1792,7 @@ export default function PublicPortal() {
                                 </div>
 
                                 {/* Bottom pricing & date */}
-                                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
+                                <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between text-white text-[11px] pointer-events-none">
                                   <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
                                     <CalendarIcon className="w-3.5 h-3.5 text-[#F5D77F]" />
                                     {formatShortDate(event.start_date || event.date)}
@@ -1959,17 +1959,17 @@ export default function PublicPortal() {
                                       src={coverUrl}
                                       alt=""
                                       aria-hidden="true"
-                                      className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
+                                      className="absolute inset-0 z-0 w-full h-full object-cover blur-md scale-110 opacity-30 select-none pointer-events-none"
                                     />
                                     {/* Capa original inteira sem corte */}
                                     <img
                                       src={coverUrl}
                                       alt={event.title}
-                                      className="relative z-[1] max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                                      className="relative z-0 max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
                                     />
                                   </>
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
+                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center relative z-0">
                                     <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
                                     <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
                                       {event.event_name || 'Edvanced Business Club'}
@@ -1977,10 +1977,10 @@ export default function PublicPortal() {
                                   </div>
                                 )}
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                                <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
                                 {/* Top badges */}
-                                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
+                                <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-1.5 pointer-events-none">
                                   <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
                                     {event.type || 'Presencial'}
                                   </Badge>
@@ -1995,7 +1995,7 @@ export default function PublicPortal() {
                                 </div>
 
                                 {/* Bottom badge */}
-                                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
+                                <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between text-white text-[11px] pointer-events-none">
                                   <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
                                     <CalendarIcon className="w-3.5 h-3.5 text-[#F5D77F]" />
                                     {formatShortDate(event.start_date || event.date)}
