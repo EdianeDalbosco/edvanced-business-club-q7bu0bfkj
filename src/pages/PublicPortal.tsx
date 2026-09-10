@@ -43,6 +43,7 @@ import {
   Star,
   CheckCircle2,
   Ticket,
+  Smartphone,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -72,7 +73,7 @@ import type {
 } from '@/types'
 import { AVAILABLE_ICONS } from '@/pages/AdminClubSelection'
 import { useAuth } from '@/contexts/AuthContext'
-import { detectMaterialKind } from '@/lib/utils'
+import { detectMaterialKind, normalizeExternalUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -355,7 +356,7 @@ export default function PublicPortal() {
 
   const getMeetingRegistrationLink = (meeting: Meeting) => {
     if (meeting.registration_url && meeting.registration_url.trim()) {
-      return meeting.registration_url.trim()
+      return normalizeExternalUrl(meeting.registration_url)
     }
     const message = encodeURIComponent(
       `Olá! Tenho interesse em garantir minha inscrição no evento "${meeting.title}" do Edvanced Business Club. Poderiam me passar mais informações?`,
@@ -1845,6 +1846,21 @@ export default function PublicPortal() {
                                       <span className="line-clamp-1">{event.speakers}</span>
                                     </div>
                                   )}
+
+                                  {/* Indicação do tipo de inscrição */}
+                                  <div className="pt-1 flex items-center justify-between text-[11px]">
+                                    {event.registration_url && event.registration_url.trim() ? (
+                                      <span className="text-amber-800 font-semibold flex items-center gap-1">
+                                        <Ticket className="w-3 h-3 text-[#D4AF37]" />
+                                        Inscrição Online Cadastrada
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-500 flex items-center gap-1">
+                                        <Smartphone className="w-3 h-3 text-emerald-600" />
+                                        Inscrição via WhatsApp Oficial
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -3500,35 +3516,61 @@ export default function PublicPortal() {
 
             {/* Bloco de Acesso / Inscrição no modal */}
             {selectedEventModal.pricing === 'pago' ? (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[#D4AF37]/15 to-emerald-500/15 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-start sm:items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#061020] border border-emerald-500/40 flex items-center justify-center flex-shrink-0">
-                    <Ticket className="w-4 h-4 text-emerald-400" />
+              <div className="space-y-2">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[#D4AF37]/15 to-emerald-500/15 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#061020] border border-emerald-500/40 flex items-center justify-center flex-shrink-0">
+                      <Ticket className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                        <span>Inscrição Aberta ao Público</span>
+                        <Sparkles className="w-3 h-3 text-[#F5D77F]" />
+                      </p>
+                      <p className="text-[11px] text-slate-300">
+                        {selectedEventModal.registration_url &&
+                        selectedEventModal.registration_url.trim()
+                          ? 'Vagas limitadas. Inscrição confirmada via checkout oficial externo.'
+                          : 'Vagas limitadas disponíveis. Atendimento direto pelo WhatsApp oficial.'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                      <span>Inscrição Aberta ao Público</span>
-                      <Sparkles className="w-3 h-3 text-[#F5D77F]" />
-                    </p>
-                    <p className="text-[11px] text-slate-300">
-                      Vagas limitadas disponíveis para convidados e líderes de mercado. Garanta seu
-                      lugar.
-                    </p>
-                  </div>
+
+                  <a
+                    href={getMeetingRegistrationLink(selectedEventModal)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0"
+                  >
+                    <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/30 flex items-center justify-center gap-1.5 border border-[#D4AF37]/50 transition-all hover:scale-105">
+                      <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                      <span>Garantir Inscrição</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
+                    </Button>
+                  </a>
                 </div>
 
-                <a
-                  href={getMeetingRegistrationLink(selectedEventModal)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0"
-                >
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-lg shadow-[#D4AF37]/30 flex items-center justify-center gap-1.5 border border-[#D4AF37]/50 transition-all hover:scale-105">
-                    <Ticket className="w-3.5 h-3.5 text-slate-950" />
-                    <span>Garantir Inscrição</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
-                  </Button>
-                </a>
+                {/* Se houver link cadastrado, mostrar o endereço para transparência */}
+                {selectedEventModal.registration_url &&
+                  selectedEventModal.registration_url.trim() && (
+                    <div className="px-3.5 py-2 rounded-xl bg-[#061020]/80 border border-slate-800 flex items-center justify-between gap-2 text-[11px]">
+                      <span className="text-slate-400 truncate">
+                        Link direto:{' '}
+                        <span className="text-[#F5D77F] font-mono">
+                          {selectedEventModal.registration_url}
+                        </span>
+                      </span>
+                      <a
+                        href={normalizeExternalUrl(selectedEventModal.registration_url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 font-semibold shrink-0"
+                      >
+                        <span>Abrir</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
               </div>
             ) : (
               <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37]/15 via-[#F5D77F]/10 to-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center gap-3">

@@ -66,6 +66,21 @@ export function normalizePhone(value?: string | null): string {
   return value.replace(/\D/g, '')
 }
 
+/**
+ * Normalizes an external URL, ensuring it has a valid web scheme (http:// or https://)
+ * so it doesn't open as a relative path when clicked in an <a> tag.
+ * Example: "workshopplay.com.br" -> "https://workshopplay.com.br"
+ */
+export function normalizeExternalUrl(raw?: string | null): string {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed
+  }
+  return `https://${trimmed}`
+}
+
 export type DetectedMaterialCategory = 'photo' | 'video' | 'document'
 export type DetailedMaterialSubtype =
   | 'photo'

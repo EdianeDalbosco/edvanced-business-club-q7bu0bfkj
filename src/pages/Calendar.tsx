@@ -16,6 +16,7 @@ import {
   Info,
 } from 'lucide-react'
 import { downloadICSFile } from '@/lib/ics'
+import { normalizeExternalUrl } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { getMeetings, getApprovedDisclosures, getFileUrl } from '@/services/api'
 import type { Meeting, Disclosure } from '@/types'
@@ -145,6 +146,7 @@ export default function CalendarPage() {
           pricing: m.pricing || 'gratuito',
           speakers: m.speakers,
           description: m.description,
+          contactLink: m.registration_url || undefined,
           coverImage: m.cover_image,
           originalMeeting: m,
         })
@@ -1034,9 +1036,9 @@ export default function CalendarPage() {
                     </Button>
                   )}
 
-                {selectedCalendarEvent.contactLink && (
+                {selectedCalendarEvent.contactLink ? (
                   <a
-                    href={selectedCalendarEvent.contactLink}
+                    href={normalizeExternalUrl(selectedCalendarEvent.contactLink)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -1044,7 +1046,19 @@ export default function CalendarPage() {
                       Acessar Link / Inscrição <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                     </Button>
                   </a>
-                )}
+                ) : selectedCalendarEvent.pricing === 'pago' ? (
+                  <a
+                    href={`https://wa.me/5565981003969?text=${encodeURIComponent(
+                      `Olá! Gostaria de mais informações sobre o evento "${selectedCalendarEvent.title}".`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider">
+                      Inscrição WhatsApp <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                    </Button>
+                  </a>
+                ) : null}
               </div>
             </div>
           </DialogContent>

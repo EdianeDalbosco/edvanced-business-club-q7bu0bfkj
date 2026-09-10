@@ -36,7 +36,7 @@ import {
 } from 'lucide-react'
 import { downloadICSFile } from '@/lib/ics'
 import { useAuth } from '@/contexts/AuthContext'
-import { detectMaterialKind, type DetailedMaterialSubtype } from '@/lib/utils'
+import { detectMaterialKind, normalizeExternalUrl, type DetailedMaterialSubtype } from '@/lib/utils'
 import PdfDocumentViewer from '@/components/PdfDocumentViewer'
 import {
   getMeetings,
@@ -551,6 +551,7 @@ export default function MeetingsAndMaterials() {
           pricing: m.pricing || 'gratuito',
           speakers: m.speakers,
           description: m.description,
+          contactLink: m.registration_url ? normalizeExternalUrl(m.registration_url) : undefined,
           coverImage: m.cover_image,
           originalMeeting: m,
         })
@@ -1289,6 +1290,33 @@ export default function MeetingsAndMaterials() {
                               <span className="truncate" title={m.speakers}>
                                 {m.speakers}
                               </span>
+                            </div>
+                          )}
+
+                          {/* Link de Inscrição no Card */}
+                          {m.registration_url && m.registration_url.trim() ? (
+                            <div
+                              className="pt-1 flex items-center justify-between gap-1 text-[11px]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="text-[#F5D77F] font-semibold flex items-center gap-1 truncate">
+                                <Ticket className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                                <span className="truncate">Inscrição Externa</span>
+                              </span>
+                              <a
+                                href={normalizeExternalUrl(m.registration_url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-0.5 font-bold shrink-0"
+                              >
+                                <span>Abrir</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="pt-1 flex items-center gap-1 text-[10px] text-slate-400">
+                              <Smartphone className="w-3 h-3 text-emerald-400 shrink-0" />
+                              <span className="truncate">WhatsApp: (65) 98100-3969</span>
                             </div>
                           )}
                         </div>
@@ -2804,23 +2832,96 @@ export default function MeetingsAndMaterials() {
             </DialogHeader>
 
             <div className="space-y-4 my-4">
-              {/* Se o evento for pago, destacar o valor */}
+              {/* Se o evento for pago, destacar o valor e o link de inscrição */}
               {detailMeeting.pricing === 'pago' && (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#D4AF37]/20 to-amber-500/15 border border-[#D4AF37]/50 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-[#F5D77F]" />
-                    <span className="font-extrabold uppercase tracking-wider text-[#F5D77F]">
-                      Investimento / Inscrição:
+                <div className="space-y-2.5">
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#D4AF37]/20 to-amber-500/15 border border-[#D4AF37]/50 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-[#F5D77F]" />
+                      <span className="font-extrabold uppercase tracking-wider text-[#F5D77F]">
+                        Investimento / Inscrição:
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-white">
+                      {detailMeeting.price && !isNaN(detailMeeting.price) && detailMeeting.price > 0
+                        ? new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(detailMeeting.price)
+                        : 'Valor sob consulta'}
                     </span>
                   </div>
-                  <span className="text-sm font-black text-white">
-                    {detailMeeting.price && !isNaN(detailMeeting.price) && detailMeeting.price > 0
-                      ? new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(detailMeeting.price)
-                      : 'Valor sob consulta'}
-                  </span>
+
+                  {/* Bloco de Link de Inscrição Externa cadastrado / Fallback WhatsApp */}
+                  {detailMeeting.registration_url && detailMeeting.registration_url.trim() ? (
+                    <div className="p-4 rounded-2xl bg-[#061020] border border-[#D4AF37]/50 shadow-lg space-y-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0">
+                            <Ticket className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#F5D77F]">
+                              Link Cadastrado para Inscrição Externa:
+                            </p>
+                            <p
+                              className="text-xs text-slate-300 font-mono truncate"
+                              title={detailMeeting.registration_url}
+                            >
+                              {detailMeeting.registration_url}
+                            </p>
+                          </div>
+                        </div>
+
+                        <a
+                          href={normalizeExternalUrl(detailMeeting.registration_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0"
+                        >
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider px-3.5 h-8 rounded-xl shadow-md flex items-center gap-1.5 transition-all hover:scale-105"
+                          >
+                            <span>Acessar Link</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Button>
+                        </a>
+                      </div>
+
+                      <p className="text-[10px] text-slate-400">
+                        Este link é utilizado no botão de inscrição da página pública para
+                        convidados e compradores externos.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl bg-[#061020]/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="text-slate-300 text-[11px]">
+                          Nenhum link externo cadastrado. Inscrições caem no WhatsApp Oficial:{' '}
+                          <strong className="text-emerald-300 font-bold">(65) 98100-3969</strong>
+                        </span>
+                      </div>
+                      <a
+                        href={`https://wa.me/5565981003969?text=${encodeURIComponent(
+                          `Olá! Gostaria de mais informações sobre as inscrições para o evento "${detailMeeting.title}".`,
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[10px] border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200"
+                        >
+                          Abrir WhatsApp
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        </Button>
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3097,9 +3198,9 @@ export default function MeetingsAndMaterials() {
                 Fechar
               </Button>
 
-              {selectedCalendarEvent.contactLink && (
+              {selectedCalendarEvent.contactLink ? (
                 <a
-                  href={selectedCalendarEvent.contactLink}
+                  href={normalizeExternalUrl(selectedCalendarEvent.contactLink)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -3107,7 +3208,19 @@ export default function MeetingsAndMaterials() {
                     Acessar Link / Inscrição <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </a>
-              )}
+              ) : selectedCalendarEvent.pricing === 'pago' ? (
+                <a
+                  href={`https://wa.me/5565981003969?text=${encodeURIComponent(
+                    `Olá! Gostaria de mais informações sobre o evento "${selectedCalendarEvent.title}".`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider">
+                    Inscrição WhatsApp <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                  </Button>
+                </a>
+              ) : null}
             </div>
           </DialogContent>
         </Dialog>
@@ -3308,26 +3421,39 @@ export default function MeetingsAndMaterials() {
               </div>
 
               {/* Link de Inscrição Externa */}
-              <div className="space-y-1 p-3 bg-[#061020]/70 rounded-2xl border border-slate-800">
+              <div className="space-y-1.5 p-3.5 bg-[#061020]/90 rounded-2xl border border-[#D4AF37]/40">
                 <Label className="text-[#F5D77F] font-semibold flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <ExternalLink className="w-4 h-4 text-[#D4AF37]" />
+                    <Ticket className="w-4 h-4 text-[#D4AF37]" />
                     Link de Inscrição Externa (Página Pública de Eventos)
                   </span>
-                  <span className="text-[10px] text-slate-300 font-normal">
-                    Opcional / Recomendado
+                  <span className="text-[10px] text-amber-300 font-semibold">
+                    {meetingPricing === 'pago' ? 'Recomendado' : 'Opcional'}
                   </span>
                 </Label>
                 <Input
-                  placeholder="https://eventos.edvanced.com.br/... ou link Sympla/Hotmart/Formulário"
+                  placeholder="https://eventos.edvanced.com.br/... ou link Sympla/Hotmart/Checkout"
                   value={meetingRegistrationUrl}
                   onChange={(e) => setMeetingRegistrationUrl(e.target.value)}
-                  className="text-xs bg-[#061020] border-slate-800 text-white rounded-xl placeholder:text-slate-400"
+                  className="text-xs bg-[#0A1A33] border-slate-700 text-white rounded-xl placeholder:text-slate-500 font-mono"
                 />
-                <p className="text-[10px] text-slate-400">
-                  Este link será exibido no botão "Inscrever-se" da aba pública de eventos para o
-                  público externo.
-                </p>
+                <div className="flex items-center justify-between gap-2 pt-1 text-[10px] text-slate-400">
+                  <span>
+                    Exibido no botão "Garantir Inscrição" da vitrine pública e nos detalhes de
+                    eventos pagos.
+                  </span>
+                  {meetingRegistrationUrl.trim() && (
+                    <a
+                      href={normalizeExternalUrl(meetingRegistrationUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#F5D77F] hover:underline flex items-center gap-1 font-bold shrink-0"
+                    >
+                      <span>Testar Link</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1">
