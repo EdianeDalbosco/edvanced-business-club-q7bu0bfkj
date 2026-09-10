@@ -31,6 +31,8 @@ import {
   Share2,
   Upload,
   Paperclip,
+  Ticket,
+  Lock,
 } from 'lucide-react'
 import { downloadICSFile } from '@/lib/ics'
 import { useAuth } from '@/contexts/AuthContext'
@@ -176,6 +178,7 @@ export default function MeetingsAndMaterials() {
   const [meetingLocation, setMeetingLocation] = useState('')
   const [meetingType, setMeetingType] = useState<'presencial' | 'online' | 'hibrido'>('presencial')
   const [meetingPricing, setMeetingPricing] = useState<'gratuito' | 'pago'>('gratuito')
+  const [meetingPrice, setMeetingPrice] = useState<string>('')
   const [meetingRegistrationUrl, setMeetingRegistrationUrl] = useState('')
   const [meetingSpeakers, setMeetingSpeakers] = useState('')
   const [meetingDesc, setMeetingDesc] = useState('')
@@ -516,6 +519,16 @@ export default function MeetingsAndMaterials() {
     [meetings, acervoSearch],
   )
 
+  const adminPublicMeetings = useMemo(
+    () => filteredMeetingsList.filter((m) => m.pricing === 'pago'),
+    [filteredMeetingsList],
+  )
+
+  const adminMemberOnlyMeetings = useMemo(
+    () => filteredMeetingsList.filter((m) => m.pricing !== 'pago'),
+    [filteredMeetingsList],
+  )
+
   // =========================================================================
   // UNIFIED CALENDAR EVENTS MAPPING (Meetings in Dark Navy + Disclosures in Teal)
   // =========================================================================
@@ -705,6 +718,7 @@ export default function MeetingsAndMaterials() {
     setMeetingLocation('')
     setMeetingType('presencial')
     setMeetingPricing('gratuito')
+    setMeetingPrice('')
     setMeetingRegistrationUrl('')
     setMeetingSpeakers('')
     setMeetingDesc('')
@@ -722,6 +736,11 @@ export default function MeetingsAndMaterials() {
     setMeetingLocation(meeting.location || '')
     setMeetingType(meeting.type || 'presencial')
     setMeetingPricing(meeting.pricing || 'gratuito')
+    setMeetingPrice(
+      meeting.price !== undefined && meeting.price !== null && !isNaN(meeting.price)
+        ? String(meeting.price)
+        : '',
+    )
     setMeetingRegistrationUrl(meeting.registration_url || '')
     setMeetingSpeakers(meeting.speakers || '')
     const cleanDesc = (meeting.description || '').replace(/^<p>/, '').replace(/<\/p>$/, '')
@@ -769,6 +788,16 @@ export default function MeetingsAndMaterials() {
       formData.append('location', meetingLocation)
       formData.append('type', meetingType)
       formData.append('pricing', meetingPricing)
+      if (meetingPricing === 'pago') {
+        const parsedPrice = parseFloat(meetingPrice.replace(',', '.'))
+        if (!isNaN(parsedPrice) && parsedPrice >= 0) {
+          formData.append('price', String(parsedPrice))
+        } else {
+          formData.append('price', '')
+        }
+      } else {
+        formData.append('price', '')
+      }
       formData.append('registration_url', meetingRegistrationUrl.trim())
       formData.append('speakers', meetingSpeakers || '')
       formData.append('description', meetingDesc ? `<p>${meetingDesc}</p>` : '')
@@ -1141,13 +1170,166 @@ export default function MeetingsAndMaterials() {
          ========================================================================= */}
       {mainView === 'acervo' && (
         <div className="space-y-12 animate-fade-in">
-          {/* CATEGORIA 1: PRATELEIRA DE ENCONTROS OFICIAIS */}
+          {/* CATEGORIA 1A: ENCONTROS ABERTOS AO PÚBLICO (INSCRIÇÃO PAGA) */}
+          {(acervoCategory === 'todos' || acervoCategory === 'encontros') &&
+            adminPublicMeetings.length > 0 && (
+              <NetflixShelf
+                title="Encontros Abertos ao Público"
+                subtitle="Palestras, summits e experiências com ingressos abertos a convidados"
+                icon={Ticket}
+                badge={`${adminPublicMeetings.length} aberto(s)`}
+                action={
+                  isAdmin
+                    ? {
+                        label: '+ Cadastrar Encontro',
+                        onClick: handleOpenAddMeeting,
+                      }
+                    : undefined
+                }
+              >
+                {adminPublicMeetings.map((m) => {
+                  const status = getMeetingStatus(m)
+                  const StatusIcon = status.icon
+                  const isHero = heroMeeting?.id === m.id
+
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => {
+                        setSelectedMeeting(m)
+                        setDetailMeeting(m)
+                      }}
+                      className={`group relative flex-shrink-0 w-72 sm:w-80 cursor-pointer rounded-2xl overflow-hidden bg-[#0A1A33] border transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between ${
+                        isHero
+                          ? 'border-emerald-500 ring-1 ring-emerald-500 shadow-xl shadow-emerald-500/15'
+                          : 'border-slate-800 hover:border-emerald-400 shadow-lg'
+                      }`}
+                    >
+                      {/* Thumbnail Cover com aspecto 16:9 fixo e object-cover centralizado */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
+                        {getMeetingHeroCover(m) ? (
+                          <img
+                            src={getMeetingHeroCover(m)}
+                            alt={m.title}
+                            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/20 rounded-full blur-xl pointer-events-none" />
+                            <Ticket className="w-8 h-8 text-emerald-400 mb-1 opacity-80" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 line-clamp-1">
+                              {m.event_name || 'Aberto ao Público'}
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/40" />
+
+                        {/* Badges Top */}
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-400 text-slate-950 tracking-wider shadow">
+                            Aberto ao Público
+                          </span>
+
+                          <span
+                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border inline-flex items-center gap-1 backdrop-blur-md ${status.cardClass}`}
+                          >
+                            <StatusIcon className="w-3 h-3" />
+                            {status.label}
+                          </span>
+                        </div>
+
+                        {/* Play / Inspect Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-slate-950 flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            <Eye className="w-5 h-5 text-slate-950" />
+                          </div>
+                        </div>
+
+                        {/* Bottom Date & Price */}
+                        <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-200">
+                          <span className="font-semibold text-[#F5D77F]">
+                            {formatShortDate(m.start_date || m.date)}
+                          </span>
+                          <span className="font-black text-emerald-300 bg-slate-950/80 px-2 py-0.5 rounded-full text-[10px] border border-emerald-500/30">
+                            {m.price && !isNaN(m.price) && m.price > 0
+                              ? new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(m.price)
+                              : 'Sob consulta'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          {m.event_name && (
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 line-clamp-1 flex items-center gap-1 mb-1">
+                              <Tag className="w-3 h-3 flex-shrink-0" />
+                              <span>{m.event_name}</span>
+                            </p>
+                          )}
+                          <h3 className="font-black text-sm text-white group-hover:text-[#F5D77F] transition-colors line-clamp-2 leading-snug">
+                            {m.title}
+                          </h3>
+                        </div>
+
+                        <div className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                          <div className="flex items-center gap-1.5 text-[11px] truncate">
+                            <MapPin className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                            <span className="truncate" title={m.location}>
+                              {m.location}
+                            </span>
+                          </div>
+
+                          {m.speakers && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-300 truncate">
+                              <Users className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                              <span className="truncate" title={m.speakers}>
+                                {m.speakers}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Admin Action Buttons */}
+                        {isAdmin && (
+                          <div
+                            className="pt-2 border-t border-slate-800 flex items-center justify-end gap-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenEditMeeting(m)}
+                              className="h-7 px-2 text-[11px] text-slate-300 hover:text-white hover:bg-white/10"
+                            >
+                              <Edit2 className="w-3 h-3 mr-1" /> Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteMeeting(m)}
+                              className="h-7 px-2 text-[11px] text-rose-400 hover:text-rose-300 hover:bg-rose-950/40"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </NetflixShelf>
+            )}
+          {/* CATEGORIA 1B: ENCONTROS EXCLUSIVOS PARA MEMBROS */}
           {(acervoCategory === 'todos' || acervoCategory === 'encontros') && (
             <NetflixShelf
-              title="Encontros Oficiais & Masterminds"
-              subtitle="Imersões presenciais, rodadas executivas e webinars exclusivos"
-              icon={CalendarIcon}
-              badge={`${filteredMeetingsList.length} encontros`}
+              title="Encontros Exclusivos para Membros"
+              subtitle="Imersões presenciais, rodadas executivas e masterminds restritos ao Club"
+              icon={Lock}
+              badge={`${adminMemberOnlyMeetings.length} exclusivo(s)`}
               action={
                 isAdmin
                   ? {
@@ -1157,8 +1339,8 @@ export default function MeetingsAndMaterials() {
                   : undefined
               }
             >
-              {filteredMeetingsList.length > 0 ? (
-                filteredMeetingsList.map((m) => {
+              {adminMemberOnlyMeetings.length > 0 ? (
+                adminMemberOnlyMeetings.map((m) => {
                   const status = getMeetingStatus(m)
                   const StatusIcon = status.icon
                   const isHero = heroMeeting?.id === m.id
@@ -1176,13 +1358,13 @@ export default function MeetingsAndMaterials() {
                           : 'border-slate-800 hover:border-[#D4AF37] shadow-lg'
                       }`}
                     >
-                      {/* Thumbnail Cover with Fallback */}
+                      {/* Thumbnail Cover adaptável com aspect-[16/9] e object-cover */}
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#061020]">
                         {getMeetingHeroCover(m) ? (
                           <img
                             src={getMeetingHeroCover(m)}
                             alt={m.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
+                            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 filter brightness-90 group-hover:brightness-100"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-[#122443] via-[#0A1A33] to-[#061020] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
@@ -1287,7 +1469,7 @@ export default function MeetingsAndMaterials() {
                 })
               ) : (
                 <div className="w-full p-8 text-center bg-[#0A1A33] rounded-2xl border border-slate-800">
-                  <p className="text-xs text-slate-400">Nenhum encontro encontrado.</p>
+                  <p className="text-xs text-slate-400">Nenhum encontro exclusivo encontrado.</p>
                 </div>
               )}
             </NetflixShelf>
@@ -2568,7 +2750,19 @@ export default function MeetingsAndMaterials() {
       {/* 2. Modal Detalhes do Encontro */}
       {detailMeeting && (
         <Dialog open={!!detailMeeting} onOpenChange={(open) => !open && setDetailMeeting(null)}>
-          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {/* Capa do Encontro no Topo do Modal (se existir) */}
+            {detailMeeting.cover_image && (
+              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
+                <img
+                  src={getFileUrl('meetings', detailMeeting.id, detailMeeting.cover_image)}
+                  alt={detailMeeting.title}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+              </div>
+            )}
+
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-[#D4AF37] text-slate-950 uppercase font-bold text-[10px]">
@@ -2582,7 +2776,7 @@ export default function MeetingsAndMaterials() {
                       : 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
                   }`}
                 >
-                  {detailMeeting.pricing === 'pago' ? 'Pago' : 'Exclusivo para Membros'}
+                  {detailMeeting.pricing === 'pago' ? 'Inscrição Paga' : 'Exclusivo para Membros'}
                 </Badge>
                 {(() => {
                   const status = getMeetingStatus(detailMeeting)
@@ -2610,6 +2804,26 @@ export default function MeetingsAndMaterials() {
             </DialogHeader>
 
             <div className="space-y-4 my-4">
+              {/* Se o evento for pago, destacar o valor */}
+              {detailMeeting.pricing === 'pago' && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#D4AF37]/20 to-amber-500/15 border border-[#D4AF37]/50 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-[#F5D77F]" />
+                    <span className="font-extrabold uppercase tracking-wider text-[#F5D77F]">
+                      Investimento / Inscrição:
+                    </span>
+                  </div>
+                  <span className="text-sm font-black text-white">
+                    {detailMeeting.price && !isNaN(detailMeeting.price) && detailMeeting.price > 0
+                      ? new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        }).format(detailMeeting.price)
+                      : 'Valor sob consulta'}
+                  </span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
                   <p className="text-blue-200 font-semibold flex items-center gap-1.5">
@@ -2763,7 +2977,28 @@ export default function MeetingsAndMaterials() {
           open={!!selectedCalendarEvent}
           onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {/* Capa do Evento no Topo do Modal (se existir) */}
+            {selectedCalendarEvent.coverImage && (
+              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
+                <img
+                  src={
+                    selectedCalendarEvent.origin === 'meeting' &&
+                    selectedCalendarEvent.originalMeeting
+                      ? getFileUrl(
+                          'meetings',
+                          selectedCalendarEvent.originalMeeting.id,
+                          selectedCalendarEvent.coverImage,
+                        )
+                      : selectedCalendarEvent.coverImage
+                  }
+                  alt={selectedCalendarEvent.title}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+              </div>
+            )}
+
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
@@ -2972,12 +3207,44 @@ export default function MeetingsAndMaterials() {
                 </div>
               </div>
 
-              {/* Upload da Imagem de Capa do Encontro */}
+              {/* Campo de Preço quando Inscrição Paga */}
+              {meetingPricing === 'pago' && (
+                <div className="p-3 bg-[#061020]/80 rounded-2xl border border-amber-500/40 space-y-1.5 animate-in fade-in duration-200">
+                  <Label className="text-[#F5D77F] font-bold text-xs flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      Valor da Inscrição (R$)
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      Opcional — exibido na vitrine pública
+                    </span>
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#D4AF37]">
+                      R$
+                    </span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Ex: 250.00"
+                      value={meetingPrice}
+                      onChange={(e) => setMeetingPrice(e.target.value)}
+                      className="pl-9 text-xs bg-[#061020] border-slate-700 text-white rounded-xl placeholder:text-slate-500 font-semibold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    Se não preenchido ou zero, será exibido "Valor sob consulta" no card e modal.
+                  </p>
+                </div>
+              )}
+
+              {/* Upload da Imagem de Capa do Encontro (qualquer proporção: 16:9, quadrado, 1080x1350) */}
               <div className="space-y-2 p-3 bg-[#061020]/70 rounded-2xl border border-slate-800">
                 <Label className="text-slate-200 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
-                    Imagem de Capa do Encontro (Estilo Netflix / Formato 16:9)
+                    Imagem de Capa do Encontro (16:9, Quadrada ou Vertical 1080x1350)
                   </span>
                   {meetingCoverPreview && (
                     <span className="text-[10px] text-[#F5D77F] font-semibold">
@@ -2987,11 +3254,11 @@ export default function MeetingsAndMaterials() {
                 </Label>
 
                 {meetingCoverPreview && (
-                  <div className="relative aspect-[16/9] w-full max-h-40 rounded-xl overflow-hidden border border-[#D4AF37]/40 bg-black/40 group">
+                  <div className="relative aspect-[16/9] w-full max-h-48 rounded-xl overflow-hidden border border-[#D4AF37]/40 bg-black/40 group">
                     <img
                       src={meetingCoverPreview}
                       alt="Preview da Capa"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Button
@@ -3026,8 +3293,8 @@ export default function MeetingsAndMaterials() {
                   />
                 </div>
                 <p className="text-[10px] text-slate-400">
-                  Formatos aceitos: JPG, PNG, WEBP. Tamanho máx.: 10MB. Se não enviada, será
-                  utilizado um gradiente premium padrão.
+                  Aceita qualquer proporção (16:9, quadrada ou vertical 1080x1350). Formatos: JPG,
+                  PNG, WEBP.
                 </p>
               </div>
 

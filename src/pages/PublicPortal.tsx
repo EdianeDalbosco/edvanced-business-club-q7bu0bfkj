@@ -343,6 +343,16 @@ export default function PublicPortal() {
   const WHATSAPP_NUMBER = '5565981003969'
   const WHATSAPP_SELECTION_URL = `https://wa.me/${WHATSAPP_NUMBER}`
 
+  const formatBRLPrice = (price?: number | null) => {
+    if (price === undefined || price === null || price <= 0 || isNaN(price)) {
+      return 'Valor sob consulta'
+    }
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(price)
+  }
+
   const getMeetingRegistrationLink = (meeting: Meeting) => {
     if (meeting.registration_url && meeting.registration_url.trim()) {
       return meeting.registration_url.trim()
@@ -472,6 +482,15 @@ export default function PublicPortal() {
       return true
     })
   }, [meetings, eventSearch, eventFormat, eventPricing, eventMonth])
+
+  // Separated events by audience: Public vs Exclusive Members
+  const publicEvents = useMemo(() => {
+    return filteredEvents.filter((m) => m.pricing === 'pago')
+  }, [filteredEvents])
+
+  const memberOnlyEvents = useMemo(() => {
+    return filteredEvents.filter((m) => m.pricing !== 'pago')
+  }, [filteredEvents])
 
   // Filtered EdvancedCast episodes
   const filteredEpisodes = useMemo(() => {
@@ -1682,177 +1701,354 @@ export default function PublicPortal() {
               )}
             </div>
 
-            {/* Events Grid (Executive White Cards with Gold Border on Hover) */}
+            {/* Renderização de Eventos Separados por Público */}
             {filteredEvents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map((event) => {
-                  const status = getMeetingStatus(event)
-                  const StatusIcon = status.icon
-                  const coverUrl = getMeetingCover(event)
-
-                  return (
-                    <Card
-                      key={event.id}
-                      className="group relative border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-                    >
-                      <div>
-                        {/* Cover image */}
-                        <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
-                          {coverUrl ? (
-                            <img
-                              src={coverUrl}
-                              alt={event.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
-                              <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
-                              <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
-                                {event.event_name || 'Edvanced Business Club'}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-
-                          {/* Top badges */}
-                          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
-                            <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
-                              {event.type || 'Presencial'}
-                            </Badge>
-
-                            <Badge
-                              variant="outline"
-                              className={`text-[9px] font-bold uppercase backdrop-blur-md shadow-xs ${status.badgeClass}`}
-                            >
-                              <StatusIcon className="w-3 h-3 mr-1 inline" />
-                              {status.label}
-                            </Badge>
-                          </div>
-
-                          {/* Bottom pricing */}
-                          <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
-                            <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
-                              <CalendarIcon className="w-3.5 h-3.5 text-[#F5D77F]" />
-                              {formatShortDate(event.start_date || event.date)}
-                            </span>
-                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-slate-950/80 border border-white/20 text-white">
-                              {event.pricing === 'pago'
-                                ? 'Inscrição Paga'
-                                : 'Exclusivo Membros Club'}
-                            </span>
+              <div className="space-y-12">
+                {/* SEÇÃO 1: ABERTOS AO PÚBLICO (m.pricing === 'pago') */}
+                {publicEvents.length > 0 && (
+                  <section className="space-y-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D4AF37]/30">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F5D77F] via-[#D4AF37] to-[#B89324] p-[1.5px] shadow-md shadow-[#D4AF37]/20 flex items-center justify-center">
+                          <div className="w-full h-full bg-[#0A1A33] rounded-[14px] flex items-center justify-center">
+                            <Ticket className="w-5 h-5 text-emerald-400" />
                           </div>
                         </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                              Abertos ao Público
+                            </h3>
+                            <Badge className="bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 text-[10px] font-black uppercase">
+                              Inscrição Aberta
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-600">
+                            Encontros, palestras e experiências com inscrições abertas para líderes
+                            e convidados.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-auto">
+                        {publicEvents.length} evento(s) aberto(s)
+                      </span>
+                    </div>
 
-                        {/* Event Content */}
-                        <div className="p-5 sm:p-6 space-y-3">
-                          {event.event_name && (
-                            <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8C6D07] flex items-center gap-1.5">
-                              <Tag className="w-3 h-3 text-[#D4AF37]" />
-                              <span>{event.event_name}</span>
-                            </p>
-                          )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {publicEvents.map((event) => {
+                        const status = getMeetingStatus(event)
+                        const StatusIcon = status.icon
+                        const coverUrl = getMeetingCover(event)
 
-                          <h3 className="font-extrabold text-base sm:text-lg text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
-                            {event.title}
-                          </h3>
+                        return (
+                          <Card
+                            key={event.id}
+                            className="group relative border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                          >
+                            <div>
+                              {/* Cover image adaptável a qualquer proporção */}
+                              <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
+                                {coverUrl ? (
+                                  <img
+                                    src={coverUrl}
+                                    alt={event.title}
+                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
+                                    <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
+                                      {event.event_name || 'Edvanced Business Club'}
+                                    </span>
+                                  </div>
+                                )}
 
-                          {/* Location & Time */}
-                          <div className="space-y-2 text-xs text-slate-600 pt-1">
-                            <div className="flex items-start gap-2">
-                              <Clock className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
-                              <span className="text-slate-700 font-medium">
-                                {formatDateString(event.start_date || event.date)} às{' '}
-                                {formatTimeString(event.start_date || event.date)}
-                                {event.end_date ? ` até ${formatTimeString(event.end_date)}` : ''}
-                              </span>
-                            </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 
-                            <div className="flex items-start gap-2">
-                              <MapPin className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
-                              <span className="truncate text-slate-700" title={event.location}>
-                                {event.location}
-                              </span>
-                            </div>
+                                {/* Top badges */}
+                                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
+                                  <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
+                                    {event.type || 'Presencial'}
+                                  </Badge>
 
-                            {event.speakers && (
-                              <div className="flex items-start gap-2 text-slate-700">
-                                <Users className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
-                                <span className="line-clamp-1">{event.speakers}</span>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[9px] font-bold uppercase backdrop-blur-md shadow-xs ${status.badgeClass}`}
+                                  >
+                                    <StatusIcon className="w-3 h-3 mr-1 inline" />
+                                    {status.label}
+                                  </Badge>
+                                </div>
+
+                                {/* Bottom pricing & date */}
+                                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
+                                  <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
+                                    <CalendarIcon className="w-3.5 h-3.5 text-[#F5D77F]" />
+                                    {formatShortDate(event.start_date || event.date)}
+                                  </span>
+                                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/90 border border-emerald-400/40 text-slate-950">
+                                    Aberto ao Público
+                                  </span>
+                                </div>
                               </div>
-                            )}
+
+                              {/* Event Content */}
+                              <div className="p-5 sm:p-6 space-y-3">
+                                {event.event_name && (
+                                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8C6D07] flex items-center gap-1.5">
+                                    <Tag className="w-3 h-3 text-[#D4AF37]" />
+                                    <span>{event.event_name}</span>
+                                  </p>
+                                )}
+
+                                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                                  {event.title}
+                                </h3>
+
+                                {/* Exibição de Valor do Investimento para eventos pagos */}
+                                <div className="px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5">
+                                    <Ticket className="w-3.5 h-3.5 text-[#D4AF37]" />
+                                    Investimento:
+                                  </span>
+                                  <span className="text-xs font-black text-slate-950">
+                                    {formatBRLPrice(event.price)}
+                                  </span>
+                                </div>
+
+                                {/* Location & Time */}
+                                <div className="space-y-2 text-xs text-slate-600 pt-1">
+                                  <div className="flex items-start gap-2">
+                                    <Clock className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                    <span className="text-slate-700 font-medium">
+                                      {formatDateString(event.start_date || event.date)} às{' '}
+                                      {formatTimeString(event.start_date || event.date)}
+                                      {event.end_date
+                                        ? ` até ${formatTimeString(event.end_date)}`
+                                        : ''}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-start gap-2">
+                                    <MapPin className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                    <span
+                                      className="truncate text-slate-700"
+                                      title={event.location}
+                                    >
+                                      {event.location}
+                                    </span>
+                                  </div>
+
+                                  {event.speakers && (
+                                    <div className="flex items-start gap-2 text-slate-700">
+                                      <Users className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                      <span className="line-clamp-1">{event.speakers}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Card Footer */}
+                            <div className="p-5 sm:p-6 pt-0 space-y-2.5 border-t border-slate-100 mt-2">
+                              {/* Botão Primário Dourado Garantir Inscrição */}
+                              <a
+                                href={getMeetingRegistrationLink(event)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full"
+                              >
+                                <Button className="w-full bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-md shadow-[#D4AF37]/25 flex items-center justify-center gap-2 transition-all border border-[#D4AF37]/40">
+                                  <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                                  <span>Garantir Inscrição</span>
+                                  <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
+                                </Button>
+                              </a>
+
+                              {/* Botão Secundário Ver Detalhes */}
+                              <Button
+                                variant="outline"
+                                onClick={() => setSelectedEventModal(event)}
+                                className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-bold text-xs uppercase tracking-wider py-2 rounded-xl flex items-center justify-center gap-2"
+                              >
+                                <span>Ver Detalhes</span>
+                                <ArrowRight className="w-3.5 h-3.5 text-[#8C6D07]" />
+                              </Button>
+                            </div>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {/* SEÇÃO 2: EXCLUSIVOS PARA MEMBROS (restante / gratuito) */}
+                {memberOnlyEvents.length > 0 && (
+                  <section className="space-y-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D4AF37]/30">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] p-[1.5px] border border-[#D4AF37]/40 shadow-md flex items-center justify-center">
+                          <div className="w-full h-full bg-[#0A1A33] rounded-[14px] flex items-center justify-center">
+                            <Lock className="w-5 h-5 text-[#F5D77F]" />
                           </div>
                         </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                              Exclusivos para Membros
+                            </h3>
+                            <Badge className="bg-[#D4AF37]/15 text-[#8C6D07] border border-[#D4AF37]/40 text-[10px] font-black uppercase">
+                              Acesso VIP Club
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-600">
+                            Imersões executivas, rodadas de negócios e jantares restritos aos
+                            associados do club.
+                          </p>
+                        </div>
                       </div>
+                      <span className="text-xs font-bold text-[#8C6D07] bg-amber-50 px-3 py-1.5 rounded-xl border border-[#D4AF37]/30 self-start sm:self-auto">
+                        {memberOnlyEvents.length} evento(s) exclusivo(s)
+                      </span>
+                    </div>
 
-                      {/* Card Footer: Conditional for 'pago' vs 'gratuito'/membros */}
-                      <div className="p-5 sm:p-6 pt-0 space-y-2.5 border-t border-slate-100 mt-2">
-                        {event.pricing === 'pago' ? (
-                          <>
-                            {/* Badge Inscrição Aberta ao Público */}
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800">
-                              <Ticket className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                              <span className="text-[11px] font-extrabold uppercase tracking-wider line-clamp-1">
-                                Inscrição Aberta ao Público
-                              </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {memberOnlyEvents.map((event) => {
+                        const status = getMeetingStatus(event)
+                        const StatusIcon = status.icon
+                        const coverUrl = getMeetingCover(event)
+
+                        return (
+                          <Card
+                            key={event.id}
+                            className="group relative border border-slate-200/90 bg-white rounded-3xl overflow-hidden shadow-sm hover:border-[#D4AF37] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                          >
+                            <div>
+                              {/* Cover image adaptável a qualquer proporção */}
+                              <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
+                                {coverUrl ? (
+                                  <img
+                                    src={coverUrl}
+                                    alt={event.title}
+                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-[#0A1A33] via-[#0D2142] to-[#061020] flex flex-col items-center justify-center p-6 text-center">
+                                    <Crown className="w-8 h-8 text-[#F5D77F] mb-2" />
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-[#F5D77F]">
+                                      {event.event_name || 'Edvanced Business Club'}
+                                    </span>
+                                  </div>
+                                )}
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+
+                                {/* Top badges */}
+                                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5">
+                                  <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 font-black text-[9px] uppercase tracking-wider shadow-md">
+                                    {event.type || 'Presencial'}
+                                  </Badge>
+
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[9px] font-bold uppercase backdrop-blur-md shadow-xs ${status.badgeClass}`}
+                                  >
+                                    <StatusIcon className="w-3 h-3 mr-1 inline" />
+                                    {status.label}
+                                  </Badge>
+                                </div>
+
+                                {/* Bottom badge */}
+                                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px]">
+                                  <span className="font-extrabold text-[#F5D77F] drop-shadow-sm flex items-center gap-1">
+                                    <CalendarIcon className="w-3.5 h-3.5 text-[#F5D77F]" />
+                                    {formatShortDate(event.start_date || event.date)}
+                                  </span>
+                                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-slate-950/80 border border-white/20 text-[#F5D77F]">
+                                    Exclusivo Membros Club
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Event Content */}
+                              <div className="p-5 sm:p-6 space-y-3">
+                                {event.event_name && (
+                                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8C6D07] flex items-center gap-1.5">
+                                    <Tag className="w-3 h-3 text-[#D4AF37]" />
+                                    <span>{event.event_name}</span>
+                                  </p>
+                                )}
+
+                                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 group-hover:text-[#8C6D07] transition-colors line-clamp-2 leading-snug">
+                                  {event.title}
+                                </h3>
+
+                                {/* Location & Time */}
+                                <div className="space-y-2 text-xs text-slate-600 pt-1">
+                                  <div className="flex items-start gap-2">
+                                    <Clock className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                    <span className="text-slate-700 font-medium">
+                                      {formatDateString(event.start_date || event.date)} às{' '}
+                                      {formatTimeString(event.start_date || event.date)}
+                                      {event.end_date
+                                        ? ` até ${formatTimeString(event.end_date)}`
+                                        : ''}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-start gap-2">
+                                    <MapPin className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                    <span
+                                      className="truncate text-slate-700"
+                                      title={event.location}
+                                    >
+                                      {event.location}
+                                    </span>
+                                  </div>
+
+                                  {event.speakers && (
+                                    <div className="flex items-start gap-2 text-slate-700">
+                                      <Users className="w-4 h-4 text-[#8C6D07] flex-shrink-0 mt-0.5" />
+                                      <span className="line-clamp-1">{event.speakers}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
 
-                            {/* Botão Primário Dourado Garantir Inscrição */}
-                            <a
-                              href={getMeetingRegistrationLink(event)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full"
-                            >
-                              <Button className="w-full bg-gradient-to-r from-[#F5D77F] via-[#D4AF37] to-[#B89324] hover:from-[#FFF0B8] hover:to-[#D4AF37] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-md shadow-[#D4AF37]/25 flex items-center justify-center gap-2 transition-all border border-[#D4AF37]/40">
-                                <Ticket className="w-3.5 h-3.5 text-slate-950" />
-                                <span>Garantir Inscrição</span>
-                                <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
+                            {/* Card Footer */}
+                            <div className="p-5 sm:p-6 pt-0 space-y-2.5 border-t border-slate-100 mt-2">
+                              {/* Selo/Aviso de Exclusividade para Membros */}
+                              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#D4AF37]/15 to-amber-500/10 border border-[#D4AF37]/40 text-[#8C6D07]">
+                                <Lock className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
+                                <span className="text-[11px] font-extrabold uppercase tracking-wider line-clamp-1">
+                                  Exclusivo para Membros do Edvanced Business Club
+                                </span>
+                              </div>
+
+                              <Button
+                                onClick={() => setSelectedEventModal(event)}
+                                className="w-full bg-[#0A1A33] hover:bg-[#122443] text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all border border-slate-800 hover:border-[#D4AF37]/50"
+                              >
+                                <span>Ver Detalhes do Evento</span>
+                                <ArrowRight className="w-3.5 h-3.5 text-[#F5D77F]" />
                               </Button>
-                            </a>
 
-                            {/* Botão Secundário Ver Detalhes */}
-                            <Button
-                              variant="outline"
-                              onClick={() => setSelectedEventModal(event)}
-                              className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-bold text-xs uppercase tracking-wider py-2 rounded-xl flex items-center justify-center gap-2"
-                            >
-                              <span>Ver Detalhes</span>
-                              <ArrowRight className="w-3.5 h-3.5 text-[#8C6D07]" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            {/* Selo/Aviso de Exclusividade para Membros */}
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#D4AF37]/15 to-amber-500/10 border border-[#D4AF37]/40 text-[#8C6D07]">
-                              <Lock className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0" />
-                              <span className="text-[11px] font-extrabold uppercase tracking-wider line-clamp-1">
-                                Exclusivo para Membros do Edvanced Business Club
-                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedEventModal(event)}
+                                className="w-full text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                              >
+                                Mais Informações & Pauta
+                              </Button>
                             </div>
-
-                            <Button
-                              onClick={() => setSelectedEventModal(event)}
-                              className="w-full bg-[#0A1A33] hover:bg-[#122443] text-white font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all border border-slate-800 hover:border-[#D4AF37]/50"
-                            >
-                              <span>Ver Detalhes do Evento</span>
-                              <ArrowRight className="w-3.5 h-3.5 text-[#F5D77F]" />
-                            </Button>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedEventModal(event)}
-                              className="w-full text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                            >
-                              Mais Informações & Pauta
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </Card>
-                  )
-                })}
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
               </div>
             ) : (
               <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 space-y-3">
@@ -3198,7 +3394,19 @@ export default function PublicPortal() {
           open={!!selectedEventModal}
           onOpenChange={(open) => !open && setSelectedEventModal(null)}
         >
-          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl bg-[#0A1A33] text-white border-slate-800 p-6 md:p-8 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
+            {/* Capa do Evento no Topo do Modal (se existir) */}
+            {selectedEventModal.cover_image && (
+              <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-2xl overflow-hidden border border-[#D4AF37]/35 bg-[#061020] shadow-lg mb-2">
+                <img
+                  src={getMeetingCover(selectedEventModal)}
+                  alt={selectedEventModal.title}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A33] via-transparent to-black/30 pointer-events-none" />
+              </div>
+            )}
+
             <DialogHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-gradient-to-r from-[#F5D77F] to-[#D4AF37] text-slate-950 uppercase font-black text-[10px]">
@@ -3231,6 +3439,21 @@ export default function PublicPortal() {
             </DialogHeader>
 
             <div className="space-y-4 my-4 text-xs">
+              {/* Se o evento for pago, destacar o valor do investimento */}
+              {selectedEventModal.pricing === 'pago' && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#D4AF37]/20 to-amber-500/15 border border-[#D4AF37]/50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-[#F5D77F]" />
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-[#F5D77F]">
+                      Investimento / Inscrição:
+                    </span>
+                  </div>
+                  <span className="text-sm font-black text-white tracking-wide">
+                    {formatBRLPrice(selectedEventModal.price)}
+                  </span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3.5 bg-[#061020] rounded-2xl border border-slate-800 space-y-1">
                   <p className="text-[#F5D77F] font-semibold flex items-center gap-1.5">
