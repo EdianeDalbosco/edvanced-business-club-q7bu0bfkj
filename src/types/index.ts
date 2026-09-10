@@ -25,6 +25,7 @@ export interface Meeting extends RecordModel {
   location: string
   type?: 'presencial' | 'online' | 'hibrido'
   pricing?: 'gratuito' | 'pago'
+  price?: number
   speakers?: string
   description?: string
   cover_image?: string

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T01:41:20.574Z",
+  "generatedAt": "2026-09-10T01:59:04.027Z",
   "collections": [
     {
       "name": "users",
@@ -184,6 +184,12 @@
         {
           "name": "registration_url",
           "type": "url",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "price",
+          "type": "number",
           "required": false,
           "system": false
         }
